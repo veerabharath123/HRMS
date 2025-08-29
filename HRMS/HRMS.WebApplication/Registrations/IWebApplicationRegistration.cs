@@ -2,6 +2,6 @@
 {
     public interface IWebApplicationRegistration : IRegistration
     {
-        public void RegisterPipelineComponents(Microsoft.AspNetCore.Builder.WebApplication app);
+        public void RegisterPipelineComponents(Microsoft.AspNetCore.Builder.WebApplication app, IWebHostEnvironment env);
     }
 }

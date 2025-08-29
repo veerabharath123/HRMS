@@ -12,12 +12,12 @@ namespace HRMS.WebApplication.Extensions
                 .Cast<T>();
         }
 
-        public static void RegisterPipelineComponents(this Microsoft.AspNetCore.Builder.WebApplication app, Type scanningType)
+        public static void RegisterPipelineComponents(this Microsoft.AspNetCore.Builder.WebApplication app, IWebHostEnvironment env, Type scanningType)
         {
             var registrations = GetRegistrations<IWebApplicationRegistration>(scanningType);
             foreach (var registration in registrations)
             {
-                registration.RegisterPipelineComponents(app);
+                registration.RegisterPipelineComponents(app, env);
             }
         }
         public static void RegisterServices(this WebApplicationBuilder builder, Type scanningType)

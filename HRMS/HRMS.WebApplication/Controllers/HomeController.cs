@@ -1,6 +1,8 @@
 using HRMS.WebApplication.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace HRMS.WebApplication.Controllers
 {
@@ -28,5 +30,43 @@ namespace HRMS.WebApplication.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        //private async Task LoadAuth(AuthResponse auth)
+        //{
+        //    _httpContextAccessor.HttpContext?.Session.SetString(nameof(auth.UserName), auth.UserName);
+        //    var claims = new List<Claim>
+        //    {
+        //        new(nameof(auth.UserName), auth.UserName),
+        //        new(nameof(auth.UserId), auth.UserId.ToString()),
+        //        new("RequestToken",auth.Token)
+        //    };
+
+        //    if (!auth.Is2FACompleted)
+        //        auth.UserPersmissions.Add("2FA");
+
+        //    foreach (var permission in auth.UserPersmissions)
+        //    {
+        //        claims.Add(new Claim(ClaimTypes.Role, permission));
+        //    }
+
+        //    var identity = new ClaimsIdentity(claims, GeneralConstants.CookieAuthName);
+        //    var principal = new ClaimsPrincipal(identity);
+
+        //    var authProperties = new AuthenticationProperties
+        //    {
+        //        IsPersistent = true,
+        //        ExpiresUtc = auth.ExpiryDate,
+        //    };
+
+        //    await HttpContext.SignInAsync(GeneralConstants.CookieAuthName, principal, authProperties);
+        //}
+
+        //[HttpGet]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    await HttpContext.SignOutAsync(GeneralConstants.CookieAuthName);
+        //    _httpContextAccessor.HttpContext?.Session.Clear();
+
+        //    return RedirectToAction(nameof(Login));
+        //}
     }
 }
