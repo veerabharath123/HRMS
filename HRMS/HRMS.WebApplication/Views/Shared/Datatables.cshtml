@@ -1,0 +1,253 @@
+﻿@model ViewDatatableModel
+
+<div>
+    <div id="accordion">
+        <div class="card">
+            <div class="card-body px-2 py-1">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1"><h2 class="my-1">Table</h2></div>
+                    <div class="">
+                        <a class="btn btn-sm bg-light text-secondary border border-secondary">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </a>
+                        <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="collapseOne" class="collapse show mb-1" data-bs-parent="#accordion">
+                    <hr class="mb-1 mt-1" />
+                    <div id="search-box">
+                        <div class="d-flex gap-2 flex-wrap advance-search-row mt-2">
+                            <div class="col-sm-2 col-md-2 col-lg-1">
+                                <select class="form-select form-select-sm operator border border-secondary">
+                                    <option></option>
+                                </select>
+
+                            </div>
+                            <div class="col-sm-3">
+                                <select class="form-select form-select-sm fields border border-secondary">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3 col-md-2">
+                                <select class="form-select form-select-sm comparator border border-secondary">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3 target">
+                                <select class="form-select form-select-sm">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3 col-md-2">
+                                <div class="btn-group">
+                                    <button class="add-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-plus"></i></button>
+                                    <button class="del-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-minus"></i></button>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div>
+                        <hr class="my-2" />
+                        <button class="btn bg-light text-secondary border border-secondary text-dark">search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <table id="myTable"></table>
+</div>
+
+<script nonce="@Html.ScriptNonce()">
+    const columns = [
+            { property: 'name' , type: 'text' },
+            { property: 'age' , type: 'number' },
+            { property: 'birthdate' , type: 'date' },
+            { property: 'timer' , type: 'time' },
+            { property: 'ative' , type: 'bool' },
+        ]
+        const operatorOptions = [
+            { text: 'And', value: 'And' },
+            { text: 'Or', value: 'Or' }
+        ]
+        const dateOrNumOrTimeOptions = [
+            { text: '>=', value: '>=' },
+            { text: '<=', value: '<=' }
+        ]
+        const textOptions = [
+            { text: 'contains', value: 'contains' },
+            { text: 'ends', value: 'ends' },
+            { text: 'starts', value: 'starts' }
+        ]
+        const boolOptions = [
+            { text: 'Yes', value: 'Yes' },
+            { text: 'No', value: 'No' },
+        ]
+        const baseOptions = [
+            { text: '=', value: '=' },
+            { text: '!=', value: '!=' }
+        ]
+        addSearchRow($('.advance-search-row'))
+
+        $(document).on('click','.add-btn',function(){
+            const container = $('#search-box')
+            const row = $(this).closest('.advance-search-row')
+            const newRow = row.clone();
+            container.append(newRow)
+            addSearchRow(newRow)
+        })
+        function addSearchRow(row){
+            checkDelBtn()
+
+            row.find('input, select').each(function(){
+                const input = $(this)
+                input.val('');
+                if(input.closest('.fields').length){
+                    input.empty()
+                    input.append(`<option></option>`)
+                    columns.forEach(x => {
+                        input.append(`<option value="${x.property}">${x.property}</option>`)
+
+                    })
+                }
+                if(input.hasClass('operator')){
+                    loadOperator(input)
+                }
+                if(input.hasClass('comparator')){
+                    loadText(input, input.closest('.advance-search-row').find('.target'))
+                }
+            })
+        }
+        function checkDelBtn(){
+            const delBtns = $('#search-box').find('.advance-search-row .del-btn')
+            delBtns.prop('disabled', delBtns.length == 1)
+        }
+        function loadOperator(valField){
+            valField.empty()
+            valField.append(`<option></option>`)
+            operatorOptions.forEach(x => {
+              valField.append(`<option value="${x.value}">${x.text}</option>`)
+            })
+        }
+        function loadText(compField, valField){
+            compField.empty().append(`<option></option>`)
+            valField.empty();
+            baseOptions.concat(textOptions).forEach(x => {
+              compField.append(`<option value="${x.value}">${x.text}</option>`)
+            })
+
+
+            valField.html('<input type="text" class="form-control form-control-sm border border-secondary" />')
+        }
+        function loadNumOrDateOrTime(type,compField,valField){
+            compField.empty().append(`<option></option>`)
+            valField.empty();
+            baseOptions.concat(dateOrNumOrTimeOptions).forEach(x => {
+              compField.append(`<option value="${x.value}">${x.text}</option>`)
+            })
+
+            valField.html(`<input type="${type}" class="form-control form-control-sm border border-secondary" />`)
+        }
+        function loadBoolean(compField,valField){
+            compField.empty().append(`<option></option>`)
+            valField.empty();
+            baseOptions.forEach(x => {
+              compField.append(`<option value="${x.value}">${x.text}</option>`)
+            })
+
+          const select = $('<select class="form-select form-select-sm border border-secondary"></select>')
+                .append(`<option></option>`)
+          valField.html(select);
+          boolOptions.forEach(x => {
+            select.append(`<option value="${x.value}">${x.text}</option>`)
+          })
+        }
+        $(document).on('change','.fields',function(){
+            const input = $(this).closest('.advance-search-row')
+            const compField = input.find('.comparator')
+            const valField = input.find('.target')
+            const prop = columns.find(x => x.property == $(this).val())?.type || 'text'
+
+            switch(prop){
+                case 'date':
+                case 'time':
+                case 'number':
+                    loadNumOrDateOrTime(prop,compField,valField)
+                    break;
+                case 'bool':
+                    loadBoolean(compField,valField)
+                    break;
+                default:
+                    loadText(compField, valField);
+                    break;
+            }
+
+        })
+        $(document).on('click','.del-btn',function(){
+            $(this).closest('.advance-search-row').remove()
+            checkDelBtn()
+        });
+
+    $('#myTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '@Model.Action',
+            type: 'POST',
+            contentType: 'application/json',
+            data: function (d) {
+                // DataTables default pagination info
+                let currentPage = Math.floor(d.start / d.length) + 1;
+                let pageLength = d.length;
+
+                // Example: default filter for simple search (applies to all searchable columns)
+                let filters = [];
+                if (d.search && d.search.value) {
+                    filters.push({
+                        target: "", // can keep empty for global
+                        type: "text",
+                        property: "Name", // or loop through your searchable cols
+                        comparator: "like",
+                        operator: "AND",
+                        value: d.search.value
+                    });
+                }
+
+                // Example: order by DataTables order info
+                let sort = [];
+                if (d.order && d.order.length > 0) {
+                    d.order.forEach(function (ord) {
+                        let colName = d.columns[ord.column].data; // column's data property
+                        sort.push({
+                            property: colName,
+                            desc: ord.dir === "desc"
+                        });
+                    });
+                }
+
+                // Build custom payload
+                let payload = {
+                    currentPage: currentPage,
+                    maxPages: 0, // you can compute this later server-side
+                    pageLength: pageLength,
+                    filter: filters,
+                    sort: sort
+                };
+
+                return JSON.stringify(payload);
+            }
+        },
+        columns: [
+            { data: "Name" },
+            { data: "Age" },
+            { data: "Email" }
+        ]
+    });
+
+</script>

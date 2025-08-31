@@ -37,7 +37,7 @@ namespace HRMS.SharedKernel.Models.Response
         {
             return new ApiResponseDto<T>(200, default, string.Format(message, messageParams), false);
         }
-        public static ApiResponseDto<T> CustomStatus(int statusCode, bool success, T result, string message)
+        public static ApiResponseDto<T> CustomStatus(int statusCode, bool success, T? result, string message)
         {
             return new ApiResponseDto<T>(statusCode, result, message, success);
         }

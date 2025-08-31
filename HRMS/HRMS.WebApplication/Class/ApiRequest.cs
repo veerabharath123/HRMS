@@ -13,13 +13,15 @@ namespace HRMS.WebApplication.Class
     public class ApiRequest
     {
         private readonly HttpClient _httpClient;
+        private readonly string _apiBaseUrl;
 
-        public ApiRequest(HttpClient httpClient)
+        public ApiRequest(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            _apiBaseUrl = configuration["ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
         }
 
-        private HttpRequestMessage CreateRequest(HttpMethod method, string url, object? data, bool authRequired)
+        private HttpRequestMessage CreateRequest(HttpMethod method, Uri url, object? data, bool authRequired)
         {
             var request = new HttpRequestMessage(method, url);
             
@@ -38,20 +40,41 @@ namespace HRMS.WebApplication.Class
 
             return request;
         }
-
-        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string url, bool authRequired, CancellationToken cancellationToken = default)
+        private static bool TryCreateUri(string url, out Uri? uri)
         {
-            return PostAsync<object?, TResponse>(url, null, authRequired, cancellationToken);
+            uri = null;
+
+            if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                return false;
+
+            uri = new Uri(url);
+
+            return uri.Scheme.Equals(Uri.UriSchemeHttps);
         }
-        public async Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(string url, TRequest? data, bool authRequired, CancellationToken cancellationToken = default)
+
+        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            if(!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
+                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+
+            return PostAsync<object?, TResponse>(uri!, null, authRequired, cancellationToken);
+        }
+        public Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
+                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+
+            return PostAsync<TRequest, TResponse>(uri!, data, authRequired, cancellationToken);
+        }
+        private async Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                var request = CreateRequest(HttpMethod.Post, url, data, authRequired);
-                var response = await _httpClient.SendAsync(request, cancellationToken);
+                using var request = CreateRequest(HttpMethod.Post, url, data, authRequired);
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
                 return await HandleResponse<TResponse>(response);
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
                 // Handle exceptions (log them, rethrow them, etc.)
                 return ApiResponseDto<TResponse>.FailureStatus(ex.ToString());
@@ -59,16 +82,6 @@ namespace HRMS.WebApplication.Class
         }
         private async Task<ApiResponseDto<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {
-            if (response.IsSuccessStatusCode)
-            {
-                return await HandleSuccessResponse<TResponse>(response);
-            }
-
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            return ApiResponseDto<TResponse>.FailureStatus(errorMessage);
-        }
-        private async Task<ApiResponseDto<TResponse>> HandleSuccessResponse<TResponse>(HttpResponseMessage response)
-        {
             var content = await response.Content.ReadAsStringAsync();
 
             // Try to deserialize as ApiResponseDto<TResponse>
@@ -84,42 +97,21 @@ namespace HRMS.WebApplication.Class
             try
             {
                 var result = JsonConvert.DeserializeObject<TResponse>(content);
-                return ApiResponseDto<TResponse>.SuccessStatus(result, "Request successful");
+                if (response.IsSuccessStatusCode)
+                    return ApiResponseDto<TResponse>.SuccessStatus(result, "Request successful");
+                else
+                    return ApiResponseDto<TResponse>.FailureStatus("Request Failed");
             }
-            catch { /* Ignore and fallback to failure below */ }
-
-            return ApiResponseDto<TResponse>.FailureStatus(content);
+            catch { return ApiResponseDto<TResponse>.FailureStatus(content); }
         }
-        private async Task<ApiResponseDto<TResponse>> HandleFailureResponse<TResponse>(HttpResponseMessage response)
-        {
-            var content = await response.Content.ReadAsStringAsync();
 
-            // Try to deserialize as ApiResponseDto<TResponse>
-            try
-            {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponseDto<TResponse>>(content);
-                if (apiResponse != null)
-                    return apiResponse;
-            }
-            catch { /* Ignore and try next */ }
-
-            // Try to deserialize as TResponse
-            try
-            {
-                var result = JsonConvert.DeserializeObject<TResponse>(content);
-                return ApiResponseDto<TResponse>.SuccessStatus(result, "Request successful");
-            }
-            catch { /* Ignore and fallback to failure below */ }
-
-            return ApiResponseDto<TResponse>.FailureStatus(content);
-        }
-        //private webresult ReturnWebExceptionStatusProtocolError(HttpWebResponse? myHttpWebResponse)
+        //private ApiResponseDto<T> ReturnWebExceptionStatusProtocolError<T>(HttpWebResponse? myHttpWebResponse)
         //{
-        //    _logger.LogError(GeneralConstants.PortocalError, myHttpWebResponse?.StatusCode.ToString(), myHttpWebResponse?.ToString());
+        //    //_logger.LogError(GeneralConstants.PortocalError, myHttpWebResponse?.StatusCode.ToString(), myHttpWebResponse?.ToString());
 
         //    var statuscode = myHttpWebResponse?.StatusCode ?? HttpStatusCode.BadRequest;
         //    string code = statuscode.ToString();
-
+        //    var ApiResponse = ApiResponseDto<T>.CustomStatus((int)statuscode, false, default, myHttpWebResponse?.StatusDescription ?? string.Empty);
 
         //    return statuscode switch
         //    {

@@ -16,6 +16,7 @@ namespace HRMS.WebApplication.Class
         public async Task Invoke(HttpContext context)
         {
             string AppBaseUrl = _configuration["MyConfig:SiteUrl"] ?? string.Empty;
+            context.Items["AppBaseUrl"] = AppBaseUrl;
 
             var rng = RandomNumberGenerator.Create();
             var nonceBytes = new byte[32];
