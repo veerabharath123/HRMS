@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Xml.Linq;
 
 namespace HRMS.WebApplication.Controllers
 {
@@ -18,6 +19,15 @@ namespace HRMS.WebApplication.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        public IActionResult GetDatatables()
+        {
+            return Json(new List<object>
+            {
+                new  { Name = "Employees", Age = 1, Birthdate = DateTime.Now.Date, timer = "10:00", active = "Yes" },
+                new  { Name = "Employees1", Age = 21, Birthdate = DateTime.Now.Date, timer = "10:30", active = "No" },
+            });
         }
 
         public IActionResult Privacy()

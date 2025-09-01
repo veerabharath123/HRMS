@@ -1,67 +1,96 @@
 ﻿@model ViewDatatableModel
 
 <div>
-    <div id="accordion">
-        <div class="card">
-            <div class="card-body px-2 py-1">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1"><h2 class="my-1">Table</h2></div>
-                    <div class="">
-                        <a class="btn btn-sm bg-light text-secondary border border-secondary">
-                            <i class="fa-solid fa-rotate-right"></i>
-                        </a>
-                        <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
-                            <i class="fa-solid fa-magnifying-glass-plus"></i>
-                        </a>
+    <div class="card p-2">
+        <div class="card-body px-2 py-1">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1"><h2 class="my-1">@Model.Name</h2></div>
+                <div class="">
+                    <a class="btn btn-sm bg-light text-secondary border border-secondary">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </a>
+                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </a>
+                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </a>
+
+                    @* <a class="btn btn-sm bg-light text-secondary border border-secondary">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </a>
+                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </a>*@
+                </div> 
+            </div>
+
+            <div id="collapseOne" class="collapse">
+                <hr class="mb-1 mt-1" />
+                <div id="search-box">
+                    <div class="d-flex gap-2 flex-wrap advance-search-row mt-2">
+                        <div class="col-sm-2 col-md-2 col-lg-1">
+                            <select class="form-select form-select-sm operator border border-secondary">
+                                <option></option>
+                            </select>
+
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-select form-select-sm fields border border-secondary">
+                                <option></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3 col-md-2">
+                            <select class="form-select form-select-sm comparator border border-secondary">
+                                <option></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3 target">
+                            <select class="form-select form-select-sm">
+                                <option></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3 col-md-2">
+                            <div class="btn-group">
+                                <button class="add-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-plus"></i></button>
+                                <button class="del-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-minus"></i></button>
+                            </div>
+
+
+                        </div>
+                        
                     </div>
                 </div>
-
-                <div id="collapseOne" class="collapse show mb-1" data-bs-parent="#accordion">
-                    <hr class="mb-1 mt-1" />
-                    <div id="search-box">
-                        <div class="d-flex gap-2 flex-wrap advance-search-row mt-2">
-                            <div class="col-sm-2 col-md-2 col-lg-1">
-                                <select class="form-select form-select-sm operator border border-secondary">
-                                    <option></option>
-                                </select>
-
-                            </div>
-                            <div class="col-sm-3">
-                                <select class="form-select form-select-sm fields border border-secondary">
-                                    <option></option>
-                                </select>
-                            </div>
-                            <div class="col-sm-3 col-md-2">
-                                <select class="form-select form-select-sm comparator border border-secondary">
-                                    <option></option>
-                                </select>
-                            </div>
-                            <div class="col-sm-3 target">
-                                <select class="form-select form-select-sm">
-                                    <option></option>
-                                </select>
-                            </div>
-                            <div class="col-sm-3 col-md-2">
-                                <div class="btn-group">
-                                    <button class="add-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-plus"></i></button>
-                                    <button class="del-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-minus"></i></button>
-                                </div>
-
-
-                            </div>
-                        </div>
-
-                    </div>
-                    <div>
-                        <hr class="my-2" />
-                        <button class="btn bg-light text-secondary border border-secondary text-dark">search</button>
-                    </div>
+                <div>
+                    <hr class="my-2" />
+                    <button class="btn bg-light text-secondary border border-secondary text-dark">search</button>
                 </div>
             </div>
-        </div>
+            <div id="collapse2" class="collapse">
+                <div class="row">
+                    <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
+                    <div class="col-3 text-start">
+                        <button class="btn btn-sm bg-light text-secondary border border-secondary text-dark">search</button>
+                    </div>
+                    
+                </div>
+            </div>
 
+            <table id="myTable">
+                <thead>
+                    <tr>
+                        <th>name</th>
+                        <th>age</th>
+                        <th>birthdate</th>
+                        <th>timer</th>
+                        <th>active</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+       
+        
     </div>
-    <table id="myTable"></table>
 </div>
 
 <script nonce="@Html.ScriptNonce()">
@@ -70,7 +99,7 @@
             { property: 'age' , type: 'number' },
             { property: 'birthdate' , type: 'date' },
             { property: 'timer' , type: 'time' },
-            { property: 'ative' , type: 'bool' },
+            { property: 'active' , type: 'bool' },
         ]
         const operatorOptions = [
             { text: 'And', value: 'And' },
@@ -194,6 +223,8 @@
             checkDelBtn()
         });
 
+        const tblCols = columns.map(col => ({ data: col.property }));
+
     $('#myTable').DataTable({
         processing: true,
         serverSide: true,
@@ -202,6 +233,7 @@
             type: 'POST',
             contentType: 'application/json',
             data: function (d) {
+                debugger;
                 // DataTables default pagination info
                 let currentPage = Math.floor(d.start / d.length) + 1;
                 let pageLength = d.length;
@@ -241,13 +273,13 @@
                 };
 
                 return JSON.stringify(payload);
+            },
+            dataSrc: function(data){
+                console.log(data)
+                return data
             }
         },
-        columns: [
-            { data: "Name" },
-            { data: "Age" },
-            { data: "Email" }
-        ]
+        columns: tblCols
     });
 
 </script>

@@ -1,8 +1,14 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var model = new ViewDatatableModel
+            {
+                Name = "Datatables",
+                Action = Url.Action("GetDatatables", "Home")!,
+            };
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <partial name="Datatables" model="model" />
 </div>
