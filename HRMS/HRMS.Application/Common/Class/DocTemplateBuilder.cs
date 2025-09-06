@@ -25,7 +25,7 @@ namespace HRMS.Application.Common.Class
         }
 
         // Add text fields from model
-        public DocTemplateBuilder WithTextFrom<T>(T model)
+        public DocTemplateBuilder WithTextFromModel<T>(T model)
         {
             var clone = CloneModel(_docTemplate);
             clone.LoadFromModel(model); // uses your extension

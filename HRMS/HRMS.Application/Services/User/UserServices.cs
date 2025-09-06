@@ -147,7 +147,7 @@ namespace HRMS.Application.Services
 
             var docTemplate = DocTemplateBuilder
                         .Create()
-                        .WithTextFrom(fields)
+                        .WithTextFromModel(fields)
                         .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
                         .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true ,FontName = "French Script MT" })
                         .WithImage("Signature", signaturePath, new(100, 40))
