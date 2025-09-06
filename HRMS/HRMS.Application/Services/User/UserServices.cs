@@ -149,7 +149,7 @@ namespace HRMS.Application.Services
                         .Create()
                         .WithTextFrom(fields)
                         .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
-                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true })
+                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true ,FontName = "French Script MT" })
                         .WithImage("Signature", signaturePath, new(100, 40))
                         .WithTable("table", [
                             ["Header1", "Header2", "Header3"],

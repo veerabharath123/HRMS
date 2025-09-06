@@ -82,64 +82,19 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeWord
             }
         }
 
-        //private static void InsertTables(Document doc, DocTemplateModel model)
-        //{
-        //    foreach (var table in model.TableFields)
-        //    {
-        //        var builder = new DocumentBuilder(doc);
-
-        //        // Move to placeholder or bookmark
-        //        builder.MoveToBookmark(table.Name);
-
-        //        Table aspTable = builder.StartTable();
-        //        foreach (var row in table.Rows)
-        //        {
-        //            foreach (var cell in row)
-        //            {
-        //                builder.InsertCell();
-        //                builder.Write(cell);
-        //            }
-        //            builder.EndRow();
-        //        }
-
-        //        builder.EndTable();
-        //    }
-        //}
-        private static void InsertTables(Document doc, DocTemplateModel model)
+        public static void InsertTables(Document doc, DocTemplateModel model)
         {
-            var builder = new DocumentBuilder(doc);
-
             foreach (var table in model.TableFields)
             {
-                // Find placeholder run that contains <tableName>
-                var run = doc.GetChildNodes(NodeType.Run, true)
-                             .OfType<Run>()
-                             .FirstOrDefault(r => r.Text.Contains($"{model.StartIndicator}{table.Name}{model.EndIndicator}"));
-
-                if (run == null)
-                    continue; // skip if no placeholder found
-
-                // Move builder to placeholder
-                builder.MoveTo(run);
-
-                // Clear the placeholder text
-                run.Text = string.Empty;
-
-                // Build the table
-                Table aspTable = builder.StartTable();
-                foreach (var row in table.Rows)
+                string placeholder = $"{model.StartIndicator}{table.Name}{model.EndIndicator}";
+                var options = new FindReplaceOptions
                 {
-                    foreach (var cell in row)
-                    {
-                        builder.InsertCell();
-                        builder.Write(cell);
-                    }
-                    builder.EndRow();
-                }
-                builder.EndTable();
+                    ReplacingCallback = new ReplaceWithTableHandler(doc, table.Rows)
+                };
+
+                doc.Range.Replace(placeholder, string.Empty, options);
             }
         }
-
 
         private static void ReplacePlaceholderWithImage(Document doc, string placeholder, string imagePath, ImageDimension dimension)
         {
