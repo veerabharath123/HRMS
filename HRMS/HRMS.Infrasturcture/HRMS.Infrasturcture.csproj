@@ -35,7 +35,7 @@
     <None Update="Resources\DocumentTemplates\Sample Template.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Signarture.png">
+    <None Update="Resources\Signatures\Venkat.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

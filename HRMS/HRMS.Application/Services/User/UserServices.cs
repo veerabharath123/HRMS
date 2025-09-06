@@ -129,25 +129,38 @@ namespace HRMS.Application.Services
         }
         public async Task<ApiResponseDto<FileResponseDto>> GetDocument()
         {
-            var filename = "Sample Template.docx";
+            var filename = "Sample Template";
+            var username = "Venkat";
 
             var fields = new SampleDocDto
             {
                 Name = "Bharath",
-                ToName = "Venkat",
+                ToName = username,
                 IssuedBy = "Unknown",
                 DateOfBirth = DateTime.Now.ToString("yyyy-MM-dd"),
                 RegistrationDate = DateTime.Now.Date.ToString("yyyy-MM-dd"),
                 Title = "Sample Test Document",
-                ParagraphOne = GeneralConstants.WORD_SAMPLE_PARA
             };
 
-            DocTemplateModel docTemplate = new();
+            var signaturePath = string.Format(GeneralConstants.SAMPE_SIGNATURE_PATH_PNG, AppDomain.CurrentDomain.BaseDirectory, username);
+            var templatePath = string.Format(GeneralConstants.SAMPE_TEMPLATE_PATH, AppDomain.CurrentDomain.BaseDirectory);
 
-            docTemplate.LoadFromModel(fields);
-            docTemplate.LoadImages("Signature", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "signarture.png"), new ImageDimension(100,40));
+            var docTemplate = DocTemplateBuilder
+                        .Create()
+                        .WithTextFrom(fields)
+                        .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
+                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true })
+                        .WithImage("Signature", signaturePath, new(100, 40))
+                        .WithTable("table", [
+                            ["Header1", "Header2", "Header3"],
+                            ["Row1 Col1", "Row1 Col2", "Row1 Col3"],
+                            ["Row2 Col1", "Row2 Col2", "Row2 Col3"],
+                            ["Row3 Col1", "Row3 Col2", "Row3 Col3"]
+                            ])
+                        .Build();
 
-            var bytes = _documentGenerator.GenerateWord(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "DocumentTemplates", filename), docTemplate);
+            var bytes = _documentGenerator.GenerateDocument(templatePath, docTemplate, GeneralConstants.DocumentType.Word);
+            
             var response = new FileResponseDto
             {
                 FileName = filename,

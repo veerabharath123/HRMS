@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HRMS.Application.Common.Class
 {
-    public static class DocTemplateLoadModelExtension
+    public static class DocTemplateModelExtension
     {
         public static void LoadFromModel<T>(this DocTemplateModel docModel,T model)
         {
@@ -34,13 +34,13 @@ namespace HRMS.Application.Common.Class
             }
 
         }
-        public static void LoadImages(this DocTemplateModel docModel,string placeholder, string imagePath, ImageDimension dimension)
+        public static void LoadImages(this DocTemplateModel docModel,string placeholder, string imagePath, ImageDimension? dimension = null)
         {
             var imageField = new DocTemplateImageField
             {
                 Name = placeholder,
                 ImagePath = imagePath,
-                ImageDimension = dimension
+                ImageDimension = dimension ?? new()
             };
 
             docModel.ImageFields.Add(imageField);

@@ -1,5 +1,7 @@
-﻿using HRMS.Application.Common.Interface;
+﻿using Aspose.Words;
+using HRMS.Application.Common.Interface;
 using HRMS.Domain.Common;
+using HRMS.Infrastructure.DocumentGenerator.AsposeWord;
 using HRMS.Infrasturcture.DocumentGenerator.AsposeWord;
 using HRMS.SharedKernel.Attributes;
 using System;
@@ -9,26 +11,30 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static HRMS.Domain.Constants.GeneralConstants;
 
 namespace HRMS.Infrasturcture.DocumentGenerator
 {
     public class DocumentGenerator: IDocumentGenerator
     {
-        public DocumentGenerator()
+        public byte[] GenerateDocument(string templatePath, DocTemplateModel dataModel, DocumentType type)
         {
-        }
+            var format = MapDocumentType(type);
 
-        public byte[] GenerateWord(string templatePath, DocTemplateModel dataModel)
-        {
-            return AsposeWordGenerator.GenerateWordDoc(templatePath, dataModel, Aspose.Words.SaveFormat.Docx);
+            return AsposeDocumentGenerator.GenerateDocument(templatePath, dataModel, format);
         }
-        public byte[] GeneratePdf(string templatePath, DocTemplateModel dataModel)
+        public Task<byte[]> GenerateDocumentAsync(string templatePath, DocTemplateModel dataModel, DocumentType type)
         {
-            return AsposeWordGenerator.GenerateWordDoc(templatePath, dataModel, Aspose.Words.SaveFormat.Pdf);
+            var format = MapDocumentType(type);
+
+            return AsposeDocumentGenerator.GenerateDocumentAsync(templatePath, dataModel, format);
         }
-        public byte[] GenerateExcel(string templatePath, DocTemplateModel dataModel)
-        {
-            throw new NotImplementedException();
-        }
+        private static SaveFormat MapDocumentType(DocumentType type) =>
+                type switch
+                {
+                    DocumentType.Word => Aspose.Words.SaveFormat.Docx,
+                    DocumentType.Pdf => Aspose.Words.SaveFormat.Pdf,
+                    _ => throw new NotSupportedException($"Unsupported document type: {type}")
+                };
     }
 }

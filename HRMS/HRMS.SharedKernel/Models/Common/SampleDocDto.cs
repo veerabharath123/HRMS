@@ -21,7 +21,5 @@ namespace HRMS.SharedKernel.Models.Common
         public string RegistrationDate { get; set; } = string.Empty;
         [DocumentPlaceholder]
         public string DateOfBirth { get; set; } = string.Empty;
-        [DocumentPlaceholder("para1")]
-        public string ParagraphOne { get; set; } = string.Empty;
     }
 }
