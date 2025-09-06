@@ -24,7 +24,7 @@ namespace HRMS.SharedKernel.Models.Response
             Message = message;
             Success = success;
         }
-
+        public ApiResponseDto() { }
         public static ApiResponseDto<T> SuccessStatus(T? result, string message = "")
         {
             return new ApiResponseDto<T>(200, result, message, true);

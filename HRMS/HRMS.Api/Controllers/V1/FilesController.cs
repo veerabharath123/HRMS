@@ -11,7 +11,7 @@ namespace HRMS.Api.Controllers.V1
         public FilesController()
         {
         }
-
+        [HttpPost("[action]")]
         public async Task<IActionResult> GetLanguageJson()
         {
             

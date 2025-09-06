@@ -1,7 +1,10 @@
-﻿using HRMS.Application.Common.Interface;
+﻿using HRMS.Application.Common.Class;
+using HRMS.Application.Common.Interface;
 using HRMS.Application.Common.Utitlities;
+using HRMS.Domain.Common;
 using HRMS.Domain.Constants;
 using HRMS.Domain.Entites;
+using HRMS.SharedKernel.Models.Common;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
@@ -18,12 +21,14 @@ namespace HRMS.Application.Services
         private readonly IJwtTokenServices _jwtTokenServices;
         private readonly JwtAuthConfigDto _jwtConfig;
         private readonly IMemoryCache _cache;
-        public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache)
+        private readonly IDocumentGenerator _documentGenerator;
+        public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
             _jwtConfig = jwtConfig.Value;
             _cache = cache;
+            _documentGenerator = documentGenerator;
         }
 
         private async Task<bool> CheckUserExistAsync(string username)
@@ -121,6 +126,38 @@ namespace HRMS.Application.Services
                                 select r.Name).ToListAsync();
 
             return result;
+        }
+        public async Task<ApiResponseDto<FileResponseDto>> GetDocument()
+        {
+            var filename = "Sample Template.docx";
+
+            var fields = new SampleDocDto
+            {
+                Name = "Bharath",
+                ToName = "Venkat",
+                IssuedBy = "Unknown",
+                DateOfBirth = DateTime.Now.ToString("yyyy-MM-dd"),
+                RegistrationDate = DateTime.Now.Date.ToString("yyyy-MM-dd"),
+                Title = "Sample Test Document",
+                ParagraphOne = GeneralConstants.WORD_SAMPLE_PARA
+            };
+
+            DocTemplateModel docTemplate = new();
+
+            docTemplate.LoadFromModel(fields);
+            docTemplate.LoadImages("Signature", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "signarture.png"), new ImageDimension(100,40));
+
+            var bytes = _documentGenerator.GenerateWord(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "DocumentTemplates", filename), docTemplate);
+            var response = new FileResponseDto
+            {
+                FileName = filename,
+                FileExtension = "docx",
+                FileContent = bytes,
+                FileContentType = GeneralConstants.CONTENT_TYPE_DOCX
+            };
+
+            
+            return await Task.FromResult(ApiResponseDto<FileResponseDto>.SuccessStatus(response));
         }
     }
 }

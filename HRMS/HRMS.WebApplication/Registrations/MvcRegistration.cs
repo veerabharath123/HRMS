@@ -13,7 +13,7 @@ namespace HRMS.WebApplication.Registrations
             {
                 serverOptions.AddServerHeader = false;
             });
-
+            builder.Services.AddScoped<ApiRequest>();
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 

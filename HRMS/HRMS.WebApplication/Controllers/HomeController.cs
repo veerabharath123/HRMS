@@ -1,3 +1,5 @@
+using HRMS.SharedKernel.Models.Response;
+using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +12,12 @@ namespace HRMS.WebApplication.Controllers
     public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ApiRequest _api;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApiRequest api)
         {
             _logger = logger;
+            _api = api;
         }
 
         public IActionResult Index()
@@ -33,6 +37,16 @@ namespace HRMS.WebApplication.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+        public async Task<IActionResult?> GetDocument()
+        {
+            var response = await _api.PostAsync<FileResponseDto>("/User/GetDocument");
+            if(response.Success && response.HasResult)
+            {
+                return FileResponse(response.Result!);
+            }
+
+            return View("Error");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

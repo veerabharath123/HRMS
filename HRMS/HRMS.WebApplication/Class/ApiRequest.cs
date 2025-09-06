@@ -12,13 +12,11 @@ namespace HRMS.WebApplication.Class
 {
     public class ApiRequest
     {
-        private readonly HttpClient _httpClient;
         private readonly string _apiBaseUrl;
 
-        public ApiRequest(HttpClient httpClient, IConfiguration configuration)
+        public ApiRequest( IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _apiBaseUrl = configuration["ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
+            _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri url, object? data, bool authRequired)
@@ -28,7 +26,7 @@ namespace HRMS.WebApplication.Class
             if(data is not null)
             {
                 var jsonContent = data is string stringData ? stringData : JsonConvert.SerializeObject(data);
-                request.Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+                request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             }
 
             if(authRequired)
@@ -44,7 +42,7 @@ namespace HRMS.WebApplication.Class
         {
             uri = null;
 
-            if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
                 return false;
 
             uri = new Uri(url);
@@ -70,8 +68,9 @@ namespace HRMS.WebApplication.Class
         {
             try
             {
+                var httpClient = new HttpClient();
                 using var request = CreateRequest(HttpMethod.Post, url, data, authRequired);
-                using var response = await _httpClient.SendAsync(request, cancellationToken);
+                using var response = await httpClient.SendAsync(request, cancellationToken);
                 return await HandleResponse<TResponse>(response);
             }
             catch (WebException ex)

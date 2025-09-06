@@ -45,6 +45,12 @@ namespace HRMS.Api.Controllers.V1
             var response = await _userServices.ValidateUserLoginAsync(request);
             return Ok(response);
         }
-
+        [AllowAnonymous]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetDocument()
+        {
+            var response = await _userServices.GetDocument();
+            return Ok(response);
+        }
     }
 }

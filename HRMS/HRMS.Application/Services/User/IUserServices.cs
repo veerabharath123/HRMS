@@ -9,5 +9,6 @@ namespace HRMS.Application.Services
         Task<List<string>> GetPermissionsByUserIdAsync(Guid Id);
 
         Task<ApiResponseDto<LoginResponseDto>> ValidateUserLoginAsync(LoginRequestDto request);
+        Task<ApiResponseDto<FileResponseDto>> GetDocument();
     }
 }

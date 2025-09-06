@@ -6,6 +6,7 @@ using HRMS.Infrasturcture.Jwt;
 using HRMS.Infrasturcture.Persistence;
 using HRMS.Infrasturcture.Persistence.Configuration;
 using HRMS.Infrasturcture.Recaptcha;
+using HRMS.Infrasturcture.DocumentGenerator;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.AspNetCore.Http;
@@ -37,8 +38,10 @@ namespace HRMS.Infrasturcture
                 .AddScoped<IJwtTokenServices, JwtTokenServices>()
                 .AddScoped<IFtpFileServices, FtpFileServices>()
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()
+                .AddScoped<IDocumentGenerator, DocumentGenerator.DocumentGenerator>()
                 .AddAppConfigs(configuration)
                 .AddRecaptcha(configuration);
+        
         }
         private static IServiceCollection AddAppConfigs(this IServiceCollection services, IConfiguration configuration)
         {
