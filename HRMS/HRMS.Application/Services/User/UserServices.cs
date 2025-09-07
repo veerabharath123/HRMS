@@ -153,17 +153,17 @@ namespace HRMS.Application.Services
             var docTemplate = DocTemplateBuilder
                         .Create()
                         .WithTextFromModel(fields)
-                        //.WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
-                        //.WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true ,FontName = "French Script MT" })
+                        .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
+                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true, FontName = "French Script MT" })
                         .WithImage("Signature", signaturePath, new(100, 40))
-                        .WithTable<UserInsertRequestDto>(
+                        .WithTableFromModel<UserInsertRequestDto>(
                             t => t.ConfigureTable("table",data)
                                     .AddColumn("User Name", x => x.UserName)
                                     .AddColumn("Email", x => x.Email)
                         )
                         .Build();
 
-            var bytes = _documentGenerator.GenerateDocument(templatePath, docTemplate, GeneralConstants.DocumentType.Word);
+            var bytes = _documentGenerator.GenerateWordDocument(templatePath, docTemplate);
             
             var response = new FileResponseDto
             {

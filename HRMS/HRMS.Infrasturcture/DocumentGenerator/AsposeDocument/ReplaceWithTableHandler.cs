@@ -6,23 +6,37 @@ using System.Drawing;
 
 namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
 {
+    /// <summary>
+    /// Implements <see cref="IReplacingCallback"/> to replace a placeholder in a Word document
+    /// with a table. Supports per-cell styling and optional global table styles.
+    /// </summary>
     public class ReplaceWithTableHandler : IReplacingCallback
     {
         private readonly DocTemplateTableField _table;
         private readonly DocumentBuilder _builder;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ReplaceWithTableHandler"/>.
+        /// </summary>
+        /// <param name="doc">The Aspose <see cref="Document"/> where the table will be inserted.</param>
+        /// <param name="table">The table data and styles (<see cref="DocTemplateTableField"/>).</param>
         public ReplaceWithTableHandler(Document doc, DocTemplateTableField table)
         {
             _table = table;
             _builder = new DocumentBuilder(doc);
         }
 
+        /// <summary>
+        /// Replaces the matched placeholder with the table content.
+        /// </summary>
+        /// <param name="e">The replacement arguments containing the matched node.</param>
+        /// <returns>A <see cref="ReplaceAction"/> indicating to skip further replacement.</returns>
         public ReplaceAction Replacing(ReplacingArgs e)
         {
             // Move builder to placeholder location
             _builder.MoveTo(e.MatchNode);
 
-            // Create table
+            // Start table
             Table table = _builder.StartTable();
 
             foreach (var row in _table.Rows)
@@ -51,28 +65,45 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
             return ReplaceAction.Skip;
         }
 
+        /// <summary>
+        /// Applies styling to a table cell. Automatically applies header bolding and optional font settings.
+        /// </summary>
+        /// <param name="builder">The <see cref="DocumentBuilder"/> used to write the cell.</param>
+        /// <param name="cell">The cell data and style.</param>
         private static void ApplyCellStyle(DocumentBuilder builder, DocTableCell cell)
         {
-            builder.Font.Bold = cell.IsHeader;
+            // Apply header bold automatically
+            builder.Font.Bold = cell.IsHeader || (cell.Style?.Bold ?? false);
 
-            if (cell.Style != null)
+            // Apply optional style properties using null-coalescing pattern
+            if (cell.Style == null) return;
+
+            var font = builder.Font;
+
+            font.Name = string.IsNullOrWhiteSpace(cell.Style.FontName) ? font.Name : cell.Style.FontName;
+            font.Size = cell.Style.FontSize ?? font.Size;
+            font.Italic = cell.Style.Italic ?? font.Italic;
+
+            // Only set color if a valid hex is provided
+            if (!string.IsNullOrWhiteSpace(cell.Style.ColorHex))
             {
-                var font = builder.Font;
-                if (!string.IsNullOrWhiteSpace(cell.Style.FontName))
-                    font.Name = cell.Style.FontName;
-                if (cell.Style.FontSize.HasValue)
-                    font.Size = cell.Style.FontSize.Value;
-                if (cell.Style.Bold.HasValue)
-                    font.Bold = cell.Style.Bold.Value;
-                if (cell.Style.Italic.HasValue)
-                    font.Italic = cell.Style.Italic.Value;
-                if (!string.IsNullOrWhiteSpace(cell.Style.ColorHex))
+                try
+                {
                     font.Color = ColorTranslator.FromHtml(cell.Style.ColorHex);
+                }
+                catch
+                {
+                    // Ignore invalid color and leave existing font color
+                }
             }
-
-
         }
 
+
+        /// <summary>
+        /// Applies optional global table styles such as borders and alignment.
+        /// </summary>
+        /// <param name="table">The Aspose <see cref="Table"/> object to style.</param>
+        /// <param name="styles">Optional <see cref="DocTableStyles"/> containing style settings.</param>
         private static void ApplyTableStyles(Table table, DocTableStyles? styles)
         {
             if (styles == null) return;
@@ -98,42 +129,7 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
                 };
             }
         }
-
     }
+
 }
 
-//public class ReplaceWithTableHandler : IReplacingCallback
-//{
-//    private readonly List<string[]> _tableData;
-//    private readonly DocumentBuilder _builder;
-
-//    public ReplaceWithTableHandler(Document doc, List<string[]> tableData)
-//    {
-//        _tableData = tableData;
-//        _builder = new DocumentBuilder(doc);
-//    }
-
-//    public ReplaceAction Replacing(ReplacingArgs e)
-//    {
-//        // Move builder to the matched text node
-//        _builder.MoveTo(e.MatchNode);
-
-//        // Insert the table
-//        Table table = _builder.StartTable();
-//        foreach (var row in _tableData)
-//        {
-//            foreach (var cell in row)
-//            {
-//                _builder.InsertCell();
-//                _builder.Write(cell);
-//            }
-//            _builder.EndRow();
-//        }
-//        _builder.EndTable();
-
-//        // Remove the placeholder text node
-//        e.MatchNode.Remove();
-
-//        return ReplaceAction.Skip;
-//    }
-//}

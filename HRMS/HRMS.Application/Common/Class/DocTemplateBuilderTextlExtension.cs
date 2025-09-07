@@ -9,8 +9,25 @@ using System.Threading.Tasks;
 
 namespace HRMS.Application.Common.Class
 {
-    public static class DocTemplateBuilderTextlExtension
+    /// <summary>
+    /// Extension methods for <see cref="DocTemplateBuilder"/> to add text fields
+    /// directly from strongly-typed model classes decorated with
+    /// <see cref="DocumentPlaceholderAttribute"/>.
+    /// </summary>
+    public static class DocTemplateBuilderTextExtension
     {
+        /// <summary>
+        /// Adds multiple text fields to the template by reading property values
+        /// from a model. Only properties decorated with
+        /// <see cref="DocumentPlaceholderAttribute"/> are considered.
+        /// </summary>
+        /// <typeparam name="T">The type of the model to extract placeholders from.</typeparam>
+        /// <param name="builder">The <see cref="DocTemplateBuilder"/> instance being extended.</param>
+        /// <param name="model">The model instance whose properties provide text field values.</param>
+        /// <returns>
+        /// A new <see cref="DocTemplateBuilder"/> instance containing all generated
+        /// <see cref="DocTemplateTextField"/>s.
+        /// </returns>
         public static DocTemplateBuilder WithTextFromModel<T>(
             this DocTemplateBuilder builder,
             T model
@@ -20,13 +37,25 @@ namespace HRMS.Application.Common.Class
 
             return builder.WithTextFields(textFields);
         }
-        private static IEnumerable<DocTemplateTextField> LoadFromModel<T>(T model)
+
+        /// <summary>
+        /// Extracts <see cref="DocTemplateTextField"/> entries from a model instance.
+        /// Only properties decorated with <see cref="DocumentPlaceholderAttribute"/> are processed.
+        /// The property name or the attribute's <c>Key</c> is used as the placeholder.
+        /// </summary>
+        /// <typeparam name="T">The type of the model to inspect.</typeparam>
+        /// <param name="model">The model instance to extract values from.</param>
+        /// <returns>
+        /// A list of <see cref="DocTemplateTextField"/> containing name-value pairs
+        /// corresponding to placeholders and their resolved values.
+        /// </returns>
+        private static List<DocTemplateTextField> LoadFromModel<T>(T model)
         {
-            List<DocTemplateTextField> textFields = new();   
+            List<DocTemplateTextField> textFields = new();
 
             foreach (var prop in typeof(T).GetProperties())
             {
-                // Get key from Placeholder or DisplayName
+                // Get key from Placeholder attribute
                 var placeholderAttr = prop.GetCustomAttribute<DocumentPlaceholderAttribute>();
 
                 if (placeholderAttr == null) continue;
@@ -46,27 +75,6 @@ namespace HRMS.Application.Common.Class
 
             return textFields;
         }
-        public static void LoadImages(this DocTemplateModel docModel,string placeholder, string imagePath, ImageDimension? dimension = null)
-        {
-            var imageField = new DocTemplateImageField
-            {
-                Name = placeholder,
-                ImagePath = imagePath,
-                ImageDimension = dimension ?? new()
-            };
-
-            docModel.ImageFields.Add(imageField);
-        }
-        public static void LoadImages(this DocTemplateModel docModel, string placeholder, Stream imageStream, ImageDimension dimension)
-        {
-            var imageField = new DocTemplateImageField
-            {
-                Name = placeholder,
-                ImageStream = imageStream,
-                ImageDimension = dimension
-            };
-
-            docModel.ImageFields.Add(imageField);
-        }
     }
+
 }

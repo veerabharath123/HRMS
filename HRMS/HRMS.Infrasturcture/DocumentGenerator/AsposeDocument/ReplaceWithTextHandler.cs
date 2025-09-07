@@ -5,14 +5,24 @@ using System.Drawing;
 
 namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
 {
+    /// <summary>
+    /// Replacing callback for inserting text into a document template.
+    /// Handles styled text replacement and fallback when placeholder runs are missing.
+    /// </summary>
     public class ReplaceWithTextHandler : IReplacingCallback
     {
         private readonly DocTemplateTextField _field;
+
+        /// <summary>
+        /// Initializes a new instance with the text field to insert.
+        /// </summary>
+        /// <param name="field">The text field containing value and style.</param>
         public ReplaceWithTextHandler(DocTemplateTextField field) => _field = field;
 
+        /// <inheritdoc/>
         ReplaceAction IReplacingCallback.Replacing(ReplacingArgs args)
         {
-            Document document = (Document)args.MatchNode.Document;
+            var document = (Document)args.MatchNode.Document;
             var (firstRun, runs, index) = ReplaceWithHandler.CollectAndRemoveMatch(document.Range, args);
 
             if (NeedsFallback(firstRun, index))
@@ -26,9 +36,15 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
             return ReplaceAction.Skip;
         }
 
+        /// <summary>
+        /// Determines if fallback insertion is needed.
+        /// </summary>
         private static bool NeedsFallback(Run? firstRun, int index) =>
             firstRun is null || index < 0;
 
+        /// <summary>
+        /// Inserts text at the placeholder location preserving style.
+        /// </summary>
         private static void InsertFallbackText(Document doc, Node matchNode, DocTemplateTextField field)
         {
             var builder = new DocumentBuilder(doc);
@@ -38,6 +54,9 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
             builder.Write(field.Value ?? string.Empty);
         }
 
+        /// <summary>
+        /// Inserts a new run with applied styles at the match location.
+        /// </summary>
         private static void InsertStyledRun(Document doc, Run firstRun, int index, DocTemplateTextField field)
         {
             var newRun = new Run(doc, field.Value ?? string.Empty);
@@ -49,12 +68,18 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
                 firstRun.ParentNode.InsertBefore(newRun, firstRun);
         }
 
+        /// <summary>
+        /// Removes all empty runs from the collection.
+        /// </summary>
         private static void CleanupEmptyRuns(IEnumerable<Run> runs)
         {
             foreach (var run in runs.Where(r => string.IsNullOrEmpty(r.Text)).ToList())
                 run.Remove();
         }
 
+        /// <summary>
+        /// Applies a combination of placeholder font and optional style overrides.
+        /// </summary>
         private static void ApplyFontStyle(Font target, DocTextStyle? style, Font? placeholder)
         {
             CopyPlaceholderStyle(target, placeholder);
@@ -83,5 +108,6 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
                 : ColorTranslator.FromHtml(style.ColorHex);
         }
     }
+
 
 }

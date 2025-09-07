@@ -10,8 +10,11 @@ namespace HRMS.Application.Common.Interface
 {
     public interface IDocumentGenerator
     {
-        byte[] GenerateDocument(string templatePath, DocTemplateModel dataModel, DocumentType type);
-        Task<byte[]> GenerateDocumentAsync(string templatePath, DocTemplateModel dataModel, DocumentType type);
+        byte[] GenerateWordDocument(string templatePath, DocTemplateModel dataModel);
+        Task<byte[]> GenerateWordDocumentAsync(string templatePath, DocTemplateModel dataModel);
+        byte[] GeneratePdfDocument(string templatePath, DocTemplateModel dataModel);
+        Task<byte[]> GeneratePdfDocumentAsync(string templatePath, DocTemplateModel dataModel);
+
 
     }
 }
