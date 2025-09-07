@@ -1,7 +1,7 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
 
-namespace HRMS.Infrasturcture.Recaptcha
+namespace HRMS.Infrastructure.Recaptcha
 {
     public class GoogleRecaptchaServices : ICaptchaServices
     {

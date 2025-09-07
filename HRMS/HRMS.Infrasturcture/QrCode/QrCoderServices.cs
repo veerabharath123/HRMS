@@ -2,7 +2,7 @@
 using HRMS.Domain.Constants;
 using QRCoder;
 
-namespace HRMS.Infrasturcture.QrCode
+namespace HRMS.Infrastructure.QrCode
 {
     public class QrCoderServices : IQrCodeServices
     {

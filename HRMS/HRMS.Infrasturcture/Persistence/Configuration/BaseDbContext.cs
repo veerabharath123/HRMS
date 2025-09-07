@@ -5,7 +5,7 @@ using HRMS.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace HRMS.Infrasturcture.Persistence.Configuration
+namespace HRMS.Infrastructure.Persistence.Configuration
 {
     public class BaseDbContext : DbContext
     {
@@ -38,10 +38,10 @@ namespace HRMS.Infrasturcture.Persistence.Configuration
             Type? keyType = baseEntityType?.GetGenericArguments().FirstOrDefault();
 
             // Example usage of ApplyEntityConfigurationGeneric
-            Type? dcontextClass = this.GetType();
+            Type? dcontextClass = GetType();
             MethodInfo? method = dcontextClass?.GetMethod("ApplyEntityConfiguration", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            if ((method is not null) && (keyType is not null))
+            if (method is not null && keyType is not null)
                 method.MakeGenericMethod(entityType, keyType).Invoke(this, [modelBuilder, tableName]);
         }
 

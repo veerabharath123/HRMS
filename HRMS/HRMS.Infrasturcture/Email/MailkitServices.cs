@@ -5,7 +5,7 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace HRMS.Infrasturcture.Email
+namespace HRMS.Infrastructure.Email
 {
     public class MailkitServices : IEmailServices
     {

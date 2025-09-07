@@ -1,7 +1,7 @@
 ﻿using HRMS.Application.Common.Interface;
 using Microsoft.AspNetCore.SignalR;
 
-namespace HRMS.Infrasturcture.Sockets
+namespace HRMS.Infrastructure.Sockets
 {
     public class NotificationHubServices<T> : ISystemNotificationServices where T : Hub
     {

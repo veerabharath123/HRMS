@@ -142,21 +142,25 @@ namespace HRMS.Application.Services
                 Title = "Sample Test Document",
             };
 
+            List<UserInsertRequestDto> data = [
+                    new() { UserName = "Bharath", Email = "bbb" },
+                    new() { UserName = "Venkat", Email = "vvv" },
+                ];
+
             var signaturePath = string.Format(GeneralConstants.SAMPE_SIGNATURE_PATH_PNG, AppDomain.CurrentDomain.BaseDirectory, username);
             var templatePath = string.Format(GeneralConstants.SAMPE_TEMPLATE_PATH, AppDomain.CurrentDomain.BaseDirectory);
 
             var docTemplate = DocTemplateBuilder
                         .Create()
                         .WithTextFromModel(fields)
-                        .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
-                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true ,FontName = "French Script MT" })
+                        //.WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
+                        //.WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true ,FontName = "French Script MT" })
                         .WithImage("Signature", signaturePath, new(100, 40))
-                        .WithTable("table", [
-                            ["Header1", "Header2", "Header3"],
-                            ["Row1 Col1", "Row1 Col2", "Row1 Col3"],
-                            ["Row2 Col1", "Row2 Col2", "Row2 Col3"],
-                            ["Row3 Col1", "Row3 Col2", "Row3 Col3"]
-                            ])
+                        .WithTable<UserInsertRequestDto>(
+                            t => t.ConfigureTable("table",data)
+                                    .AddColumn("User Name", x => x.UserName)
+                                    .AddColumn("Email", x => x.Email)
+                        )
                         .Build();
 
             var bytes = _documentGenerator.GenerateDocument(templatePath, docTemplate, GeneralConstants.DocumentType.Word);

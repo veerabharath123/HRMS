@@ -1,7 +1,7 @@
 ﻿using HRMS.Api.Class;
 using HRMS.Api.ExceptionHandling;
 using HRMS.Application;
-using HRMS.Infrasturcture;
+using HRMS.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 
 namespace HRMS.Api.Registrations

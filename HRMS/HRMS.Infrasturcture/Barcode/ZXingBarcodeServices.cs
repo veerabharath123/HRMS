@@ -2,7 +2,7 @@
 using SkiaSharp;
 using ZXing;
 
-namespace HRMS.Infrasturcture.Barcode
+namespace HRMS.Infrastructure.Barcode
 {
     public class ZXingBarcodeServices : IBarcodeServices
     {

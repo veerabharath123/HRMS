@@ -1,8 +1,9 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Domain.Entites;
+using HRMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace HRMS.Infrasturcture.Persistence.Configuration
+namespace HRMS.Infrastructure.Persistence.Configuration
 {
     internal class UnitOfWork : IUnitOfWork
     {

@@ -69,7 +69,9 @@ namespace HRMS.WebApplication.Class
             try
             {
                 var httpClient = new HttpClient();
+                httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
                 using var request = CreateRequest(HttpMethod.Post, url, data, authRequired);
+                
                 using var response = await httpClient.SendAsync(request, cancellationToken);
                 return await HandleResponse<TResponse>(response);
             }

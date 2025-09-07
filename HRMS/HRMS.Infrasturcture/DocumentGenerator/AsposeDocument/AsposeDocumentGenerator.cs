@@ -1,17 +1,8 @@
 ﻿using Aspose.Words;
 using Aspose.Words.Replacing;
-using Aspose.Words.Tables;
 using HRMS.Domain.Common;
-using HRMS.Infrasturcture.DocumentGenerator.AsposeWord;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZXing;
 
-namespace HRMS.Infrastructure.DocumentGenerator.AsposeWord
+namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
 {
     public class AsposeDocumentGenerator
     {
@@ -57,7 +48,7 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeWord
             {
                 var options = new FindReplaceOptions
                 {
-                    ReplacingCallback = new ReplaceWithStyledTextHandler(field)
+                    ReplacingCallback = new ReplaceWithTextHandler(field)
                 };
 
                 var placeholder = $"{model.StartIndicator}{field.Name}{model.EndIndicator}";
@@ -82,6 +73,19 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeWord
             }
         }
 
+        //public static void InsertTables(Document doc, DocTemplateModel model)
+        //{
+        //    foreach (var table in model.TableFields)
+        //    {
+        //        string placeholder = $"{model.StartIndicator}{table.Name}{model.EndIndicator}";
+        //        var options = new FindReplaceOptions
+        //        {
+        //            ReplacingCallback = new ReplaceWithTableHandler(doc, table.Rows)
+        //        };
+
+        //        doc.Range.Replace(placeholder, string.Empty, options);
+        //    }
+        //}
         public static void InsertTables(Document doc, DocTemplateModel model)
         {
             foreach (var table in model.TableFields)
@@ -89,7 +93,7 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeWord
                 string placeholder = $"{model.StartIndicator}{table.Name}{model.EndIndicator}";
                 var options = new FindReplaceOptions
                 {
-                    ReplacingCallback = new ReplaceWithTableHandler(doc, table.Rows)
+                    ReplacingCallback = new ReplaceWithTableHandler(doc, table)
                 };
 
                 doc.Range.Replace(placeholder, string.Empty, options);

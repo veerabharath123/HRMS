@@ -1,19 +1,10 @@
 ﻿using Aspose.Words;
 using HRMS.Application.Common.Interface;
 using HRMS.Domain.Common;
-using HRMS.Infrastructure.DocumentGenerator.AsposeWord;
-using HRMS.Infrasturcture.DocumentGenerator.AsposeWord;
-using HRMS.SharedKernel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using static HRMS.Domain.Constants.GeneralConstants;
+using HRMS.Infrastructure.DocumentGenerator.AsposeDocument;
 
-namespace HRMS.Infrasturcture.DocumentGenerator
+namespace HRMS.Infrastructure.DocumentGenerator
 {
     public class DocumentGenerator: IDocumentGenerator
     {

@@ -1,11 +1,11 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Domain.Common;
 using HRMS.Domain.Entites;
-using HRMS.Infrasturcture.Persistence.Configuration;
+using HRMS.Infrastructure.Persistence.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace HRMS.Infrasturcture.Persistence
+namespace HRMS.Infrastructure.Persistence
 {
     public class ApplicationDbContext : BaseDbContext, IApplicationDbContext
     {
@@ -87,7 +87,7 @@ namespace HRMS.Infrasturcture.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-            ApplyEntityConfigurationMaster(modelBuilder, this.GetType());
+            ApplyEntityConfigurationMaster(modelBuilder, GetType());
         }
     }
 }

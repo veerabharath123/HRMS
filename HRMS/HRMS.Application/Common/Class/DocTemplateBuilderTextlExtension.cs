@@ -9,10 +9,21 @@ using System.Threading.Tasks;
 
 namespace HRMS.Application.Common.Class
 {
-    public static class DocTemplateModelExtension
+    public static class DocTemplateBuilderTextlExtension
     {
-        public static void LoadFromModel<T>(this DocTemplateModel docModel,T model)
+        public static DocTemplateBuilder WithTextFromModel<T>(
+            this DocTemplateBuilder builder,
+            T model
+        )
         {
+            var textFields = LoadFromModel(model);
+
+            return builder.WithTextFields(textFields);
+        }
+        private static IEnumerable<DocTemplateTextField> LoadFromModel<T>(T model)
+        {
+            List<DocTemplateTextField> textFields = new();   
+
             foreach (var prop in typeof(T).GetProperties())
             {
                 // Get key from Placeholder or DisplayName
@@ -26,13 +37,14 @@ namespace HRMS.Application.Common.Class
 
                 if (rawValue == null) continue;
 
-                docModel.TextFields.Add(new DocTemplateTextField
+                textFields.Add(new DocTemplateTextField
                 {
                     Name = key,
                     Value = rawValue.ToString()
                 });
             }
 
+            return textFields;
         }
         public static void LoadImages(this DocTemplateModel docModel,string placeholder, string imagePath, ImageDimension? dimension = null)
         {

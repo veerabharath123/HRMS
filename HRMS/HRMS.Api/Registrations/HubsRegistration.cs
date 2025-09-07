@@ -1,7 +1,6 @@
 ﻿using HRMS.Api.Hubs;
-using HRMS.Application.Common.Interface;
-using HRMS.Infrasturcture;
-using HRMS.Infrasturcture.Sockets;
+using HRMS.Infrastructure;
+
 
 namespace HRMS.Api.Registrations
 {

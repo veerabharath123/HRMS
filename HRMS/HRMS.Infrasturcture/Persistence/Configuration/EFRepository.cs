@@ -6,9 +6,10 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using HRMS.Application.Common.Interface;
+using HRMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace HRMS.Infrasturcture.Persistence.Configuration
+namespace HRMS.Infrastructure.Persistence.Configuration
 {
     internal class EFRepository<TEntity> : IRepository<TEntity> where TEntity : class
     {

@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRMS.Application", "HRMS\HR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRMS.Domain", "HRMS\HRMS.Domain\HRMS.Domain.csproj", "{7CFF66BB-0FD1-4BCB-BF16-D14DADCC11F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRMS.Infrasturcture", "HRMS\HRMS.Infrasturcture\HRMS.Infrasturcture.csproj", "{C8C6E264-DC7C-4DD2-AAAB-1331C83F7A57}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRMS.Infrastructure", "HRMS\HRMS.Infrasturcture\HRMS.Infrastructure.csproj", "{C8C6E264-DC7C-4DD2-AAAB-1331C83F7A57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRMS.SharedKernel", "HRMS\HRMS.SharedKernel\HRMS.SharedKernel.csproj", "{1C325450-338A-4191-9353-A0298BD0F681}"
 EndProject

@@ -6,7 +6,7 @@ using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace HRMS.Infrasturcture.Jwt
+namespace HRMS.Infrastructure.Jwt
 {
     public class JwtTokenServices : IJwtTokenServices
     {

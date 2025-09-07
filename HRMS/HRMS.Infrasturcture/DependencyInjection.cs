@@ -1,12 +1,6 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
 using HRMS.Infrastructure.Ftp;
-using HRMS.Infrasturcture.FileLogging;
-using HRMS.Infrasturcture.Jwt;
-using HRMS.Infrasturcture.Persistence;
-using HRMS.Infrasturcture.Persistence.Configuration;
-using HRMS.Infrasturcture.Recaptcha;
-using HRMS.Infrasturcture.DocumentGenerator;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.AspNetCore.Http;
@@ -15,9 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using HRMS.Infrastructure.FileLogging;
+using HRMS.Infrastructure.Jwt;
+using HRMS.Infrastructure.Persistence;
+using HRMS.Infrastructure.Persistence.Configuration;
+using HRMS.Infrastructure.Recaptcha;
 
-namespace HRMS.Infrasturcture
+namespace HRMS.Infrastructure
 {
     public static class DependencyInjection
     {

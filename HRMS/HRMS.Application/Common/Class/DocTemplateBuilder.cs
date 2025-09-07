@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static HRMS.Domain.Records.DocImageInfoRecords;
+using static HRMS.Domain.Records.DocTemplateRecords;
 
 namespace HRMS.Application.Common.Class
 {
@@ -24,26 +24,29 @@ namespace HRMS.Application.Common.Class
             return new DocTemplateBuilder(model);
         }
 
-        // Add text fields from model
-        public DocTemplateBuilder WithTextFromModel<T>(T model)
-        {
-            var clone = CloneModel(_docTemplate);
-            clone.LoadFromModel(model); // uses your extension
-            return new DocTemplateBuilder(clone);
-        }
         public DocTemplateBuilder WithText(
             string placeholder,
             string value,
             DocTextStyle? style = null)
         {
-            var clone = CloneModel(_docTemplate);
-
-            clone.TextFields.Add(new DocTemplateTextField
+            var textField = new DocTemplateTextField
             {
                 Name = placeholder,
                 Value = value,
                 Style = style,
-            });
+            };
+            return WithTextField(textField);
+        }
+        public DocTemplateBuilder WithTextField(DocTemplateTextField textField)
+        {
+            var clone = CloneModel(_docTemplate);
+            clone.TextFields.Add(textField);
+            return new DocTemplateBuilder(clone);
+        }
+        public DocTemplateBuilder WithTextFields(IEnumerable<DocTemplateTextField> textFields)
+        {
+            var clone = CloneModel(_docTemplate);
+            clone.TextFields.AddRange(textFields);
             return new DocTemplateBuilder(clone);
         }
 
@@ -79,17 +82,35 @@ namespace HRMS.Application.Common.Class
         }
 
         // Add table
-        public DocTemplateBuilder WithTable(string placeholder, List<string[]> rows, int[]? columnWidths = null)
+        public DocTemplateBuilder WithTable(
+            string placeholder,
+            IEnumerable<DocTableRowInputRec> rows,
+            DocTableStyles? tableStyles = null
+        )
+        {
+            var tableField = new DocTemplateTableField(placeholder, tableStyles)
+            {
+                Rows = [.. rows.Select((columns, index) =>
+                {
+                    var docColumns = columns.Columns.Select(column => new DocTableCell
+                    {
+                        IsHeader = index == 0,
+                        Style = columns.Pipe?.Invoke(column),
+                        Value = column
+                    });
+
+                    return new DocTableRow { Columns = [.. docColumns] };
+                })],
+            };
+            return WithTableField(tableField);
+        }
+        public DocTemplateBuilder WithTableField(DocTemplateTableField tableField)
         {
             var clone = CloneModel(_docTemplate);
-            clone.TableFields.Add(new DocTemplateTableField
-            {
-                Name = placeholder,
-                Rows = rows,
-                ColumnWidths = columnWidths
-            });
+            clone.TableFields.Add(tableField);
             return new DocTemplateBuilder(clone);
         }
+        
 
         // Finalize
         public DocTemplateModel Build()

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 
-namespace HRMS.Infrasturcture.FileLogging
+namespace HRMS.Infrastructure.FileLogging
 {
     public class FileLoggerProvider : ILoggerProvider
     {

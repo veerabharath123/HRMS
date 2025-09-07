@@ -1,4 +1,4 @@
-﻿using HRMS.Infrasturcture;
+﻿using HRMS.Infrastructure;
 
 namespace HRMS.Api.Registrations
 {

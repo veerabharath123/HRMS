@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace HRMS.Infrasturcture.FileLogging
+namespace HRMS.Infrastructure.FileLogging
 {
     public class FileLogger : ILogger
     {
