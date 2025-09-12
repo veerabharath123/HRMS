@@ -73,14 +73,14 @@ namespace HRMS.Application.Common.Class
             this List<DocTemplateAdvanceColumnField<T>> model,
             string columnName,
             Func<T, object?> selector,
-            Func<T, DocTextStyle?>? pipe = null
+            Func<T, DocTextStyle?>? pipeStyles = null
         )
         {
             model.Add(new DocTemplateAdvanceColumnField<T>
             {
                 ColumnName = columnName,
                 Selector = selector,
-                PipeStyles = pipe
+                PipeStyles = pipeStyles
             });
 
             return model;
@@ -126,7 +126,7 @@ namespace HRMS.Application.Common.Class
                     row.Columns.Add(new DocTableCell
                     {
                         Value = col.Selector?.Invoke(item)?.ToString() ?? string.Empty,
-                        Style = col.PipeStyles?.Invoke(item)
+                        Style = col.PipeStyles?.Invoke(item),
                     });
                 }
                 tableField.Rows.Add(row);

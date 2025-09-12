@@ -13,7 +13,7 @@ namespace HRMS.Domain.Common
         public double? FontSize { get; set; }
         public bool? Bold { get; set; }
         public bool? Italic { get; set; }
-        public string? ColorHex { get; set; }
+        public string? Color { get; set; }
     }
     public class DocTemplateTextField
     {
@@ -100,9 +100,10 @@ namespace HRMS.Domain.Common
         public List<DocTableRow> Rows { get; set; } = []; 
 
         public DocTableStyles? Styles { get; set; }
-        public DocTemplateTableField(string name, DocTableStyles? Styles = null)
+        public DocTemplateTableField(string name, DocTableStyles? styles = null)
         {
             Name = name;
+            Styles = styles;
         }
         public DocTemplateTableField()
         {
@@ -118,6 +119,7 @@ namespace HRMS.Domain.Common
         public bool IsHeader { get; set; } = false;
         public DocTextStyle? Style { get; set; }
         public string Value { get; set; } = string.Empty;
+        
     }
     public class DocTableStyles
     {

@@ -11,6 +11,7 @@ using HRMS.SharedKernel.Models.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using System.Drawing;
 using static HRMS.Domain.Records.UserRecords;
 
 namespace HRMS.Application.Services
@@ -151,17 +152,16 @@ namespace HRMS.Application.Services
             var templatePath = string.Format(GeneralConstants.SAMPE_TEMPLATE_PATH, AppDomain.CurrentDomain.BaseDirectory);
 
             var docTemplate = DocTemplateBuilder
-                        .Create()
-                        .WithTextFromModel(fields)
-                        .WithText("para1", GeneralConstants.WORD_SAMPLE_PARA)
-                        .WithText("style", "test text", new() { FontSize = 32, Bold = true, Italic = true, FontName = "French Script MT" })
-                        .WithImage("Signature", signaturePath, new(100, 40))
-                        .WithTableFromModel<UserInsertRequestDto>(
-                            t => t.ConfigureTable("table",data)
-                                    .AddColumn("User Name", x => x.UserName)
-                                    .AddColumn("Email", x => x.Email)
-                        )
-                        .Build();
+                                .Create()
+                                .WithTextFromModel(fields)
+                                .WithImage("Signature", signaturePath, new(100, 40))
+                                .WithTableFromModel<UserInsertRequestDto>(
+                                    t => t.ConfigureTable("table",data)
+                                            .AddColumn("User Name", x => x.UserName, 
+                                                    s => s.UserName == "Bharath" ? new() { Color = "dodgerblue" } : null)
+                                            .AddColumn("Email", x => x.Email)
+                                )
+                                .Build();
 
             var bytes = _documentGenerator.GenerateWordDocument(templatePath, docTemplate);
             

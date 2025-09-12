@@ -1,231 +1,302 @@
 ﻿@model ViewDatatableModel
 
 <div>
-    <div class="card p-2">
-        <div class="card-body px-2 py-1">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1"><h2 class="my-1">@Model.Name</h2></div>
-                <div class="">
-                    <a class="btn btn-sm bg-light text-secondary border border-secondary">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </a>
-                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
-                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                    </a>
-                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2">
-                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                    </a>
-
-                    @* <a class="btn btn-sm bg-light text-secondary border border-secondary">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </a>
-                    <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
-                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                    </a>*@
-                </div> 
+    <div id="accordion" class="bg-white rounded shadow p-4 w-100" style="max-width: 960px;">
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1"><h2 class="my-1 text-start">@Model.Name</h2></div>
+            <div class="">
+                <a class="btn btn-sm bg-light text-secondary border border-secondary">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </a>
+                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                </a>
+                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                </a>
             </div>
-
-            <div id="collapseOne" class="collapse">
-                <hr class="mb-1 mt-1" />
-                <div id="search-box">
-                    <div class="d-flex gap-2 flex-wrap advance-search-row mt-2">
-                        <div class="col-sm-2 col-md-2 col-lg-1">
-                            <select class="form-select form-select-sm operator border border-secondary">
-                                <option></option>
-                            </select>
-
-                        </div>
-                        <div class="col-sm-3">
-                            <select class="form-select form-select-sm fields border border-secondary">
-                                <option></option>
-                            </select>
-                        </div>
-                        <div class="col-sm-3 col-md-2">
-                            <select class="form-select form-select-sm comparator border border-secondary">
-                                <option></option>
-                            </select>
-                        </div>
-                        <div class="col-sm-3 target">
-                            <select class="form-select form-select-sm">
-                                <option></option>
-                            </select>
-                        </div>
-                        <div class="col-sm-3 col-md-2">
-                            <div class="btn-group">
-                                <button class="add-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-plus"></i></button>
-                                <button class="del-btn btn bg-light text-secondary border border-secondary btn-sm"><i class="fa-solid fa-minus"></i></button>
-                            </div>
-
-
-                        </div>
-                        
-                    </div>
-                </div>
-                <div>
-                    <hr class="my-2" />
-                    <button class="btn bg-light text-secondary border border-secondary text-dark">search</button>
-                </div>
-            </div>
-            <div id="collapse2" class="collapse">
-                <div class="row">
-                    <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
-                    <div class="col-3 text-start">
-                        <button class="btn btn-sm bg-light text-secondary border border-secondary text-dark">search</button>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <table id="myTable">
-                <thead>
-                    <tr>
-                        <th>name</th>
-                        <th>age</th>
-                        <th>birthdate</th>
-                        <th>timer</th>
-                        <th>active</th>
-                    </tr>
-                </thead>
-            </table>
         </div>
-       
-        
+
+        <div id="collapseOne" class="collapse" data-bs-parent="#accordion">
+            <hr class="mb-1 mt-1" />
+            <div id="search-box">
+                <!-- Search row template, the library will manage its content -->
+                <div class="advance-search-row row g-3 align-items-center mb-3">
+                    <!-- Field Selection -->
+                    <div class="col-md">
+                        <label class="form-label">Field</label>
+                        <select class="fields form-select form-select-sm border rounded shadow-sm"></select>
+                    </div>
+                    <!-- Operator Selection -->
+                    <div class="col-md">
+                        <label class="form-label">Operator</label>
+                        <select class="operator form-select form-select-sm border rounded shadow-sm"></select>
+                    </div>
+                    <!-- Comparator Selection -->
+                    <div class="col-md">
+                        <label class="form-label">Comparator</label>
+                        <select class="comparator form-select form-select-sm border rounded shadow-sm"></select>
+                    </div>
+                    <!-- Target Value Input -->
+                    <div class="col-md">
+                        <label class="form-label">Value</label>
+                        <div class="target"></div>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="col-md-auto">
+                        <label class="form-label">Action</label>
+                        <div class="col-12 d-flex align-items-center flex-wrap">
+                            <button class="add-btn btn btn-primary btn-sm me-2 rounded-pill">
+                                Add
+                            </button>
+                            <button class="del-btn btn btn-danger btn-sm rounded-pill" disabled>
+                                Del
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-lg-end justify-content-md-center">
+                <div class="col-auto">
+                    <button id="searchButton" class="mt-4 btn btn-primary rounded shadow-md fw-bold rounded-pill">
+                        Search
+                    </button>
+                    <button id="clearSearchButton" class="mt-4 btn btn-warning rounded shadow-md fw-bold rounded-pill">
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="collapse2" class="collapse" data-bs-parent="#accordion">
+            <div class="row">
+                <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
+                <div class="col-3 text-start">
+                    <button class="btn btn-sm bg-light text-secondary border border-secondary text-dark">search</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="w-100 mt-4" style="max-width: 960px;">
+            <div class="table-responsive">
+                <table id="myTable" class="table display w-100">
+                    <thead>
+                        <tr>
+                            <th>name</th>
+                            <th>age</th>
+                            <th>birthdate</th>
+                            <th>timer</th>
+                            <th>active</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
+
 </div>
 
 <script nonce="@Html.ScriptNonce()">
-    const columns = [
-            { property: 'name' , type: 'text' },
-            { property: 'age' , type: 'number' },
-            { property: 'birthdate' , type: 'date' },
-            { property: 'timer' , type: 'time' },
-            { property: 'active' , type: 'bool' },
-        ]
-        const operatorOptions = [
-            { text: 'And', value: 'And' },
-            { text: 'Or', value: 'Or' }
-        ]
-        const dateOrNumOrTimeOptions = [
-            { text: '>=', value: '>=' },
-            { text: '<=', value: '<=' }
-        ]
-        const textOptions = [
-            { text: 'contains', value: 'contains' },
-            { text: 'ends', value: 'ends' },
-            { text: 'starts', value: 'starts' }
-        ]
-        const boolOptions = [
-            { text: 'Yes', value: 'Yes' },
-            { text: 'No', value: 'No' },
-        ]
-        const baseOptions = [
-            { text: '=', value: '=' },
-            { text: '!=', value: '!=' }
-        ]
-        addSearchRow($('.advance-search-row'))
+    class AdvanceSearchFilter{
+        constructor(options) {
+            // Ensure required options are provided
+            if (!options.containerSelector || !options.columns) {
+                console.error("AdvancedSearchFilter requires containerSelector and columns options.");
+                return;
+            }
 
-        $(document).on('click','.add-btn',function(){
-            const container = $('#search-box')
-            const row = $(this).closest('.advance-search-row')
+            // Store configuration
+            this.config = {
+                containerSelector: options.containerSelector,
+                columns: options.columns,
+                operatorOptions: options.operatorOptions || [
+                    { text: 'And', value: 'And' },
+                    { text: 'Or', value: 'Or' }
+                ],
+                dateOrNumOrTimeOptions: options.dateOrNumOrTimeOptions || [
+                    { text: '>=', value: '>=' },
+                    { text: '<=', value: '<=' }
+                ],
+                textOptions: options.textOptions || [
+                    { text: 'contains', value: 'contains' },
+                    { text: 'ends', value: 'ends' },
+                    { text: 'starts', value: 'starts' }
+                ],
+                boolOptions: options.boolOptions || [
+                    { text: 'Yes', value: 'Yes' },
+                    { text: 'No', value: 'No' },
+                ],
+                baseOptions: options.baseOptions || [
+                    { text: '=', value: '=' },
+                    { text: '!=', value: '!=' }
+                ]
+            };
+
+            // Store jQuery object for the main container
+            this.$container = $(this.config.containerSelector);
+
+            // Set up initial UI and event listeners
+            this.addSearchRow(this.$container.find('.advance-search-row'));
+            this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+            this.$container.on('click', '.add-btn',(e) => this.handleAddRow(e));
+            this.$container.on('click', '.del-btn',(e) => this.handleDeleteRow(e));
+            this.$container.on('change', '.fields',(e) => this.handleFieldChange(e));
+        }
+        setSearchCallBack(callback){
+            const $searchButton = this.$container.closest('#collapseOne').find('#searchButton')
+
+            if(typeof callback === 'function'){
+                $searchButton.on('click',callback)
+            }
+                
+        }
+        handleAddRow(event){
+            const row = $(event.target).closest('.advance-search-row')
             const newRow = row.clone();
-            container.append(newRow)
-            addSearchRow(newRow)
-        })
-        function addSearchRow(row){
-            checkDelBtn()
+            this.$container.append(newRow)
+            this.addSearchRow(newRow)
+        }
+        handleDeleteRow(event) {
+            $(event.target).closest('.advance-search-row').remove();
+            this.checkDeleteButtons();
+        }
+        handleFieldChange(event){
+            const input = $(event.target).closest('.advance-search-row')
+            const compField = input.find('.comparator')
+            const valField = input.find('.target')
+            const prop = this.config.columns.find(x => x.property == $(event.target).val())?.type || 'text'
 
-            row.find('input, select').each(function(){
-                const input = $(this)
+            switch(prop){
+                case 'date':
+                case 'time':
+                case 'number':
+                    this.loadNumOrDateOrTime(prop,compField,valField)
+                    break;
+                case 'bool':
+                    this.loadBoolean(compField,valField)
+                    break;
+                default:
+                    this.loadText(compField, valField);
+                    break;
+            }
+        }
+        addSearchRow(row){
+            this.checkDeleteButtons()
+            const columns = this.config.columns;
+
+            row.find('input, select').each((i,elem) => {
+                const input = $(elem)
                 input.val('');
                 if(input.closest('.fields').length){
-                    input.empty()
-                    input.append(`<option></option>`)
+                    input.empty().append(`<option></option>`)
                     columns.forEach(x => {
                         input.append(`<option value="${x.property}">${x.property}</option>`)
 
                     })
                 }
                 if(input.hasClass('operator')){
-                    loadOperator(input)
+                    this.loadOperator(input)
                 }
                 if(input.hasClass('comparator')){
-                    loadText(input, input.closest('.advance-search-row').find('.target'))
+                    this.loadText(input, input.closest('.advance-search-row').find('.target'))
                 }
             })
         }
-        function checkDelBtn(){
-            const delBtns = $('#search-box').find('.advance-search-row .del-btn')
+        checkDeleteButtons(){
+            const delBtns = this.$container.find('.advance-search-row .del-btn')
             delBtns.prop('disabled', delBtns.length == 1)
         }
-        function loadOperator(valField){
-            valField.empty()
-            valField.append(`<option></option>`)
-            operatorOptions.forEach(x => {
+
+        loadOperator(valField){
+            valField.empty().append(`<option></option>`)
+            this.config.operatorOptions.forEach(x => {
               valField.append(`<option value="${x.value}">${x.text}</option>`)
             })
         }
-        function loadText(compField, valField){
+        loadText(compField, valField){
             compField.empty().append(`<option></option>`)
             valField.empty();
-            baseOptions.concat(textOptions).forEach(x => {
+            this.config.baseOptions.concat(this.config.textOptions).forEach(x => {
               compField.append(`<option value="${x.value}">${x.text}</option>`)
             })
 
-
             valField.html('<input type="text" class="form-control form-control-sm border border-secondary" />')
         }
-        function loadNumOrDateOrTime(type,compField,valField){
+        loadNumOrDateOrTime(type,compField,valField){
             compField.empty().append(`<option></option>`)
             valField.empty();
-            baseOptions.concat(dateOrNumOrTimeOptions).forEach(x => {
+            this.config.baseOptions.concat(this.config.dateOrNumOrTimeOptions).forEach(x => {
               compField.append(`<option value="${x.value}">${x.text}</option>`)
             })
 
             valField.html(`<input type="${type}" class="form-control form-control-sm border border-secondary" />`)
         }
-        function loadBoolean(compField,valField){
+        loadBoolean(compField,valField){
             compField.empty().append(`<option></option>`)
             valField.empty();
-            baseOptions.forEach(x => {
-              compField.append(`<option value="${x.value}">${x.text}</option>`)
+
+            this.config.baseOptions.forEach(x => {
+                compField.append(`<option value="${x.value}">${x.text}</option>`)
             })
 
-          const select = $('<select class="form-select form-select-sm border border-secondary"></select>')
-                .append(`<option></option>`)
-          valField.html(select);
-          boolOptions.forEach(x => {
-            select.append(`<option value="${x.value}">${x.text}</option>`)
-          })
+            const select = $('<select class="form-select form-select-sm border border-secondary"></select>')
+                            .append(`<option></option>`);
+
+            this.config.boolOptions.forEach(x => {
+                select.append(`<option value="${x.value}">${x.text}</option>`)
+            })
+
+            valField.html(select);
         }
-        $(document).on('change','.fields',function(){
-            const input = $(this).closest('.advance-search-row')
-            const compField = input.find('.comparator')
-            const valField = input.find('.target')
-            const prop = columns.find(x => x.property == $(this).val())?.type || 'text'
 
-            switch(prop){
-                case 'date':
-                case 'time':
-                case 'number':
-                    loadNumOrDateOrTime(prop,compField,valField)
-                    break;
-                case 'bool':
-                    loadBoolean(compField,valField)
-                    break;
-                default:
-                    loadText(compField, valField);
-                    break;
-            }
+        getFilters() {
+            const filters = [];
+            const rows = this.$container.find('.advance-search-row');
 
-        })
-        $(document).on('click','.del-btn',function(){
-            $(this).closest('.advance-search-row').remove()
-            checkDelBtn()
-        });
+            rows.each(function(index, row) {
+                const $row = $(row);
+                const field = $row.find('.fields').val();
+                const operator = $row.find('.operator').val();
+                const comparator = $row.find('.comparator').val();
+                const value = $row.find('.target input, .target select').val();
 
-        const tblCols = columns.map(col => ({ data: col.property }));
+                // Only add valid filter rows
+                if (field && comparator && value) {
+                    filters.push({
+                        property: field,
+                        comparator: comparator,
+                        value: value,
+                        operator: index > 0 ? (operator || 'And') : '' // Operator is 'And' by default for subsequent rows
+                    });
+                }
+            });
 
-    $('#myTable').DataTable({
+            return filters;
+        }
+    }
+    const columns = [
+        { property: 'name' , type: 'text' },
+        { property: 'age' , type: 'number' },
+        { property: 'birthdate' , type: 'date' },
+        { property: 'timer' , type: 'time' },
+        { property: 'active' , type: 'bool' },
+    ]
+
+    const advanceSearchFilter = new AdvanceSearchFilter({
+        containerSelector: '#search-box',
+        columns: columns
+    })
+
+    
+
+    const tblCols = columns.map(col => ({ data: col.property }));
+
+    const tbl = $('#myTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -233,13 +304,12 @@
             type: 'POST',
             contentType: 'application/json',
             data: function (d) {
-                debugger;
                 // DataTables default pagination info
                 let currentPage = Math.floor(d.start / d.length) + 1;
                 let pageLength = d.length;
 
                 // Example: default filter for simple search (applies to all searchable columns)
-                let filters = [];
+                let filters = advanceSearchFilter.getFilters();
                 if (d.search && d.search.value) {
                     filters.push({
                         target: "", // can keep empty for global
@@ -281,5 +351,9 @@
         },
         columns: tblCols
     });
+
+    advanceSearchFilter.setSearchCallBack(function(){
+        alert('search')
+    })
 
 </script>

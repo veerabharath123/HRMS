@@ -72,6 +72,9 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
         /// <param name="cell">The cell data and style.</param>
         private static void ApplyCellStyle(DocumentBuilder builder, DocTableCell cell)
         {
+            // Clear styles to avoid applying styles to other cells
+            builder.Font.ClearFormatting();
+            builder.CellFormat.ClearFormatting();
             // Apply header bold automatically
             builder.Font.Bold = cell.IsHeader || (cell.Style?.Bold ?? false);
 
@@ -85,11 +88,11 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
             font.Italic = cell.Style.Italic ?? font.Italic;
 
             // Only set color if a valid hex is provided
-            if (!string.IsNullOrWhiteSpace(cell.Style.ColorHex))
+            if (!string.IsNullOrWhiteSpace(cell.Style.Color))
             {
                 try
                 {
-                    font.Color = ColorTranslator.FromHtml(cell.Style.ColorHex);
+                    font.Color = ColorTranslator.FromHtml(cell.Style.Color);
                 }
                 catch
                 {
