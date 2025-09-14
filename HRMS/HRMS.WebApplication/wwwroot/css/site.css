@@ -20,3 +20,74 @@ html {
 body {
   margin-bottom: 60px;
 }
+.dt-w {
+    max-width: 960px;
+}
+/* Remove default blue highlight */
+.dt-paging .dt-paging-button.page-item .page-link {
+    border: none !important;
+    background: transparent !important;
+    color: #23262b !important; /* Bootstrap text-secondary */
+    margin: 0 2px;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    box-shadow: none !important;
+}
+
+    /* Current page */
+.dt-paging .dt-paging-button.page-item.active .page-link {
+    background: #ffffff !important; /* White */
+    color: #23262b !important; /* Bootstrap dark text */
+    border: 1px solid #dee2e6 !important; /* Subtle border */
+}
+    .dt-paging .dt-paging-button.page-item.active .page-link:focus {
+        box-shadow: none !important;
+    }
+    /* Hover effect */
+.dt-paging .dt-paging-button.page-item:not(.active) .page-link:hover {
+    background: lightgrey !important; /* Very light gray */
+    color: #23262b !important;
+    border: none !important;
+}
+.dt-paging .dt-paging-button.page-item.disabled .page-link {
+    color: lightgrey !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+table.dataTable,
+table.dataTable th,
+table.dataTable td {
+    border-color: #dee2e6 !important; /* Bootstrap light gray */
+}
+
+    /* Optional: remove inner borders if you want a cleaner look */
+    table.dataTable.no-inner-borders td,
+    table.dataTable.no-inner-borders th {
+        border-left: none !important;
+        border-right: none !important;
+    }
+
+.login-bg {
+    background-image: url(../images/login-bg.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+.glass-bg{
+    backdrop-filter:blur(.5rem);
+    background: transparent;
+}
+.my-input{
+    width:calc(100% - 2px);
+    border: 1px solid lightgrey;
+    border-radius:.25rem;
+    background:transparent;
+}

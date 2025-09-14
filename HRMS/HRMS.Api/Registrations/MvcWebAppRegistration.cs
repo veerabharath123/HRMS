@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
+﻿using Asp.Versioning.ApiExplorer;
+using HRMS.Api.Hubs;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace HRMS.Api.Registrations
 {
@@ -19,6 +21,14 @@ namespace HRMS.Api.Registrations
                 .UseAuthorization();
 
             app.MapControllers();
+
+            RegisterHubPipelines(app);
+
+        }
+        private void RegisterHubPipelines(WebApplication app)
+        {
+            app.MapHub<NotificationHub>("/hubs/notifications")
+                .RequireCors(_policyName);
         }
     }
 }

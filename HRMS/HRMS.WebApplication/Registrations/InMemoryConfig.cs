@@ -14,6 +14,6 @@ namespace HRMS.WebApplication.Registrations
 
         public IReadOnlyList<RouteConfig> Routes { get; }
         public IReadOnlyList<ClusterConfig> Clusters { get; }
-        public IChangeToken ChangeToken => new Microsoft.Extensions.Primitives.CancellationChangeToken(new System.Threading.CancellationToken());
+        public IChangeToken ChangeToken => new CancellationChangeToken(new());
     }
 }

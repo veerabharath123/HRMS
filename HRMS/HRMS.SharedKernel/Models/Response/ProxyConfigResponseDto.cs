@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace HRMS.SharedKernel.Models.Response
 {
-    public class FileResponseDto: FileDto
+    public class ProxyConfigResponseDto
     {
-        public string FileNameWithExtension { get => $"{FileName}.{FileExtension}"; }
+        public List<RouteDto> Routes { get; set; } = new();
+        public List<ClusterDto> Clusters { get; set; } = new();
     }
 }

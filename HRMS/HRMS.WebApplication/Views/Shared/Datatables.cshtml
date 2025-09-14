@@ -1,25 +1,25 @@
-﻿@model ViewDatatableModel
+﻿@model (string title, string selector)
 
 <div>
-    <div id="accordion" class="bg-white rounded shadow p-4 w-100" style="max-width: 960px;">
+    <div id="accordion-@Model.selector" class="bg-white rounded shadow p-4 w-100 dt-w">
         <div class="d-flex align-items-center">
-            <div class="flex-grow-1"><h2 class="my-1 text-start">@Model.Name</h2></div>
+            <div class="flex-grow-1"><h2 class="my-1 text-start">@Model.title</h2></div>
             <div class="">
                 <a class="btn btn-sm bg-light text-secondary border border-secondary">
                     <i class="fa-solid fa-rotate-right"></i>
                 </a>
-                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne">
+                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne-@Model.selector">
                     <i class="fa-solid fa-magnifying-glass-plus"></i>
                 </a>
-                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2">
+                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2-@Model.selector">
                     <i class="fa-solid fa-magnifying-glass-plus"></i>
                 </a>
             </div>
         </div>
 
-        <div id="collapseOne" class="collapse" data-bs-parent="#accordion">
+        <div id="collapseOne-@Model.selector" class="collapse" data-bs-parent="#accordion-@Model.selector">
             <hr class="mb-1 mt-1" />
-            <div id="search-box">
+            <div id="search-box-@Model.selector">
                 <!-- Search row template, the library will manage its content -->
                 <div class="advance-search-row row g-3 align-items-center mb-3">
                     <!-- Field Selection -->
@@ -58,17 +58,18 @@
             </div>
             <div class="row justify-content-lg-end justify-content-md-center">
                 <div class="col-auto">
-                    <button id="searchButton" class="mt-4 btn btn-primary rounded shadow-md fw-bold rounded-pill">
+                    <button id="searchButton-@Model.selector" class="mt-4 btn btn-primary rounded shadow-md fw-bold rounded-pill advance-serach-btn">
                         Search
                     </button>
-                    <button id="clearSearchButton" class="mt-4 btn btn-warning rounded shadow-md fw-bold rounded-pill">
+                    <button id="clearSearchButton-@Model.selector" class="mt-4 btn btn-warning rounded shadow-md fw-bold rounded-pill advance-serach-clear-btn">
                         Clear
                     </button>
                 </div>
             </div>
+            <hr class="mb-2 mt-2" />
         </div>
-        <div id="collapse2" class="collapse" data-bs-parent="#accordion">
-            <div class="row">
+        <div id="collapse2-@Model.selector" class="collapse" data-bs-parent="#accordion-@Model.selector">
+            <div class="row mt-3">
                 <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
                 <div class="col-3 text-start">
                     <button class="btn btn-sm bg-light text-secondary border border-secondary text-dark">search</button>
@@ -77,10 +78,10 @@
         </div>
 
 
-        <div class="w-100 mt-4" style="max-width: 960px;">
+        <div class="w-100 mt-4 dt-w">
             <div class="table-responsive">
-                <table id="myTable" class="table display w-100">
-                    <thead>
+                <table id="@Model.selector" class="table w-100">
+                    <thead class="table-white table-bordered">
                         <tr>
                             <th>name</th>
                             <th>age</th>
@@ -95,265 +96,6 @@
         </div>
 
     </div>
-
 </div>
 
-<script nonce="@Html.ScriptNonce()">
-    class AdvanceSearchFilter{
-        constructor(options) {
-            // Ensure required options are provided
-            if (!options.containerSelector || !options.columns) {
-                console.error("AdvancedSearchFilter requires containerSelector and columns options.");
-                return;
-            }
 
-            // Store configuration
-            this.config = {
-                containerSelector: options.containerSelector,
-                columns: options.columns,
-                operatorOptions: options.operatorOptions || [
-                    { text: 'And', value: 'And' },
-                    { text: 'Or', value: 'Or' }
-                ],
-                dateOrNumOrTimeOptions: options.dateOrNumOrTimeOptions || [
-                    { text: '>=', value: '>=' },
-                    { text: '<=', value: '<=' }
-                ],
-                textOptions: options.textOptions || [
-                    { text: 'contains', value: 'contains' },
-                    { text: 'ends', value: 'ends' },
-                    { text: 'starts', value: 'starts' }
-                ],
-                boolOptions: options.boolOptions || [
-                    { text: 'Yes', value: 'Yes' },
-                    { text: 'No', value: 'No' },
-                ],
-                baseOptions: options.baseOptions || [
-                    { text: '=', value: '=' },
-                    { text: '!=', value: '!=' }
-                ]
-            };
-
-            // Store jQuery object for the main container
-            this.$container = $(this.config.containerSelector);
-
-            // Set up initial UI and event listeners
-            this.addSearchRow(this.$container.find('.advance-search-row'));
-            this.setupEventListeners();
-        }
-
-        setupEventListeners() {
-            this.$container.on('click', '.add-btn',(e) => this.handleAddRow(e));
-            this.$container.on('click', '.del-btn',(e) => this.handleDeleteRow(e));
-            this.$container.on('change', '.fields',(e) => this.handleFieldChange(e));
-        }
-        setSearchCallBack(callback){
-            const $searchButton = this.$container.closest('#collapseOne').find('#searchButton')
-
-            if(typeof callback === 'function'){
-                $searchButton.on('click',callback)
-            }
-                
-        }
-        handleAddRow(event){
-            const row = $(event.target).closest('.advance-search-row')
-            const newRow = row.clone();
-            this.$container.append(newRow)
-            this.addSearchRow(newRow)
-        }
-        handleDeleteRow(event) {
-            $(event.target).closest('.advance-search-row').remove();
-            this.checkDeleteButtons();
-        }
-        handleFieldChange(event){
-            const input = $(event.target).closest('.advance-search-row')
-            const compField = input.find('.comparator')
-            const valField = input.find('.target')
-            const prop = this.config.columns.find(x => x.property == $(event.target).val())?.type || 'text'
-
-            switch(prop){
-                case 'date':
-                case 'time':
-                case 'number':
-                    this.loadNumOrDateOrTime(prop,compField,valField)
-                    break;
-                case 'bool':
-                    this.loadBoolean(compField,valField)
-                    break;
-                default:
-                    this.loadText(compField, valField);
-                    break;
-            }
-        }
-        addSearchRow(row){
-            this.checkDeleteButtons()
-            const columns = this.config.columns;
-
-            row.find('input, select').each((i,elem) => {
-                const input = $(elem)
-                input.val('');
-                if(input.closest('.fields').length){
-                    input.empty().append(`<option></option>`)
-                    columns.forEach(x => {
-                        input.append(`<option value="${x.property}">${x.property}</option>`)
-
-                    })
-                }
-                if(input.hasClass('operator')){
-                    this.loadOperator(input)
-                }
-                if(input.hasClass('comparator')){
-                    this.loadText(input, input.closest('.advance-search-row').find('.target'))
-                }
-            })
-        }
-        checkDeleteButtons(){
-            const delBtns = this.$container.find('.advance-search-row .del-btn')
-            delBtns.prop('disabled', delBtns.length == 1)
-        }
-
-        loadOperator(valField){
-            valField.empty().append(`<option></option>`)
-            this.config.operatorOptions.forEach(x => {
-              valField.append(`<option value="${x.value}">${x.text}</option>`)
-            })
-        }
-        loadText(compField, valField){
-            compField.empty().append(`<option></option>`)
-            valField.empty();
-            this.config.baseOptions.concat(this.config.textOptions).forEach(x => {
-              compField.append(`<option value="${x.value}">${x.text}</option>`)
-            })
-
-            valField.html('<input type="text" class="form-control form-control-sm border border-secondary" />')
-        }
-        loadNumOrDateOrTime(type,compField,valField){
-            compField.empty().append(`<option></option>`)
-            valField.empty();
-            this.config.baseOptions.concat(this.config.dateOrNumOrTimeOptions).forEach(x => {
-              compField.append(`<option value="${x.value}">${x.text}</option>`)
-            })
-
-            valField.html(`<input type="${type}" class="form-control form-control-sm border border-secondary" />`)
-        }
-        loadBoolean(compField,valField){
-            compField.empty().append(`<option></option>`)
-            valField.empty();
-
-            this.config.baseOptions.forEach(x => {
-                compField.append(`<option value="${x.value}">${x.text}</option>`)
-            })
-
-            const select = $('<select class="form-select form-select-sm border border-secondary"></select>')
-                            .append(`<option></option>`);
-
-            this.config.boolOptions.forEach(x => {
-                select.append(`<option value="${x.value}">${x.text}</option>`)
-            })
-
-            valField.html(select);
-        }
-
-        getFilters() {
-            const filters = [];
-            const rows = this.$container.find('.advance-search-row');
-
-            rows.each(function(index, row) {
-                const $row = $(row);
-                const field = $row.find('.fields').val();
-                const operator = $row.find('.operator').val();
-                const comparator = $row.find('.comparator').val();
-                const value = $row.find('.target input, .target select').val();
-
-                // Only add valid filter rows
-                if (field && comparator && value) {
-                    filters.push({
-                        property: field,
-                        comparator: comparator,
-                        value: value,
-                        operator: index > 0 ? (operator || 'And') : '' // Operator is 'And' by default for subsequent rows
-                    });
-                }
-            });
-
-            return filters;
-        }
-    }
-    const columns = [
-        { property: 'name' , type: 'text' },
-        { property: 'age' , type: 'number' },
-        { property: 'birthdate' , type: 'date' },
-        { property: 'timer' , type: 'time' },
-        { property: 'active' , type: 'bool' },
-    ]
-
-    const advanceSearchFilter = new AdvanceSearchFilter({
-        containerSelector: '#search-box',
-        columns: columns
-    })
-
-    
-
-    const tblCols = columns.map(col => ({ data: col.property }));
-
-    const tbl = $('#myTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '@Model.Action',
-            type: 'POST',
-            contentType: 'application/json',
-            data: function (d) {
-                // DataTables default pagination info
-                let currentPage = Math.floor(d.start / d.length) + 1;
-                let pageLength = d.length;
-
-                // Example: default filter for simple search (applies to all searchable columns)
-                let filters = advanceSearchFilter.getFilters();
-                if (d.search && d.search.value) {
-                    filters.push({
-                        target: "", // can keep empty for global
-                        type: "text",
-                        property: "Name", // or loop through your searchable cols
-                        comparator: "like",
-                        operator: "AND",
-                        value: d.search.value
-                    });
-                }
-
-                // Example: order by DataTables order info
-                let sort = [];
-                if (d.order && d.order.length > 0) {
-                    d.order.forEach(function (ord) {
-                        let colName = d.columns[ord.column].data; // column's data property
-                        sort.push({
-                            property: colName,
-                            desc: ord.dir === "desc"
-                        });
-                    });
-                }
-
-                // Build custom payload
-                let payload = {
-                    currentPage: currentPage,
-                    maxPages: 0, // you can compute this later server-side
-                    pageLength: pageLength,
-                    filter: filters,
-                    sort: sort
-                };
-
-                return JSON.stringify(payload);
-            },
-            dataSrc: function(data){
-                console.log(data)
-                return data
-            }
-        },
-        columns: tblCols
-    });
-
-    advanceSearchFilter.setSearchCallBack(function(){
-        alert('search')
-    })
-
-</script>

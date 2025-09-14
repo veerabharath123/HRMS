@@ -9,5 +9,6 @@ namespace HRMS.Application.Common.Interface
     public interface ISystemNotificationServices
     {
         Task SendNotificationAsync(string userId, string title, string body);
+        public Task SendNotificationToAllAsync(string title, string body);
     }
 }

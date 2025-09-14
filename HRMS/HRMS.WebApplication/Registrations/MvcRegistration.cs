@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Transforms;
 
 namespace HRMS.WebApplication.Registrations
 {
@@ -13,7 +14,7 @@ namespace HRMS.WebApplication.Registrations
             {
                 serverOptions.AddServerHeader = false;
             });
-            builder.Services.AddScoped<ApiRequest>();
+            builder.Services.AddSingleton<ApiRequest>();
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
@@ -51,6 +52,19 @@ namespace HRMS.WebApplication.Registrations
                 options.FormFieldName = "AntiforgeryField";
                 options.HeaderName = "X-CSRF-TOKEN";
             });
+
+            builder.Services.AddSingleton<IProxyConfigProvider, ApiProxyConfigProvider>();
+
+            builder.Services.AddReverseProxy()
+                .AddTransforms(transforms =>
+                {
+                    transforms.AddRequestTransform(async context =>
+                    {
+                        // Inject server JWT before sending to API
+                        context.ProxyRequest.Headers.Authorization =
+                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "");
+                    });
+                });  // YARP
         }
 
     }

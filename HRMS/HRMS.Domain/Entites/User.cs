@@ -14,8 +14,8 @@ namespace HRMS.Domain.Entites
         public string LastName { get; private set; } = string.Empty;
         public string UserName { get; private set; } = string.Empty;
         public string Email { get; private set; } = string.Empty;
-        public byte[] Password { get; private set; }
-        public byte[] HashSalt { get; private set; }
+        public byte[]? Password { get; private set; }
+        public byte[]? HashSalt { get; private set; }
         public int? Otp { get; private set; }
         public DateTime? OtpDateTime { get; private set; }
         public bool FirstTime { get; private set; }

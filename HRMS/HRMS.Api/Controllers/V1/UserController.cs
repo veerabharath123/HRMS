@@ -52,5 +52,12 @@ namespace HRMS.Api.Controllers.V1
             var response = await _userServices.GetDocument();
             return Ok(response);
         }
+        [AllowAnonymous]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UploadImage([FromBody] FileRequestDto request)
+        {
+            var response = await _userServices.GetDocument();
+            return Ok(response);
+        }
     }
 }

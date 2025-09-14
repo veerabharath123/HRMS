@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HRMS.SharedKernel.Models.Response
+namespace HRMS.SharedKernel.Models.Request
 {
-    public class FileResponseDto: FileDto
+    public class FilterRequestDto
     {
-        public string FileNameWithExtension { get => $"{FileName}.{FileExtension}"; }
+        public List<FilterOptionDto> Filters { get; set; } = [];
     }
 }

@@ -30,9 +30,9 @@
     <title>title</title> *@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - HRMS.WebApplication</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
+    
     <link rel="stylesheet" href="~/HRMS.WebApplication.styles.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
@@ -40,6 +40,9 @@
     <script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js" nonce="@Html.ScriptNonce()"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" nonce="@Html.ScriptNonce()" />
+    <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
+    <script src="~/js/advance.search.table.js" nonce="@Html.ScriptNonce()"></script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
 </head>
 <body>
     <header>
@@ -64,17 +67,7 @@
         </nav>
     </header>
     <div class="container">
-        <main role="main" class="pb-3">
-            <div class="row">
-                <div class="col-12">
-                    <input type="text" name="name" id="text" class="form-input" />
-                    <button type="button" id="text-btn" class=" btn btn-success">Send</button>
-                </div>
-                <div class="col-12">
-                    <ul id="list-ul"></ul>
-                </div> 
-            </div>
-            
+        <main role="main" class="pb-3">        
             @RenderBody()
         </main>
     </div>
@@ -84,13 +77,9 @@
             &copy; 2025 - HRMS.WebApplication - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
-    <script>
-        
-
-    </script>
 
     <script src="~/js/site.js" asp-append-version="true" nonce="@Html.ScriptNonce()"></script>
-    <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,10 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-    var model = new ViewDatatableModel
-            {
-                Name = "Datatables",
-                Action = Url.Action("GetDatatables", "Home")!,
-            };
+    (string, string) tableModel = ("Index Table", "index-table");
 }
 
 <div class="text-center">
@@ -12,4 +8,57 @@
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
     
     <a href="@Url.Action("GetDocument","Home")" target="_blank">Download</a>
+
+    <partial name="Datatables" model="tableModel" />
 </div>
+
+<script nonce="@Html.ScriptNonce()">
+
+    const table = new AdvanceSearchTable({
+        tableSelector: "#index-table",
+        filterSelector: "#search-box-index-table",
+        ajaxUrl: '@Url.Action("GetDatatables","Home")',
+        columns: [
+            { property: 'name' , type: 'text' },
+            { property: 'age' , type: 'number' },
+            { property: 'birthdate' , type: 'date' },
+            { property: 'timer' , type: 'time' },
+            { property: 'active' , type: 'bool' },
+        ],
+        dataTableOptions: {
+            pageLength: 10,
+            ordering: true,
+            searching: false,
+            select: true
+        }
+    });
+
+
+        const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/notifications") // Proxy endpoint, not backend URL
+        .withAutomaticReconnect()
+        .build();
+
+    // Receive notification
+    connection.on("ReceiveNotifications", (title, body) => {
+        console.log("Notification:", title, body);
+
+        // Example: show in UI
+        const li = document.createElement("li");
+        li.textContent = `${title}: ${body}`;
+        document.getElementById("notifications").appendChild(li);
+    });
+
+    // Start connection
+    async function startConnection() {
+        try {
+            await connection.start();
+            console.log("SignalR connected.");
+        } catch (err) {
+            console.error("Connection failed: ", err);
+            setTimeout(startConnection, 5000); // retry
+        }
+    }
+
+    startConnection();
+</script>

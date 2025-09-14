@@ -1,36 +1,80 @@
-﻿using HRMS.WebApplication.Class;
+﻿using HRMS.SharedKernel.Models.Common.Class;
+using HRMS.SharedKernel.Models.Response;
+using HRMS.WebApplication.Class;
+using HRMS.WebApplication.Registrations;
+
+using System.Threading;
 using Yarp.ReverseProxy.Configuration;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace HRMS.WebApplication.Registrations
+public class ApiProxyConfigProvider : IProxyConfigProvider
 {
-    public class ApiProxyConfigProvider : IProxyConfigProvider
+    private readonly ApiRequest _apiRequest;
+    private volatile IProxyConfig _config;
+    private readonly TimeSpan _refreshInterval;
+    private readonly Timer _timer;
+
+    public ApiProxyConfigProvider(ApiRequest apiRequest, TimeSpan? refreshInterval = null)
     {
-        private volatile IProxyConfig _config;
-        private readonly ApiRequest _apiRequest;
+        _apiRequest = apiRequest;
+        _refreshInterval = refreshInterval ?? TimeSpan.FromMinutes(1);
 
-        public ApiProxyConfigProvider(ApiRequest apiRequest)
+        // Initialize empty config
+        _config = new InMemoryConfig(Array.Empty<RouteConfig>(), Array.Empty<ClusterConfig>());
+
+        // Fire async fetch immediately
+        LoadConfigAsync().GetAwaiter().GetResult();
+
+        // Timer for periodic refresh
+        //_timer = new Timer(async _ => await LoadConfigAsync(), null, _refreshInterval, _refreshInterval);
+    }
+
+    public IProxyConfig GetConfig() => _config;
+
+    private async Task LoadConfigAsync()
+    {
+        try
         {
-            _apiRequest = apiRequest;
-            // Initial fetch (could be async if you want to support reloads)
-            _config = new InMemoryConfig(GetRoutesFromApi().Result, GetClustersFromApi().Result);
+            var proxyDto = await _apiRequest.PostAsync<ProxyConfigResponseDto>("/Configurations/GetProxyConfig");
+
+            var routes = proxyDto?.Result?.Routes.Select(BuildRoute).ToList() ?? [];
+
+            var clusters = proxyDto?.Result?.Clusters.Select(BuildCluster).ToList() ?? [];
+
+            _config = new InMemoryConfig(routes, clusters);
+
+            await Task.CompletedTask;
+
+
         }
-
-        public IProxyConfig GetConfig() => _config;
-
-        // Example: Fetch routes from API
-        private async Task<IReadOnlyList<RouteConfig>> GetRoutesFromApi()
+        catch (Exception ex)
         {
-            var response = await _apiRequest.PostAsync<List<RouteConfig>>("https://your-api-url/api/proxy/routes", false);
-            return response.Result ?? [];
+            // Log error if needed; keep old config if API fails
+            Console.WriteLine($"Failed to load proxy config: {ex.Message}");
+            throw;
         }
-
-        // Example: Fetch clusters from API
-        private async Task<IReadOnlyList<ClusterConfig>> GetClustersFromApi()
+    }
+    private RouteConfig BuildRoute(RouteDto route)
+    {
+        return new RouteConfig
         {
-            var response = await _apiRequest.PostAsync<List<ClusterConfig>>("https://your-api-url/api/proxy/clusters", false);
-            return response.Result ?? [];
-        }
+            RouteId = route.RouteId,
+            ClusterId = route.ClusterId,
+            Match = new RouteMatch
+            {
+                Path = route.Path
+            }
+        };
+    }
+    private ClusterConfig BuildCluster(ClusterDto cluster)
+    {
+        Dictionary<string, DestinationConfig> destinations = cluster.Destinations.ToDictionary(
+                    kv => kv.Key,
+                    kv => new DestinationConfig { Address = kv.Value }
+                );
+        return new ClusterConfig
+        {
+            ClusterId = cluster.ClusterId,
+            Destinations = destinations
+        };
     }
 }

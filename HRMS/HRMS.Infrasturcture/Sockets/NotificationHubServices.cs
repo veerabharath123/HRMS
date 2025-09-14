@@ -14,5 +14,8 @@ namespace HRMS.Infrastructure.Sockets
 
         public Task SendNotificationAsync(string userId, string title, string body)
             => _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", title, body);
+
+        public Task SendNotificationToAllAsync(string title, string body) =>
+        _hubContext.Clients.All.SendAsync("ReceiveNotifications", title, body);
     }
 }

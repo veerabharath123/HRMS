@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HRMS.Application.Common.Class
+namespace HRMS.Application.Common.Class.DocTemplateBuilder
 {
     /// <summary>
     /// Extension methods for <see cref="DocTemplateBuilder"/> to add text fields

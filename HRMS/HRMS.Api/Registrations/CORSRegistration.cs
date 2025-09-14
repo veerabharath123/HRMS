@@ -7,7 +7,7 @@ namespace HRMS.Api.Registrations
 
         public void RegisterServices(WebApplicationBuilder builder)
         {
-            var hosts = builder.Configuration.GetValue<string>("AllowedHosts");
+            var hosts = builder.Configuration.GetValue<string>("AllowedOrigins");
 
             if (string.IsNullOrEmpty(hosts)) return;
 
@@ -16,7 +16,7 @@ namespace HRMS.Api.Registrations
                 var origins = hosts.Split(',');
                 options.AddPolicy(_policyName, p =>
                 {
-                    p.WithOrigins(origins).AllowAnyHeader().WithMethods("POST");
+                    p.WithOrigins(origins).AllowAnyHeader().WithMethods("POST").AllowCredentials();
                 });
             });
         }

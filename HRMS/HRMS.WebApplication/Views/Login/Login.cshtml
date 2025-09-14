@@ -1,1 +1,31 @@
-﻿
+﻿@{
+    Layout = null;
+}
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
+<script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
+<link href="~/css/site.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+
+<div class="login-bg">
+   <div class="container login d-flex justify-content-end align-items-center h-100">
+        <div class="card p-3 glass-bg text-white w-50 h-100">
+            <img src="~/images/logo.png" />
+            <form action="">
+                <div class="mb-3 mt-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" class="my-input form-control-sm" id="email" placeholder="Enter email" name="email">
+                </div>
+                <div class="mb-3">
+                    <label for="pwd" class="form-label">Password:</label>
+                    <input type="password" class="my-input" id="pwd" placeholder="Enter password" name="pswd">
+                </div>
+                <div class="form-check mb-3">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="remember"> Remember me
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+            </form>
+        </div>
+   </div>
+</div>

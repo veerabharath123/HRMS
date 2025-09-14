@@ -103,9 +103,9 @@ namespace HRMS.Infrastructure.DocumentGenerator.AsposeDocument
             target.Size = style.FontSize ?? target.Size;
             target.Bold = style.Bold ?? target.Bold;
             target.Italic = style.Italic ?? target.Italic;
-            target.Color = string.IsNullOrWhiteSpace(style.ColorHex)
+            target.Color = string.IsNullOrWhiteSpace(style.Color)
                 ? target.Color
-                : ColorTranslator.FromHtml(style.ColorHex);
+                : ColorTranslator.FromHtml(style.Color);
         }
     }
 

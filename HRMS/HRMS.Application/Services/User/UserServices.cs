@@ -1,4 +1,6 @@
 ﻿using HRMS.Application.Common.Class;
+using HRMS.Application.Common.Class.DocTemplateBuilder;
+using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
 using HRMS.Application.Common.Utitlities;
 using HRMS.Domain.Common;
@@ -23,13 +25,16 @@ namespace HRMS.Application.Services
         private readonly JwtAuthConfigDto _jwtConfig;
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
-        public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator)
+        private readonly ISystemNotificationServices _systemNotificationServices;
+        public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
+            ISystemNotificationServices systemNotificationServices)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
             _jwtConfig = jwtConfig.Value;
             _cache = cache;
             _documentGenerator = documentGenerator;
+            _systemNotificationServices = systemNotificationServices;
         }
 
         private async Task<bool> CheckUserExistAsync(string username)
@@ -146,6 +151,7 @@ namespace HRMS.Application.Services
             List<UserInsertRequestDto> data = [
                     new() { UserName = "Bharath", Email = "bbb" },
                     new() { UserName = "Venkat", Email = "vvv" },
+                    new() { UserName = "Ankit", Email = "vvv" },
                 ];
 
             var signaturePath = string.Format(GeneralConstants.SAMPE_SIGNATURE_PATH_PNG, AppDomain.CurrentDomain.BaseDirectory, username);
@@ -154,7 +160,7 @@ namespace HRMS.Application.Services
             var docTemplate = DocTemplateBuilder
                                 .Create()
                                 .WithTextFromModel(fields)
-                                .WithImage("Signature", signaturePath, new(100, 40))
+                                .WithImage("Signature", signaturePath, new() { Width = 100, Height = 40 })
                                 .WithTableFromModel<UserInsertRequestDto>(
                                     t => t.ConfigureTable("table",data)
                                             .AddColumn("User Name", x => x.UserName, 
@@ -172,9 +178,16 @@ namespace HRMS.Application.Services
                 FileContent = bytes,
                 FileContentType = GeneralConstants.CONTENT_TYPE_DOCX
             };
+            await _systemNotificationServices.SendNotificationToAllAsync("hello", "Test");
 
-            
+
             return await Task.FromResult(ApiResponseDto<FileResponseDto>.SuccessStatus(response));
+        }
+
+        public async Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request)
+        {
+           
+            return await Task.FromResult(ApiResponseDto<bool>.SuccessStatus(true));
         }
     }
 }

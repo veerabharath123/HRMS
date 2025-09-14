@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HRMS.Application.Common.Class
+namespace HRMS.Application.Common.Class.DocTemplateBuilder
 {
     /// <summary>
     /// Provides extension methods for building advanced tables

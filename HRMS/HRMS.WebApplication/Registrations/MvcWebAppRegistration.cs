@@ -16,6 +16,8 @@ namespace HRMS.WebApplication.Registrations
 
             app.UseMiddleware<CustomSecurityHeader>();
 
+            app.UseCors(_policyName);
+
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
@@ -23,7 +25,6 @@ namespace HRMS.WebApplication.Registrations
             app.UseRequestLocalization();
 
             app.UseRouting();
-
 
             app.UseAuthorization();
 
@@ -38,6 +39,8 @@ namespace HRMS.WebApplication.Registrations
             app.UseForwardedHeaders(forwardedHeadersOptions);
 
             app.UseSession();
+
+            app.MapReverseProxy();
 
             app.MapControllerRoute(
                 name: "default",

@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HRMS.SharedKernel.Models.Response
+namespace HRMS.SharedKernel.Models.Request
 {
-    public class FileResponseDto: FileDto
+    public class FileRequestDto: FileDto
     {
-        public string FileNameWithExtension { get => $"{FileName}.{FileExtension}"; }
     }
 }

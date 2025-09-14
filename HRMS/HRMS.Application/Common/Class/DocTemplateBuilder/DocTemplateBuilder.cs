@@ -1,19 +1,13 @@
 ﻿using HRMS.Domain.Common;
-using HRMS.Domain.Records;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static HRMS.Domain.Records.DocTemplateRecords;
 
-namespace HRMS.Application.Common.Class
+namespace HRMS.Application.Common.Class.DocTemplateBuilder
 {
     /// <summary>
     /// A builder class for constructing <see cref="DocTemplateModel"/> instances
     /// using a fluent API. Supports adding text fields, images, and tables.
     /// </summary>
-    public class DocTemplateBuilder
+    public sealed class DocTemplateBuilder
     {
         private readonly DocTemplateModel _docTemplate;
 

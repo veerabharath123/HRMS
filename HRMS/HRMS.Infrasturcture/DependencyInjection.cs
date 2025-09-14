@@ -1,6 +1,12 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
+using HRMS.Infrastructure.FileLogging;
 using HRMS.Infrastructure.Ftp;
+using HRMS.Infrastructure.ImageCompressor;
+using HRMS.Infrastructure.Jwt;
+using HRMS.Infrastructure.Persistence;
+using HRMS.Infrastructure.Persistence.Configuration;
+using HRMS.Infrastructure.Recaptcha;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.AspNetCore.Http;
@@ -9,11 +15,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using HRMS.Infrastructure.FileLogging;
-using HRMS.Infrastructure.Jwt;
-using HRMS.Infrastructure.Persistence;
-using HRMS.Infrastructure.Persistence.Configuration;
-using HRMS.Infrastructure.Recaptcha;
 
 namespace HRMS.Infrastructure
 {
@@ -37,6 +38,7 @@ namespace HRMS.Infrastructure
                 .AddScoped<IFtpFileServices, FtpFileServices>()
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()
                 .AddScoped<IDocumentGenerator, DocumentGenerator.DocumentGenerator>()
+                .AddScoped<IImageCompressor, SkiaSharpCompressor>()
                 .AddAppConfigs(configuration)
                 .AddRecaptcha(configuration);
         
