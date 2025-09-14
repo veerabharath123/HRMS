@@ -27,7 +27,7 @@ namespace HRMS.Api.Controllers.V1
             {
                 list.Add(i.ToString());
             }
-            return Ok(list);
+            return Ok(await Task.FromResult(list));
         }
 
         [AllowAnonymous]
@@ -56,7 +56,7 @@ namespace HRMS.Api.Controllers.V1
         [HttpPost("[action]")]
         public async Task<IActionResult> UploadImage([FromBody] FileRequestDto request)
         {
-            var response = await _userServices.GetDocument();
+            var response = await _userServices.UploadImage(request);
             return Ok(response);
         }
     }

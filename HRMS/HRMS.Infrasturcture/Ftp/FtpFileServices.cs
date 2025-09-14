@@ -14,16 +14,49 @@ namespace HRMS.Infrastructure.Ftp
             _defaultConfig = config.Value;
         }
 
+        private static bool TryParseUri(string remotePath, FtpConfigDto config, out Uri? uri)
+        {
+            uri = null;
+
+            if (config is null || string.IsNullOrWhiteSpace(config.FtpBaseUrl) || string.IsNullOrWhiteSpace(remotePath))
+            {
+                return false;
+            }
+
+            // Make sure host does not contain scheme
+            var host = config.FtpBaseUrl
+                .Replace("ftp://", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("ftps://", "", StringComparison.OrdinalIgnoreCase)
+                .TrimEnd('/');
+
+            // Normalize path
+            var cleanPath = remotePath.Replace('\\', '/').TrimStart('/');
+
+            var builder = new UriBuilder
+            {
+                Scheme = config.UseSsl ? Uri.UriSchemeFtps : Uri.UriSchemeFtp,
+                Host = host,
+                Path = cleanPath
+            };
+
+            uri = builder.Uri;
+            return true;
+        }
+
+
         private static FtpWebRequest CreateRequest(string method, string remotePath, FtpConfigDto config)
         {
-            var uri = new Uri($"ftp://{config.FtpBaseUrl.TrimEnd('/')}/{remotePath.TrimStart('/')}");
+            if(!TryParseUri(remotePath, config, out Uri? uri) || uri is null)
+                throw new ArgumentException("Invalid FTP configuration or remote path.");
+
             var request = (FtpWebRequest)WebRequest.Create(uri);
             
             request.Method = method;
             request.Credentials = new NetworkCredential(config.FtpUsername, config.FtpPassword);
             request.EnableSsl = config.UseSsl;
             request.UsePassive = true;
-            
+            request.UseBinary = true;
+
             return request;
         }
 
@@ -40,11 +73,14 @@ namespace HRMS.Infrastructure.Ftp
                 using var requestStream = await request.GetRequestStreamAsync();
                 await fileStream.CopyToAsync(requestStream, cancellationToken);
                 using var response = (FtpWebResponse)await request.GetResponseAsync();
-                return response.StatusCode == FtpStatusCode.FileActionOK;
+                return response.StatusCode is
+               FtpStatusCode.FileActionOK or
+               FtpStatusCode.ClosingData or
+               FtpStatusCode.DataAlreadyOpen;
             }
             catch (WebException ex) when (ex.Response is FtpWebResponse response)
             {
-                return response.StatusCode == FtpStatusCode.FileActionOK;
+                return false;
             }
         }
 

@@ -26,8 +26,10 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
+        private readonly IFtpFileServices _ftpFileServices;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices)
+            ISystemNotificationServices systemNotificationServices,
+            IFtpFileServices ftpFileServices)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
@@ -35,6 +37,7 @@ namespace HRMS.Application.Services
             _cache = cache;
             _documentGenerator = documentGenerator;
             _systemNotificationServices = systemNotificationServices;
+            _ftpFileServices = ftpFileServices;
         }
 
         private async Task<bool> CheckUserExistAsync(string username)
@@ -186,8 +189,25 @@ namespace HRMS.Application.Services
 
         public async Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request)
         {
-           
-            return await Task.FromResult(ApiResponseDto<bool>.SuccessStatus(true));
+            //if (FileValidator.Validate(request))
+            //{
+            //    return ApiResponseDto<bool>.FailureStatus("Invalid file");
+            //}
+
+            var ftpConfig = new FtpConfigDto
+            {
+                FtpBaseUrl = "hrmsftp.local",
+                FtpUsername = "VeeraBharath",
+                FtpPassword = "ftppswd001"
+            };
+
+            var remotePath = $"{Path.GetFileNameWithoutExtension(request.FileName)}-{Guid.NewGuid()}.{Path.GetExtension(request.FileName)}";
+
+            using var stream = new MemoryStream(request.FileContent!);
+
+            var isUploaded = await _ftpFileServices.UploadAsync(remotePath, stream, ftpConfig);
+
+            return await Task.FromResult(ApiResponseDto<bool>.SuccessStatus(isUploaded));
         }
     }
 }

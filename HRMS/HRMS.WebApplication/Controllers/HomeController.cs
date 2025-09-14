@@ -1,3 +1,4 @@
+using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Models;
@@ -53,6 +54,27 @@ namespace HRMS.WebApplication.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadDocument(IFormFile file)
+        {
+            if(file is null || file.Length == 0)
+                return BadRequest("No file uploaded");
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var fileRequest = new FileRequestDto
+            {
+                FileName = file.FileName,
+                FileContent = memoryStream.ToArray(),
+                FileContentType = file.ContentType,
+                FileExtension = Path.GetExtension(file.FileName).TrimStart('.')
+            };
+            var response = await _api.PostAsync<FileRequestDto, bool>("/User/UploadImage", fileRequest);
+            if(response.Success && response.Result)
+            {
+                return RedirectToAction("Login", "Login");
+            }
+            return View("Error");
         }
         //private async Task LoadAuth(AuthResponse auth)
         //{

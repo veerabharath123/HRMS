@@ -8,7 +8,19 @@
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
     
     <a href="@Url.Action("GetDocument","Home")" target="_blank">Download</a>
-
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="post" asp-controller="Home" asp-action="UploadDocument" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="fileInput">Upload Document:</label>
+                        <input type="file" class="form-control" id="fileInput" name="file" />
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
     <partial name="Datatables" model="tableModel" />
 </div>
 
