@@ -76,11 +76,11 @@ table.dataTable td {
     height: 100vh;
     overflow: hidden;
 }
-html, body {
+/*html, body {
     margin: 0;
     padding: 0;
     height: 100vh;
-}
+}*/
 .glass-bg{
     backdrop-filter:blur(.5rem);
     background: transparent;
@@ -90,4 +90,7 @@ html, body {
     border: 1px solid lightgrey;
     border-radius:.25rem;
     background:transparent;
+}
+.img-bg{
+    object-fit:cover
 }

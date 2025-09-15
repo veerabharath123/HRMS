@@ -21,6 +21,9 @@
             </div>
         </div>
     </div>
+    <ul id="notify-list">
+        
+    </ul>
     <partial name="Datatables" model="tableModel" />
 </div>
 
@@ -58,7 +61,7 @@
         // Example: show in UI
         const li = document.createElement("li");
         li.textContent = `${title}: ${body}`;
-        document.getElementById("notifications").appendChild(li);
+        $('#notify-list').append(li);
     });
 
     // Start connection
