@@ -1,47 +1,47 @@
 ﻿@{
-    Layout = null;
+	Layout = null;
 }
 <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
 <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
 <link href="~/css/site.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
-
+@* Test *@
 <div class="container-fluid h-100">
-    <div class="row h-100">
-        <div class="col-md-6 col-sm-12 d-none d-md-flex">
-            <img src="~/images/login-bg.jpg" class="img-fluid img-bg"/>
-        </div>
-        <div class="col-md-6 col-sm-12 d-flex justify-content-center align-items-center">
-            <div class="container mt-3">
-                <div class="card p-3 shadow">
-                    <h2>Login</h2>
-                    <div class="row my-2">
-                        <div class="col-12 d-flex justify-content-lg-between">
-                            <button type="button" class="btn btn-danger rounded-pill">Admin</button>
-                            <button type="button" class="btn btn-warning rounded-pill">Empolyee</button>
-                            <button type="button" class="btn btn-primary rounded-pill">Client</button>
-                        </div>
-                    </div>
-                    <form action="/action_page.php">
-                        <div class="mb-3 mt-3">
-                            <label for="email">Email:</label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="pwd">Password:</label>
-                            <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd">
-                        </div>
-                        <div class="form-check mb-3 clearfix">
-                            <label class="form-check-label">
-                                <input class="form-check-input" type="checkbox" name="remember"> Remember me
-                            </label>
-                            <a href="#" class="float-end">forget password?</a>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary rounded-pill w-100">Submit</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="row h-100">
+		<div class="col-md-6 col-sm-12 d-none d-md-flex">
+			<img src="~/images/login-bg.jpg" class="img-fluid img-bg" />
+		</div>
+		<div class="col-md-6 col-sm-12 d-flex justify-content-center align-items-center">
+			<div class="container mt-3">
+				<div class="card p-3 shadow">
+					<h2>Login</h2>
+					<div class="row my-2">
+						<div class="col-12 d-flex justify-content-lg-between">
+							<button type="button" class="btn btn-danger rounded-pill">Admin</button>
+							<button type="button" class="btn btn-warning rounded-pill">Empolyee</button>
+							<button type="button" class="btn btn-primary rounded-pill">Client</button>
+						</div>
+					</div>
+					<form action="/action_page.php">
+						<div class="mb-3 mt-3">
+							<label for="email">Email:</label>
+							<input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+						</div>
+						<div class="mb-3">
+							<label for="pwd">Password:</label>
+							<input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pswd">
+						</div>
+						<div class="form-check mb-3 clearfix">
+							<label class="form-check-label">
+								<input class="form-check-input" type="checkbox" name="remember"> Remember me
+							</label>
+							<a href="#" class="float-end">forget password?</a>
+						</div>
+
+						<button type="submit" class="btn btn-primary rounded-pill w-100">Submit</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
