@@ -9,6 +9,11 @@ namespace HRMS.Api.Registrations
         private readonly string _policyName = "ExpenseTrackerPolicy";
         public void RegisterPipelineComponents(WebApplication app)
         {
+            if(!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
+            }
+
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -27,7 +32,7 @@ namespace HRMS.Api.Registrations
         }
         private void RegisterHubPipelines(WebApplication app)
         {
-            app.MapHub<NotificationHub>("/hubs/notifications")
+            app.MapHub<NotificationHub>("/hubs/notification")
                 .RequireCors(_policyName);
         }
     }

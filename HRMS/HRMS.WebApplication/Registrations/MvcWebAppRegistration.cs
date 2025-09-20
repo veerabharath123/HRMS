@@ -11,12 +11,15 @@ namespace HRMS.WebApplication.Registrations
             if (!env.IsDevelopment())
             {
                 app.UseHsts();
+                //app.UsePathBase("/Frontend");
             }
             app.UseExceptionHandler("/Home/Error");
 
             app.UseMiddleware<CustomSecurityHeader>();
 
             app.UseCors(_policyName);
+
+            
 
             app.UseHttpsRedirection();
 

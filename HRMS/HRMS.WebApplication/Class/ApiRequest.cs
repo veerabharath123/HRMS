@@ -57,6 +57,13 @@ namespace HRMS.WebApplication.Class
 
             return PostAsync<object?, TResponse>(uri!, null, authRequired, cancellationToken);
         }
+        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
+                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+
+            return PostAsync<object?, TResponse>(uri!, data, authRequired, cancellationToken);
+        }
         public Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))

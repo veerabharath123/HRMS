@@ -11,32 +11,63 @@ namespace HRMS.Api.Controllers.V1
     [ApiVersion("1.0")]
     public class ConfigurationsController : ControllerBase
     {
+        private readonly ILogger<ConfigurationsController> _logger;
+        public ConfigurationsController(ILogger<ConfigurationsController> logger)
+        {
+            _logger = logger;
+        }
         [HttpPost("[action]")]
         public IActionResult GetProxyConfig()
         {
-            var proxyConfig = new ProxyConfigResponseDto
+            var builder = new UriBuilder
             {
-                Routes =
-                [
-                    new() {
-                        RouteId = "notificationsRoute",
-                        ClusterId = "notificationHubCluster",
-                        Path = "/hubs/notifications/{**catch-all}"
+                Scheme = Request.Scheme,
+                Host = Request.Host.Host,
+                Port = Request.Host.Port ?? (Request.Scheme == "https" ? 80 : 443),
+                Path = Request.PathBase.Value?.TrimEnd('/') ?? string.Empty
+            };
+            var proxyConfig = new ProxyConfigResponseDto 
+            { 
+                Routes = [
+                    new() 
+                    { 
+                        RouteId = "notificationsRoute", 
+                        ClusterId = "notificationHubCluster", 
+                        Path = "/hubs/notifications/{**catch-all}" 
                     }
-                ],
-                Clusters =
-                [
-                    new() {
-                        ClusterId = "notificationHubCluster",
-                        Destinations = new Dictionary<string, string>
-                        {
-                            { "dest1", "https://localhost:7163/" }
-                        }
+                ], 
+                Clusters = [
+                    new() 
+                    { 
+                        ClusterId = "notificationHubCluster", 
+                        Destinations = new Dictionary<string, string> 
+                        { 
+                            { "dest1", builder.ToString() } 
+                        } 
                     }
-                ]
+                ] 
             };
 
-            return Ok(ApiResponseDto<ProxyConfigResponseDto>.SuccessStatus(proxyConfig));
+            var destination = new Dictionary<string, string> { ["dest1"] = builder.ToString() };
+
+            string[] hubs = ["notification"];
+
+            var routes = hubs.Select(hub => new RouteDto
+            {
+                RouteId = $"{hub}Route",
+                ClusterId = $"{hub}HubCluster",
+                Path = $"/hubs/{hub}/{{**catch-all}}"
+            }).ToList();
+
+            var clusters = hubs.Select(hub => new ClusterDto
+            {
+                ClusterId = $"{hub}HubCluster",
+                Destinations = destination
+            }).ToList();
+
+            var proxyConfig1 = new ProxyConfigResponseDto { Routes = routes, Clusters = clusters };
+
+            return Ok(ApiResponseDto<ProxyConfigResponseDto>.SuccessStatus(proxyConfig1));
         }
 
     }

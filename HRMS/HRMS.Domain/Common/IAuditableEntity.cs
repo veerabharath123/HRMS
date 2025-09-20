@@ -9,11 +9,9 @@ namespace HRMS.Domain.Common
     public interface IAuditableEntity
     {
         public DateTime CreatedDate { get; set; }
-        public TimeSpan CreatedTime { get; set; }
-        public int CreatedUser { get; set; }
-        public TimeSpan UpdatedTime { get; set; }
+        public string? CreatedUser { get; set; }
         public DateTime? UpdatedDate { get; set; }
-        public int UpdatedUser { get; set; }
+        public string? UpdatedUser { get; set; } 
         public bool IsDeleted { get; set; }
     }
 }

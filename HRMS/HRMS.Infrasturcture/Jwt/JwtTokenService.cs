@@ -22,8 +22,7 @@ namespace HRMS.Infrastructure.Jwt
 
             List<Claim> claims =
             [
-                new(JwtRegisteredClaimNames.Sub, user.UserName),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.Name, user.UserName),
                 new(ClaimTypes.NameIdentifier, user.UserId.ToString())
             ];
 

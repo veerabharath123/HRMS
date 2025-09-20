@@ -45,6 +45,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
 </head>
 <body>
+    <script nonce="@Html.ScriptNonce()">
+        window.basePath = '@(Context.Request.PathBase.Value)';
+        console.log("Base Path:", window.basePath);
+    </script>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -60,6 +64,12 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Logout">Logout</a>
+                        </li>
+                        <li class="nav-item">
+                            @User.Identity.Name;
                         </li>
                     </ul>
                 </div>

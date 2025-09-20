@@ -17,7 +17,7 @@ namespace HRMS.Infrastructure.Persistence
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public DbSet<User> User { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Roles> Roles { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<RolePermissions> RolePermissions { get; set; }
@@ -25,56 +25,48 @@ namespace HRMS.Infrastructure.Persistence
 
         public Task<int> SaveChangesAsync()
         {
-            int usernr = GetCurrentUser();
+            string user = GetCurrentUser();
 
             foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
             {
-                if (usernr != -1)
+                if (string.IsNullOrWhiteSpace(user))
                 {
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            SetAuditFieldsCreated(entry, usernr);
+                            SetAuditFieldsCreated(entry, user);
                             break;
                         case EntityState.Modified:
-                            SetAuditFieldsModified(entry, usernr);
+                            SetAuditFieldsModified(entry, user);
                             break;
                     }
                 }
             }
             return base.SaveChangesAsync();
         }
-        public int GetCurrentUser()
+        public string GetCurrentUser()
         {
-            return 1;
             var user = _httpContextAccessor.HttpContext?.User;
 
             if (user == null || user.Identity is null || !user.Identity.IsAuthenticated)
-                return 0;
+                return string.Empty;
 
-            var userIdClaim = user.FindFirst("UserId");
+            var username = user.FindFirst("Username");
 
-            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
-            {
-                return userId;
-            }
-
-            return 0;
+            return username?.Value ?? string.Empty;
         }
 
-        private void SetAuditFieldsCreated(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, int usernr)
+        private void SetAuditFieldsCreated(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
-            entry1.Entity.CreatedUser = usernr;
+            entry1.Entity.CreatedUser = user;
             entry1.Entity.CreatedDate = _currentDateTime.Date;
-            entry1.Entity.CreatedTime = TimeSpan.Parse(_currentDateTime.ToString("HH:mm:ss"));
-            SetAuditFieldsModified(entry1, usernr);
+            SetAuditFieldsModified(entry1, user);
 
 
         }
-        private void SetAuditFieldsModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, int usernr)
+        private void SetAuditFieldsModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
-            entry1.Entity.UpdatedTime = TimeSpan.Parse(_currentDateTime.ToString("HH:mm:ss"));
-            entry1.Entity.UpdatedUser = usernr;
+            entry1.Entity.UpdatedUser = user;
             entry1.Entity.UpdatedDate = _currentDateTime.Date;
         }
 

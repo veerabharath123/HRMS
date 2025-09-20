@@ -47,21 +47,25 @@
             select: true
         }
     });
-
+  
 
         const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/hubs/notifications") // Proxy endpoint, not backend URL
+        .withUrl(`${window.basePath}/hubs/notification`) // Proxy endpoint, not backend URL
         .withAutomaticReconnect()
         .build();
 
     // Receive notification
-    connection.on("ReceiveNotifications", (title, body) => {
+    connection.on("ReceiveNotification", (title, body) => {
         console.log("Notification:", title, body);
 
         // Example: show in UI
         const li = document.createElement("li");
         li.textContent = `${title}: ${body}`;
         $('#notify-list').append(li);
+    });
+
+    connection.on("ReceiveNotifications", (title, body) => {
+        console.log("Notification all:", title, body);
     });
 
     // Start connection

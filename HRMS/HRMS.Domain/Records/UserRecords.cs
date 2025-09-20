@@ -9,11 +9,9 @@ namespace HRMS.Domain.Records
     public class UserRecords
     {
         public record UserAddOrUpdateRec(
-                                    string FirstName,
-                                    string LastName,
                                     string Email,
                                     string UserName,
-                                    bool IsActive,
+                                    bool IsActive = true,
                                     bool IsDeleted = false
                                     );
     }

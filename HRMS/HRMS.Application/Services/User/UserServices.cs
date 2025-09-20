@@ -53,11 +53,8 @@ namespace HRMS.Application.Services
             var user = new User();
 
             user.Add(new UserAddOrUpdateRec(
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                request.UserName,
-                true
+                request.Email,
+                request.UserName
             ));
 
             SetPassword(user, request.Password);
@@ -67,6 +64,13 @@ namespace HRMS.Application.Services
 
             return ApiResponseDto<bool>.SuccessStatus(saved);
         }
+        public async Task<ApiResponseDto<LoginResponseDto>> SignUpUserAsync(UserInsertRequestDto request)
+        {
+            var insertRes = await InsertUserAsync(request);
+            if (!insertRes.Success) return ApiResponseDto<LoginResponseDto>.FailureStatus(insertRes.Message);
+
+            return await ValidateUserLoginAsync(request);
+        }
         private static void SetPassword(User user, string password, bool isUpdate = default)
         {
             if (isUpdate && PasswordHasher.VerifyPasswordHash(password, user.Password, user.HashSalt))
@@ -75,9 +79,9 @@ namespace HRMS.Application.Services
             PasswordHasher.CreatePasswordHash(password, out byte[] hashedPassword, out byte[] salt);
             user.SetPassword(hashedPassword, salt);
         }
-        private async Task<User?> GetUnqiueUserByUserNameAsync(string username)
+        private  Task<User?> GetUnqiueUserByUserNameAsync(string username)
         {
-            return await _unitOfWork.UserRepo.TableNoTracking
+            return _unitOfWork.UserRepo.TableNoTracking
                 .SingleOrDefaultAsync(x => !x.IsDeleted && x.UserName.ToLower().Equals(username.ToLower()));
         }
 
@@ -117,24 +121,21 @@ namespace HRMS.Application.Services
             return await GetPermissionsByUserIdAsync(userId.Value);
         }
 
-        private async Task<List<string>> GetPermissionsByUserIdAsync(int userId)
+        private Task<List<string>> GetPermissionsByUserIdAsync(int userId)
         {
-            var result = await (from u in _unitOfWork.UserRolesRepo.TableNoTracking
+            return (from u in _unitOfWork.UserRolesRepo.TableNoTracking
                                 join rp in _unitOfWork.RolePermissionsRepo.TableNoTracking on u.RoleId equals rp.RoleId
                                 join p in _unitOfWork.PermissionsRepo.TableNoTracking on rp.PermissionId equals p.Id
                                 where u.UserId == userId && !u.IsDeleted && !p.IsDeleted && !rp.IsDeleted
                                 select p.Name).ToListAsync();
-
-            return result;
         }
-        public async Task<List<string>> GetRolesByUserIdAsync(int userId)
+        public Task<List<string>> GetRolesByUserIdAsync(int userId)
         {
-            var result = await (from u in _unitOfWork.UserRolesRepo.TableNoTracking
+            return (from u in _unitOfWork.UserRolesRepo.TableNoTracking
                                 join r in _unitOfWork.RolesRepo.TableNoTracking on u.RoleId equals r.Id
                                 where u.UserId == userId && !u.IsDeleted && !r.IsDeleted
                                 select r.Name).ToListAsync();
 
-            return result;
         }
         public async Task<ApiResponseDto<FileResponseDto>> GetDocument()
         {
@@ -181,8 +182,9 @@ namespace HRMS.Application.Services
                 FileContent = bytes,
                 FileContentType = GeneralConstants.CONTENT_TYPE_DOCX
             };
-            await _systemNotificationServices.SendNotificationToAllAsync("hello", "Test");
-
+            var user =  await GetUnqiueUserByUserNameAsync("Bharath");
+            if(user is not null)
+                await _systemNotificationServices.SendNotificationAsync(user.GuidId.ToString(),"hello", "Test");
 
             return await Task.FromResult(ApiResponseDto<FileResponseDto>.SuccessStatus(response));
         }

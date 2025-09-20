@@ -11,5 +11,6 @@ namespace HRMS.Application.Services
         Task<ApiResponseDto<LoginResponseDto>> ValidateUserLoginAsync(LoginRequestDto request);
         Task<ApiResponseDto<FileResponseDto>> GetDocument();
         Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request);
+        Task<ApiResponseDto<LoginResponseDto>> SignUpUserAsync(UserInsertRequestDto request);
     }
 }

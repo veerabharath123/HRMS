@@ -30,11 +30,17 @@ namespace HRMS.Api.Controllers.V1
             return Ok(await Task.FromResult(list));
         }
 
-        [AllowAnonymous]
         [HttpPost("[action]")]
         public async Task<IActionResult> InsertUser([FromBody] UserInsertRequestDto request)
         {
             var response = await _userServices.InsertUserAsync(request);
+            return Ok(response);
+        }
+        [AllowAnonymous]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SignUpUser([FromBody] UserInsertRequestDto request)
+        {
+            var response = await _userServices.SignUpUserAsync(request);
             return Ok(response);
         }
 

@@ -11,6 +11,5 @@ namespace HRMS.Domain.Entites
     {
         public int UserId { get; private set; }
         public int RoleId { get; private set; }
-        public bool IsActive { get; private set; }
     }
 }

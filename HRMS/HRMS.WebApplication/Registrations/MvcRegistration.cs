@@ -1,6 +1,7 @@
 ﻿using HRMS.WebApplication.Class;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
+using System.Net;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
 
@@ -22,8 +23,8 @@ namespace HRMS.WebApplication.Registrations
             .AddCookie("AuthCookie", options =>
             {
                 options.Cookie.Name = "AuthCookie";
-                options.LoginPath = "/Home/Login";
-                options.AccessDeniedPath = "/Maintenance/NotAllowed";
+                options.LoginPath = "/Login/Login";
+                options.AccessDeniedPath = "/Login/AccessDenied";
             });
 
             builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -60,9 +61,16 @@ namespace HRMS.WebApplication.Registrations
                 {
                     transforms.AddRequestTransform(async context =>
                     {
+                        var httpContext = context.HttpContext;
+
+                        var token = httpContext.Session.GetString("AccessToken");
                         // Inject server JWT before sending to API
-                        context.ProxyRequest.Headers.Authorization =
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "");
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.ProxyRequest.Headers.Authorization =
+                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        }
+
                     });
                 });  // YARP
         }

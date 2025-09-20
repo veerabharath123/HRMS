@@ -1,0 +1,27 @@
+﻿@model UserInsertRequestDto
+
+<div class="container">
+    <div class="row h-100">
+        <div class="col-lg-6"></div>
+        <div class="col-lg-6">
+            <form action="@Url.Action("SignUp","Login")" method="post">
+                <div class="mb-3 mt-3">
+                    <label asp-for="Email" for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter email" asp-for="Email">
+                    <span asp-validation-for="Email" class=""></span>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label asp-for="UserName" for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" placeholder="Enter username" asp-for="UserName">
+                    <span asp-validation-for="UserName" class=""></span>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label asp-for="Password" for="password">Password:</label>
+                    <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Enter password">
+                    <span asp-validation-for="Password" class=""></span>
+                </div>
+                <button type="submit" class="btn btn-primary rounded-pill w-100">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -10,8 +10,6 @@ namespace HRMS.Domain.Entites
 {
     public class User : AuditableWithBaseEntity<int>
     {
-        public string FirstName { get; private set; } = string.Empty;
-        public string LastName { get; private set; } = string.Empty;
         public string UserName { get; private set; } = string.Empty;
         public string Email { get; private set; } = string.Empty;
         public byte[]? Password { get; private set; }
@@ -28,8 +26,6 @@ namespace HRMS.Domain.Entites
         }
         public void Update(UserAddOrUpdateRec rec)
         {
-            FirstName = rec.FirstName;
-            LastName = rec.LastName;
             UserName = rec.UserName;
             Email = rec.Email;
             IsActive = true;

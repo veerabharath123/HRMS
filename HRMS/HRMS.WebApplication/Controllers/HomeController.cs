@@ -3,6 +3,7 @@ using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ using System.Xml.Linq;
 
 namespace HRMS.WebApplication.Controllers
 {
+    [Authorize]
     public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;

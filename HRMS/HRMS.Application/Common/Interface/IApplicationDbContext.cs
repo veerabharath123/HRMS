@@ -5,7 +5,7 @@ namespace HRMS.Application.Common.Interface
 {
     public interface IApplicationDbContext
     {
-        DbSet<User> User { get; set; }
+        DbSet<User> Users { get; set; }
         DbSet<Roles> Roles { get; set; }
         DbSet<UserRoles> UserRoles { get; set; }
         DbSet<RolePermissions> RolePermissions { get; set; }
