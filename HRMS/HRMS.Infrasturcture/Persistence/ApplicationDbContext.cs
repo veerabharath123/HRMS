@@ -22,6 +22,9 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<UserRoles> UserRoles { get; set; }
         public DbSet<RolePermissions> RolePermissions { get; set; }
         public DbSet<Permissions> Permissions { get; set; }
+        public DbSet<StoredFiles> StoredFiles { get; set; }
+        public DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
+        public DbSet<SystemSettings> SystemSettings { get; set; }
 
         public Task<int> SaveChangesAsync()
         {

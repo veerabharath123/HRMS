@@ -9,6 +9,10 @@ namespace HRMS.Application.Common.Interface
         IRepository<Permissions> PermissionsRepo { get; }
         IRepository<RolePermissions> RolePermissionsRepo { get; }
         IRepository<UserRoles> UserRolesRepo { get; }
+        IRepository<StoredFiles> StoredFilesRepo { get; }
+        IRepository<FileLocationConfigurations> FileLocationConfigurationsRepo { get; }
+        IRepository<SystemSettings> SystemSettingsRepo { get; }
+
 
         Task<bool> SaveAsync();
         Task<int> SaveChangesAsync();

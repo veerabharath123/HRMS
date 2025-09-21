@@ -10,6 +10,9 @@ namespace HRMS.Application.Common.Interface
         DbSet<UserRoles> UserRoles { get; set; }
         DbSet<RolePermissions> RolePermissions { get; set; }
         DbSet<Permissions> Permissions { get; set; }
+        DbSet<StoredFiles> StoredFiles { get; set; }
+        DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
+        DbSet<SystemSettings> SystemSettings { get; set; }
 
     }
 }

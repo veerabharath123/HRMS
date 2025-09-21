@@ -20,6 +20,9 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         private IRepository<Permissions> _permissionsRepo;
         private IRepository<RolePermissions> _rolePermissionsRepo;
         private IRepository<UserRoles> _userRolesRepo;
+        private IRepository<StoredFiles> _storedFilesRepo;
+        private IRepository<FileLocationConfigurations> _fileLocationConfigurationsRepo;
+        private IRepository<SystemSettings> _systemSettingsRepo;
 
         #endregion private repositories
 
@@ -63,6 +66,30 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             {
                 _userRolesRepo ??= new EFRepository<UserRoles>(_context);
                 return _userRolesRepo;
+            }
+        }
+        public IRepository<StoredFiles> StoredFilesRepo
+        {
+            get
+            {
+                _storedFilesRepo ??= new EFRepository<StoredFiles>(_context);
+                return _storedFilesRepo;
+            }
+        }
+        public IRepository<FileLocationConfigurations> FileLocationConfigurationsRepo
+        {
+            get
+            {
+                _fileLocationConfigurationsRepo ??= new EFRepository<FileLocationConfigurations>(_context);
+                return _fileLocationConfigurationsRepo;
+            }
+        }
+        public IRepository<SystemSettings> SystemSettingsRepo
+        {
+            get
+            {
+                _systemSettingsRepo ??= new EFRepository<SystemSettings>(_context);
+                return _systemSettingsRepo;
             }
         }
         #endregion public repositories
