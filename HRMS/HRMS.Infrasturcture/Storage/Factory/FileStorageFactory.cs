@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace HRMS.Infrastructure.Storage.Factory
 {
-    public class FileStorageFactory
+    public class FileStorageFactory: IFileStorageFactory
     {
         private readonly IConfiguration _configuration;
         public FileStorageFactory(IConfiguration configuration)

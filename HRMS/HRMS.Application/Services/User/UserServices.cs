@@ -26,10 +26,8 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
-        private readonly IFtpFileServices _ftpFileServices;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices,
-            IFtpFileServices ftpFileServices)
+            ISystemNotificationServices systemNotificationServices)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
@@ -37,7 +35,6 @@ namespace HRMS.Application.Services
             _cache = cache;
             _documentGenerator = documentGenerator;
             _systemNotificationServices = systemNotificationServices;
-            _ftpFileServices = ftpFileServices;
         }
 
         private async Task<bool> CheckUserExistAsync(string username)
@@ -207,9 +204,20 @@ namespace HRMS.Application.Services
 
             using var stream = new MemoryStream(request.FileContent!);
 
-            var isUploaded = await _ftpFileServices.UploadAsync(remotePath, stream, ftpConfig);
+            var isUploaded = false;// await _ftpFileServices.UploadAsync(remotePath, stream, ftpConfig);
 
             return await Task.FromResult(ApiResponseDto<bool>.SuccessStatus(isUploaded));
+        }
+        public async Task<ApiResponseDto<bool>> SendMessageByUser(MessageRequestDto request)
+        {
+            var user = await GetUnqiueUserByUserNameAsync(request.Username);
+            if (user is not null)
+            {
+                await _systemNotificationServices.SendNotificationAsync(user.GuidId.ToString(), request.Title, request.Message);
+                return ApiResponseDto<bool>.FlagStatus(true, "Message sent");
+            }
+
+            return ApiResponseDto<bool>.FlagStatus(true, "User not found");
         }
     }
 }

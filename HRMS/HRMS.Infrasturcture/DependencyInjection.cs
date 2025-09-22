@@ -1,12 +1,12 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
 using HRMS.Infrastructure.FileLogging;
-using HRMS.Infrastructure.Ftp;
 using HRMS.Infrastructure.ImageCompressor;
 using HRMS.Infrastructure.Jwt;
 using HRMS.Infrastructure.Persistence;
 using HRMS.Infrastructure.Persistence.Configuration;
 using HRMS.Infrastructure.Recaptcha;
+using HRMS.Infrastructure.Storage.Factory;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +23,7 @@ namespace HRMS.Infrastructure
         public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)), ServiceLifetime.Scoped);
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection1"), b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)), ServiceLifetime.Scoped);
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
@@ -35,7 +35,7 @@ namespace HRMS.Infrastructure
         {
             return services
                 .AddScoped<IJwtTokenServices, JwtTokenServices>()
-                .AddScoped<IFtpFileServices, FtpFileServices>()
+                .AddScoped<IFileStorageFactory, FileStorageFactory>()
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()
                 .AddScoped<IDocumentGenerator, DocumentGenerator.DocumentGenerator>()
                 .AddScoped<IImageCompressor, SkiaSharpCompressor>()

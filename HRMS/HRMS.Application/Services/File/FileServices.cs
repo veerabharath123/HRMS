@@ -4,12 +4,6 @@ using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HRMS.Application.Services.File
 {

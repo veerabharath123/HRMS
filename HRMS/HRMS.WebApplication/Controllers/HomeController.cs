@@ -78,6 +78,13 @@ namespace HRMS.WebApplication.Controllers
             }
             return View("Error");
         }
+        [HttpPost]
+        public async Task<IActionResult> SendMessage(MessageRequestDto request)
+        {
+            var response = await _api.PostAsync<MessageRequestDto, bool>("/User/SendMessageByUser", request, true);
+
+            return JsonResponse(response);
+        }
         //private async Task LoadAuth(AuthResponse auth)
         //{
         //    _httpContextAccessor.HttpContext?.Session.SetString(nameof(auth.UserName), auth.UserName);

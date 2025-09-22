@@ -9,5 +9,14 @@ namespace HRMS.WebApplication.Controllers
         {
             return File(fileResponse.FileContent!, fileResponse.FileContentType, fileResponse.FileNameWithExtension);
         }
+        protected IActionResult JsonResponse<T>(ApiResponseDto<T> response)
+        {
+            if(response.Success)
+            {
+                return Json(new { success = true, data = response.Result, message = response.Message });
+            }
+
+            return Json(new { success = false, data = default(T), message = response.Message });
+        }
     }
 }

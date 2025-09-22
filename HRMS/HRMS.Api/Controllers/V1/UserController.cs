@@ -65,5 +65,11 @@ namespace HRMS.Api.Controllers.V1
             var response = await _userServices.UploadImage(request);
             return Ok(response);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendMessageByUser([FromBody] MessageRequestDto request)
+        {
+            var response = await _userServices.SendMessageByUser(request);
+            return Ok(response);
+        }
     }
 }

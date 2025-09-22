@@ -13,10 +13,12 @@ namespace HRMS.WebApplication.Class
     public class ApiRequest
     {
         private readonly string _apiBaseUrl;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ApiRequest( IConfiguration configuration)
+        public ApiRequest( IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
+            _httpContextAccessor = httpContextAccessor;
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri url, object? data, bool authRequired)
@@ -31,7 +33,8 @@ namespace HRMS.WebApplication.Class
 
             if(authRequired)
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "your_token");
+                var token = _httpContextAccessor?.HttpContext?.Session.GetString("AccessToken");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token ?? string.Empty);
             }
 
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en-US"));

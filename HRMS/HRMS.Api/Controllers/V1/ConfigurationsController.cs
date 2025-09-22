@@ -50,7 +50,7 @@ namespace HRMS.Api.Controllers.V1
 
             var destination = new Dictionary<string, string> { ["dest1"] = builder.ToString() };
 
-            string[] hubs = ["notification"];
+            string[] hubs = [""];notification
 
             var routes = hubs.Select(hub => new RouteDto
             {

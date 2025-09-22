@@ -8,14 +8,14 @@ using Yarp.ReverseProxy.Configuration;
 
 public class ApiProxyConfigProvider : IProxyConfigProvider
 {
-    private readonly ApiRequest _apiRequest;
+    private readonly IServiceScopeFactory _scopeFactory;
     private volatile IProxyConfig _config;
     private readonly TimeSpan _refreshInterval;
     private readonly Timer _timer;
 
-    public ApiProxyConfigProvider(ApiRequest apiRequest, TimeSpan? refreshInterval = null)
+    public ApiProxyConfigProvider(IServiceScopeFactory scopeFactory, TimeSpan? refreshInterval = null)
     {
-        _apiRequest = apiRequest;
+        _scopeFactory = scopeFactory;
         _refreshInterval = refreshInterval ?? TimeSpan.FromMinutes(1);
 
         // Initialize empty config
@@ -34,7 +34,9 @@ public class ApiProxyConfigProvider : IProxyConfigProvider
     {
         try
         {
-            var proxyDto = await _apiRequest.PostAsync<ProxyConfigResponseDto>("/Configurations/GetProxyConfig");
+            using var scope = _scopeFactory.CreateScope();
+            var apiRequest = scope.ServiceProvider.GetRequiredService<ApiRequest>();
+            var proxyDto = await apiRequest.PostAsync<ProxyConfigResponseDto>("/Configurations/GetProxyConfig");
 
             var routes = proxyDto?.Result?.Routes.Select(BuildRoute).ToList() ?? [];
 
