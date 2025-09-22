@@ -12,15 +12,16 @@ namespace HRMS.Api.Workers
             _logger = logger;
             _fileServices = fileServices;
         }
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            throw new NotImplementedException();
+            while (stoppingToken.IsCancellationRequested) 
+            {
+                await DoWorkAsync(stoppingToken);
+            }
         }
         private async Task DoWorkAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("File Maintenance Worker running at: {time}", DateTimeOffset.Now);
-            // Implement file maintenance tasks here, e.g., deleting old files, archiving, etc.
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Example delay
+            await _fileServices.ProcessFileMaintenanceAsync(stoppingToken);
         }
     }
 }

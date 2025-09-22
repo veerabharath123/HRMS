@@ -27,5 +27,10 @@ namespace HRMS.Domain.Entites
         {
             IsProcessed = true;
         }
+        public void DeleteFile()
+        {
+            IsProcessed = false;
+            IsDeleted = true;
+        }
     }
 }

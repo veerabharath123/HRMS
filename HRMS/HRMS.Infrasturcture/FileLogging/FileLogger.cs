@@ -63,7 +63,8 @@ namespace HRMS.Infrastructure.FileLogging
             {
                 try
                 {
-                    File.AppendAllText(filePath, text + Environment.NewLine);
+                    File.AppendAllText(filePath, text);
+                    File.AppendAllText(filePath, Environment.NewLine + Environment.NewLine);
                     return; // success
                 }
                 catch (IOException) when (attempt < _maxRetries - 1)
