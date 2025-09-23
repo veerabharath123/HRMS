@@ -10,10 +10,12 @@ using HRMS.SharedKernel.Models.Common;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Drawing;
+using System.Security.Claims;
 using static HRMS.Domain.Records.UserRecords;
 
 namespace HRMS.Application.Services
@@ -26,8 +28,9 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices)
+            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
@@ -35,8 +38,26 @@ namespace HRMS.Application.Services
             _cache = cache;
             _documentGenerator = documentGenerator;
             _systemNotificationServices = systemNotificationServices;
+            _httpContextAccessor = httpContextAccessor;
         }
+        public async Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync()
+        {
+            var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(currentUserId, out Guid userId))
+            {
+                return ApiResponseDto<List<ChatUserResponseDto>>.FailureStatus("Invalid user ID");
+            }
+            
+            var chatUsers = await _unitOfWork.UserRepo.TableNoTracking
+                .Where(x => !x.IsDeleted && x.GuidId != userId && x.IsActive)
+                .Select(x => new ChatUserResponseDto
+                {
+                    UserId = x.GuidId,
+                    UserName = x.UserName
+                }).ToListAsync();
 
+            return ApiResponseDto<List<ChatUserResponseDto>>.SuccessStatus(chatUsers);
+        }
         private async Task<bool> CheckUserExistAsync(string username)
         {
             return await _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);

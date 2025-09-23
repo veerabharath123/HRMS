@@ -22,12 +22,8 @@ namespace HRMS.Api.Controllers.V1
         [HttpPost("[action]")]
         public async Task<IActionResult> GetUsers()
         {
-            var list = new List<string>();
-            for (int i = 0; i < 10; i++)
-            {
-                list.Add(i.ToString());
-            }
-            return Ok(await Task.FromResult(list));
+            var response = await _userServices.GetUsersAsync();
+            return Ok(response);
         }
 
         [HttpPost("[action]")]

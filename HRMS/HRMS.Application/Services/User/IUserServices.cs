@@ -13,5 +13,7 @@ namespace HRMS.Application.Services
         Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request);
         Task<ApiResponseDto<LoginResponseDto>> SignUpUserAsync(UserInsertRequestDto request);
         Task<ApiResponseDto<bool>> SendMessageByUser(MessageRequestDto request);
+
+        Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync();
     }
 }
