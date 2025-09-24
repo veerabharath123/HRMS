@@ -1,17 +1,25 @@
 ﻿@model List<ChatUserResponseDto>
 
 <div class="container h-100">
-    <div class="row">
-        <div class="col-4">
-            @foreach(var user in Model)
-            {
-                <div class="w-100" data-user="@user.UserId">
-                    @user.UserName
-                </div>
-            }
+    <div class="row border chat-box py-3">
+        <div class="col-4 chat-box-col">
+            <ul class="chat-users">
+                @foreach (var user in Model)
+                {
+                    <li>
+                        <img src="~/images/user-no-img.png" alt="no img" />
+                        <a class="chat-user-link">
+                            @user.UserName
+                        </a>
+                    </li>
+                }
+            </ul>
         </div>
         <div class="col-8">
-            
+            <div class="col-12 d-flex">
+                <textarea></textarea>
+                <button>Send</button>
+            </div>
         </div>
     </div>
 </div>

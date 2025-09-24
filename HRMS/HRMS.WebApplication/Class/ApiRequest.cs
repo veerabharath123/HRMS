@@ -15,7 +15,7 @@ namespace HRMS.WebApplication.Class
         private readonly string _apiBaseUrl;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ApiRequest( IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public ApiRequest(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
             _httpContextAccessor = httpContextAccessor;
@@ -115,66 +115,5 @@ namespace HRMS.WebApplication.Class
             }
             catch { return ApiResponseDto<TResponse>.FailureStatus(content); }
         }
-
-        //private ApiResponseDto<T> ReturnWebExceptionStatusProtocolError<T>(HttpWebResponse? myHttpWebResponse)
-        //{
-        //    //_logger.LogError(GeneralConstants.PortocalError, myHttpWebResponse?.StatusCode.ToString(), myHttpWebResponse?.ToString());
-
-        //    var statuscode = myHttpWebResponse?.StatusCode ?? HttpStatusCode.BadRequest;
-        //    string code = statuscode.ToString();
-        //    var ApiResponse = ApiResponseDto<T>.CustomStatus((int)statuscode, false, default, myHttpWebResponse?.StatusDescription ?? string.Empty);
-
-        //    return statuscode switch
-        //    {
-        //        HttpStatusCode.BadRequest => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        HttpStatusCode.Unauthorized => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException, login = true },
-        //        HttpStatusCode.Forbidden => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        HttpStatusCode.NotFound => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        HttpStatusCode.LengthRequired => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        HttpStatusCode.TooManyRequests => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        HttpStatusCode.InternalServerError => new webresult() { resstring = string.Empty, statuscode = code, error = exmessage, message = exInnerException },
-        //        _ => new webresult() { resstring = string.Empty, statuscode = code },
-        //    };
-        //}
-
-
-        //private webresult ReturnException(WebException ex)
-        //{
-        //    var myHttpWebResponse = (HttpWebResponse?)ex.Response;
-        //    _logger.LogError(GeneralConstants.WebExceptionError, ex.ToString());
-        //    return new webresult() { resstring = string.Empty, statuscode = myHttpWebResponse?.StatusCode.ToString() ?? string.Empty, message = exInnerException, error = exmessage };
-        //}
-
-        //private webresult HandleAndReturnWebException(WebException ex)
-        //{
-        //    exmessage = ex.Message;
-        //    exInnerException = ex.InnerException?.ToString() ?? string.Empty;
-
-        //    if (ex.Status == WebExceptionStatus.ProtocolError)
-        //        return ReturnWebExceptionStatusProtocolError((HttpWebResponse?)ex.Response);
-
-        //    return ReturnException(ex);
-        //}
-
-        //protected async Task<webresult> ApiCall(string apiMethod, string jsonParams, bool deserialize = false, bool needAuth = false)
-        //{
-        //    if (!TryValidateAndCreateUriString(apiMethod, out Uri? uri))
-        //        return new webresult() { resstring = string.Empty, statuscode = StatusCodes.Status400BadRequest.ToString() };
-        //    else
-        //    {
-        //        try
-        //        {
-        //            using HttpClient httpClient = CreateHttpClient();
-        //            LoadClientSettings(httpClient, needAuth);
-        //            HttpResponseMessage response = await httpClient.PostAsync(uri, new StringContent(jsonParams, Encoding.UTF8, "application/json"));
-
-        //            return await ProcessResponseAndReturnResultAsync(response, deserialize);
-        //        }
-        //        catch (WebException ex)
-        //        {
-        //            return HandleAndReturnWebException(ex);
-        //        }
-        //    }
-        //}
     }
 }

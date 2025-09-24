@@ -94,3 +94,37 @@ table.dataTable td {
 .img-bg{
     object-fit:cover
 }
+.chat-users {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+    .chat-users > li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        display: flex;
+    }
+
+    .chat-users img {
+        width: 30px;
+        aspect-ratio: 1 / 1;
+        border-radius: 30px;
+        border: 1px solid #00000075;
+        padding: 2px;
+        margin-right: .5rem;
+    }
+    .chat-users a.chat-user-link {
+        height: 30px;
+        width: 100%;
+        text-decoration: none;
+        color: grey;
+        display: flex;
+        align-items: center;
+    }
+.chat-box{
+    min-height:500px;
+}
+    .chat-box .chat-box-col {
+        border-right: 1px solid #ddd;
+    }
