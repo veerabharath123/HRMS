@@ -1,43 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    ViewData["Module"] = "Home";
     (string, string) tableModel = ("Index Table", "index-table");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    
-    <a href="@Url.Action("GetDocument","Home")" target="_blank">Download</a>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                @* <form method="post" asp-controller="Home" asp-action="UploadDocument" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="fileInput">Upload Document:</label>
-                        <input type="file" class="form-control" id="fileInput" name="file" />
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-2">Upload</button>
-                </form> *@
-
-                <form id="msg">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" class="form-control" id="username" name="Username" />
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message:</label>
-                        <textarea class="form-control" id="message" name="Message" placeholder="Message"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-success">Send</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <ul id="notify-list">
-        
-    </ul>
-    <partial name="Datatables" model="tableModel" />
-</div>
+<partial name="Datatables" model="tableModel" />
 
 <script nonce="@Html.ScriptNonce()">
 
