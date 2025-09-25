@@ -78,7 +78,7 @@ namespace HRMS.WebApplication.Class
         {
             try
             {
-                var httpClient = new HttpClient();
+                using var httpClient = new HttpClient();
                 httpClient.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
                 using var request = CreateRequest(HttpMethod.Post, url, data, authRequired);
                 
@@ -91,7 +91,7 @@ namespace HRMS.WebApplication.Class
                 return ApiResponseDto<TResponse>.FailureStatus(ex.ToString());
             }
         }
-        private async Task<ApiResponseDto<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
+        private static async Task<ApiResponseDto<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
 

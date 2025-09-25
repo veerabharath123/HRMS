@@ -6,45 +6,116 @@
 <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
 <link href="~/css/site.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
-@* Test *@
-<div class="container-fluid h-100">
-	<div class="row h-100">
-		<div class="col-md-6 col-sm-12 d-none d-md-flex">
-			<img src="~/images/login-bg.jpg" class="img-fluid img-bg" />
-		</div>
-		<div class="col-md-6 col-sm-12 d-flex justify-content-center align-items-center">
-			<div class="container mt-3">
-				<div class="card p-3 shadow">
-					<h2>Login</h2>
-					<div class="row my-2">
-						<div class="col-12 d-flex justify-content-lg-between">
-							<button type="button" class="btn btn-danger rounded-pill">Admin</button>
-							<button type="button" class="btn btn-warning rounded-pill">Empolyee</button>
-							<button type="button" class="btn btn-primary rounded-pill">Client</button>
-						</div>
-					</div>
-					<form asp-action="Login" method="post">
-						<div class="mb-3 mt-3">
-							<label for="UserName">UserName:</label>
-							<input type="text" class="form-control" id="UserName" placeholder="Enter UserName" asp-for="UserName">
-						</div>
-						<div class="mb-3">
-							<label for="pwd">Password:</label>
-							<input type="password" class="form-control" id="pwd" placeholder="Enter password" asp-for="Password">
-						</div>
-						<div class="form-check mb-3 clearfix">
-							<label class="form-check-label">
-								<input class="form-check-input" type="checkbox" name="remember"> Remember me
-							</label>
-							<a href="#" class="float-end">forget password?</a>
-						</div>
+<style nonce="@Html.ScriptNonce()">
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
 
-						<button type="submit" class="btn btn-primary rounded-pill w-100">Submit</button>
-					</form>
-					<hr />
-					<a href="@Url.Action("SignUp")" class="mt-3 btn btn-success rounded-pill w-100">Create New Account</a>
-				</div>
+    .bg-image {
+        background: url('https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        margin: 2rem;
+        color: #fff;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
+        color: #fff;
+    }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: none;
+            color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: #eee;
+        }
+
+    .btn-primary {
+        background: #0d6efd;
+        border: none;
+    }
+
+    /* Responsive: center card on small screens */
+    @@media (max-width: 768px) {
+        .bg-image
+
+    {
+        justify-content: center;
+    }
+
+    }
+
+    /* 🌙 Dark mode styles */
+    @@media (prefers-color-scheme: dark) {
+        .bg-image
+
+    {
+            background: url('../../images/login-bg.jpg') no-repeat center center/cover;
+    }
+
+    .glass-card {
+        background: rgba(0, 0, 0, 0.4);
+        color: #f1f1f1;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        color: #f1f1f1;
+    }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: #bbb;
+        }
+
+    }
+</style>
+@* Test *@
+<div class="bg-image">
+	<div class="glass-card">
+		<h3 class="mb-4">Welcome Back</h3>
+		<form asp-action="Login" asp-controller="Login" method="post">
+			<div class="mb-3">
+				<label class="form-label">Username</label>
+				<input type="text" class="form-control" id="UserName" placeholder="Enter UserName" asp-for="UserName">
 			</div>
-		</div>
+			<div class="mb-2">
+				<label class="form-label">Password</label>
+				<input type="password" class="form-control" id="pwd" placeholder="Enter password" asp-for="Password">
+			</div>
+			<div class="d-flex justify-content-end mb-3">
+				<a href="#" class="text-decoration-none text-info small">Forgot password?</a>
+			</div>
+			<button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+			<div class="text-center">
+				<small>
+					Don't have an account?
+					<a href="@Url.Action("SignUp")" class="text-decoration-none text-info">Sign up</a>
+				</small>
+			</div>
+		</form>
 	</div>
 </div>

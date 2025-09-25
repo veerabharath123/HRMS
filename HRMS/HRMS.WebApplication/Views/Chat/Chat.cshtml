@@ -1,25 +1,352 @@
 ﻿@model List<ChatUserResponseDto>
+<style nonce="@Html.ScriptNonce()">
+    .chat-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        height: calc(100vh - 2rem);
+        display: grid;
+        grid-template-columns: 312px 1fr;
+        gap: 1rem;
+    }
 
-<div class="container h-100">
-    <div class="row border chat-box py-3">
-        <div class="col-4 chat-box-col">
-            <ul class="chat-users">
-                @foreach (var user in Model)
-                {
-                    <li>
-                        <img src="~/images/user-no-img.png" alt="no img" />
-                        <a class="chat-user-link">
-                            @user.UserName
-                        </a>
-                    </li>
-                }
-            </ul>
-        </div>
-        <div class="col-8">
-            <div class="col-12 d-flex">
-                <textarea></textarea>
-                <button>Send</button>
+    /* Responsive: collapse to single column on small screens */
+    @@media (max-width: 992px) {
+        .chat-section {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .people-head {
+        padding: 1rem;
+        display: flex;
+        gap: .75rem;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .chat-section .profile {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px
+    }
+
+    .people-search {
+        flex: 1
+    }
+
+    .chat-window {
+        background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.01) 100%);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .people-list .list-group {
+        border-radius: 0;
+        background: transparent;
+        padding: .5rem 0;
+        overflow: auto;
+    }
+
+    .person {
+        padding: .6rem 1rem;
+        display: flex;
+        gap: .75rem;
+        align-items: center;
+        cursor: pointer;
+        transition: background .12s ease, transform .06s ease;
+        border-radius: 10px;
+        margin: .2rem .5rem;
+    }
+
+        .person:hover {
+            background: rgba(0,0,0,0.03);
+            transform: translateY(-1px);
+        }
+
+    body.dark .person:hover {
+        background: rgba(255,255,255,0.02);
+    }
+
+    .person .meta {
+        flex: 1;
+        min-width: 0
+    }
+
+    .person .name {
+        font-weight: 600;
+        font-size: .95rem
+    }
+
+    .person .msg {
+        font-size: .82rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis
+    }
+
+    .person .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700
+    }
+
+    /* mini sidebar icons (for narrow screens when collapsed) */
+    .people-mini {
+        display: none;
+        flex-direction: column;
+        gap: .4rem;
+        background: transparent
+    }
+    @@media (max-width:420px) {
+        .people-mini
+
+    {
+        display: flex
+    }
+
+    .people-head .people-search {
+        display: none
+    }
+
+    .people-head .btn {
+        display: none
+    }
+
+    }
+
+    .chat-top {
+        padding: .9rem 1.2rem;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        background: linear-gradient(0deg, rgba(255,255,255,0.02), transparent);
+    }
+
+    .chat-body {
+        padding: 1rem;
+        flex: 1;
+        overflow: auto
+    }
+
+    .messages {
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+        max-width: 900px
+    }
+
+    .msg {
+        padding: .55rem .8rem;
+        border-radius: 12px;
+        display: inline-block;
+        max-width: 70%;
+        box-shadow: 0 6px 18px rgba(12,20,40,0.04)
+    }
+
+    body.dark .msg {
+        box-shadow: none
+    }
+
+    .from-me {
+        align-self: flex-end;
+        background: var(--msg-out);
+        border-bottom-right-radius: 6px
+    }
+
+    .from-them {
+        align-self: flex-start;
+        background: var(--card);
+        border-bottom-left-radius: 6px
+    }
+
+    .time {
+        font-size: .72rem;
+        color: var(--muted);
+        margin-top: .28rem
+    }
+
+    .chat-input {
+        padding: .7rem;
+        border-top: 1px solid rgba(0,0,0,0.04);
+        display: flex;
+        gap: .6rem;
+        align-items: center;
+        background: linear-gradient(0deg, rgba(255,255,255,0.01), transparent);
+    }
+
+    body.dark .chat-input {
+        border-top-color: rgba(255,255,255,0.04);
+    }
+
+    .input-box {
+        flex: 1;
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+        background: var(--card);
+        padding: .45rem;
+        border-radius: 12px
+    }
+
+        .input-box input {
+            border: 0;
+            background: transparent;
+            outline: none;
+            padding: .5rem;
+            width: 100%
+        }
+
+    /* subtle badges */
+    .badge-unread {
+        background: linear-gradient(90deg,var(--accent),#2b6df6);
+        border-radius: 999px;
+        color: white;
+        padding: .18rem .5rem;
+        font-size: .75rem
+    }
+
+    /* small helpers */
+    .muted {
+        color: var(--muted)
+    }
+
+    /* make scrollbars subtle */
+    .people-list .list-group::-webkit-scrollbar, .chat-body::-webkit-scrollbar {
+        height: 8px;
+        width: 8px
+    }
+
+    .people-list .list-group::-webkit-scrollbar-thumb, .chat-body::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,0.08);
+        border-radius: 999px
+    }
+
+    body.dark .people-list .list-group::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.05)
+    }
+</style>
+<div class="chat-section">
+    <div class="chat-persons-list">
+        <div class="people-head">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-light rounded-circle" id="toggleTheme" title="Toggle theme"><i class="bi bi-moon-fill"></i></button>
             </div>
+
+            <div class="people-search border rounded-pill">
+                <div class="input-group input-group-sm ">
+                    <span class="input-group-text bg-transparent border-0"><i class="fa fa-search"></i></span>
+                    <input class="form-control form-control-sm rounded-pill border-0" placeholder="Search people" id="searchPeople">
+                </div>
+            </div>
+
+            <div class="d-flex ms-2" style="gap:8px;align-items:center">
+                <div class="avatar avatar-sm rounded-pill bg-primary text-white d-flex align-items-center justify-content-center profile">VB</div>
+            </div>
+        </div>
+
+        @foreach(var user in Model)
+        {
+            <div class="list-group list-group-flush" id="peopleListItems" role="tablist">
+                <div class="person active d-flex align-items-center" data-name="Maya Patel" data-id="1">
+                    <div class="avatar bg-info text-white">@user.UserName.FirstOrDefault()</div>
+                    <div class="meta">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="name">@user.UserName</div>
+                            <div class="muted small">2:18 PM</div>
+                        </div>
+                        <div class="msg muted">Got the designs — I'll share updates by EOD</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="chat-window">
+        <div class="chat-top">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar bg-info text-white" style="width:48px;height:48px;border-radius:12px">MP</div>
+                <div>
+                    <div style="font-weight:700">Maya Patel</div>
+                    <div class="muted small">Online • UX Designer</div>
+                </div>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone-fill"></i></button>
+                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-three-dots"></i></button>
+            </div>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+            <div class="messages" id="messages">
+                <div class="d-flex flex-column">
+                    <div class="msg from-them">Hey — did you get a chance to see the new homepage layout?</div>
+                    <div class="time muted">2:12 PM</div>
+                </div>
+
+                <div class="d-flex flex-column align-items-end">
+                    <div class="msg from-me">Yes — I like the new header. The spacing needs a small tweak.</div>
+                    <div class="time muted">2:14 PM</div>
+                </div>
+
+                <div class="d-flex flex-column">
+                    <div class="msg from-them">Perfect. I'll update the Figma and share a link.</div>
+                    <div class="time muted">2:15 PM</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="input-box">
+                <button class="btn btn-sm" id="attachBtn" title="Attach"><i class="bi bi-paperclip"></i></button>
+                <input id="messageInput" placeholder="Type a message or use @@ to mention" autocomplete="off">
+                <button class="btn btn-sm" id="emojiBtn" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
+            </div>
+            <button class="btn btn-primary" id="sendBtn">Send</button>
         </div>
     </div>
 </div>
+
+@* <div class="container-fluid h-100">
+    <div class="row chat-container">
+
+        <!-- People list -->
+        <div class="col-md-3 col-12 people-list active p-0" id="peopleList">
+            <div class="list-group list-group-flush">
+                @foreach(var user in Model)
+                {
+                    <button class="list-group-item list-group-item-action d-flex align-items-center" data-user-id="@user.UserId">
+                        <img src="~/images/user-no-img.png" class="rounded-circle me-2" alt="no img">
+                        <span>@user.UserName</span>
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Chat window -->
+        <div class="col-md-9 col-12 chat-window" id="chatWindow">
+            <div class="d-flex align-items-center border-bottom p-2">
+                <button class="btn btn-sm btn-outline-secondary d-md-none me-2" >back</button>
+                <h6 class="m-0" id="chatTitle">Select a person</h6>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="chat-input">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="chatInput" placeholder="Type a message...">
+                    <button class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div> *@
