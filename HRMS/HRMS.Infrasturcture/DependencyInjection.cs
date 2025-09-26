@@ -6,6 +6,7 @@ using HRMS.Infrastructure.Jwt;
 using HRMS.Infrastructure.Persistence;
 using HRMS.Infrastructure.Persistence.Configuration;
 using HRMS.Infrastructure.Recaptcha;
+using HRMS.Infrastructure.Sockets.HubsConnectionManager;
 using HRMS.Infrastructure.Storage.Factory;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
@@ -93,6 +94,8 @@ namespace HRMS.Infrastructure
         }
         public static IServiceCollection AddHubs(this IServiceCollection services, params Type[] types)
         {
+            services.AddSingleton<HubsConnectionManager>();
+
             foreach (var type in types)
             {
                 var className = type.Name.Replace("Hub", "HubServices");
