@@ -26,31 +26,10 @@ namespace HRMS.Api.Controllers.V1
                 Port = Request.Host.Port ?? (Request.Scheme == "https" ? 80 : 443),
                 Path = Request.PathBase.Value?.TrimEnd('/') ?? string.Empty
             };
-            var proxyConfig = new ProxyConfigResponseDto 
-            { 
-                Routes = [
-                    new() 
-                    { 
-                        RouteId = "notificationsRoute", 
-                        ClusterId = "notificationHubCluster", 
-                        Path = "/hubs/notifications/{**catch-all}" 
-                    }
-                ], 
-                Clusters = [
-                    new() 
-                    { 
-                        ClusterId = "notificationHubCluster", 
-                        Destinations = new Dictionary<string, string> 
-                        { 
-                            { "dest1", builder.ToString() } 
-                        } 
-                    }
-                ] 
-            };
 
             var destination = new Dictionary<string, string> { ["dest1"] = builder.ToString() };
 
-            string[] hubs = ["notification"];
+            string[] hubs = ["notification", "chat"];
 
             var routes = hubs.Select(hub => new RouteDto
             {
@@ -65,9 +44,9 @@ namespace HRMS.Api.Controllers.V1
                 Destinations = destination
             }).ToList();
 
-            var proxyConfig1 = new ProxyConfigResponseDto { Routes = routes, Clusters = clusters };
+            var proxyConfig = new ProxyConfigResponseDto { Routes = routes, Clusters = clusters };
 
-            return Ok(ApiResponseDto<ProxyConfigResponseDto>.SuccessStatus(proxyConfig1));
+            return Ok(ApiResponseDto<ProxyConfigResponseDto>.SuccessStatus(proxyConfig));
         }
 
     }

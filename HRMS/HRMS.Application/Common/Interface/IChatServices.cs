@@ -8,5 +8,10 @@ namespace HRMS.Application.Common.Interface
 {
     public interface IChatServices
     {
+        Task SendMessageToUserAsync<TResponse>(string userId, TResponse response);
+        Task SendMessageToGroup<TResponse>(string groupName, TResponse response);
+        Task AddUserToGroupAsync(string userId, string groupName);
+        Task RemoveUserFromGroupAsync(string userId, string groupName);
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Infrastructure.Sockets.ConnectionManager;
+using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.SignalR;
 
 namespace HRMS.Infrastructure.Sockets
@@ -14,12 +15,11 @@ namespace HRMS.Infrastructure.Sockets
             _manager = manager;
         }
         public Task SendMessageToUserAsync<TResponse>(string userId, TResponse response)
-            => _hubContext.Clients.User(userId).SendAsync("ReceiveMessage", response);
+            => _hubContext.Clients.User(userId).SendAsync("ReceiveChatMessage", ApiResponseDto<TResponse>.SuccessStatus(response));
         public async Task SendMessageToGroup<TResponse>(string groupName, TResponse response)
         {
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveMessage", response);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveGroupMessage", response);
         }
-
         // Join a group (like a chat room)
         public async Task AddUserToGroupAsync(string userId, string groupName)
         {
@@ -29,7 +29,6 @@ namespace HRMS.Infrastructure.Sockets
                 await _hubContext.Groups.AddToGroupAsync(conn, groupName);
             }
         }
-
         // Leave a group
         public async Task RemoveUserFromGroupAsync(string userId, string groupName)
         {

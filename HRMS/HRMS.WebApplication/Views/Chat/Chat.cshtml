@@ -260,21 +260,24 @@
             </div>
         </div>
 
-        @foreach(var user in Model)
-        {
-            <div class="list-group list-group-flush" id="peopleListItems" role="tablist">
-                <div class="person active d-flex align-items-center" data-name="Maya Patel" data-id="1">
+        <div class="list-group list-group-flush" id="peopleListItems" role="tablist">
+            @foreach (var user in Model)
+            {
+                <div class="person d-flex align-items-center" data-name="Maya Patel" data-id="@user.UserId">
                     <div class="avatar bg-info text-white">@user.UserName.FirstOrDefault()</div>
                     <div class="meta">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="name">@user.UserName</div>
                             <div class="muted small">2:18 PM</div>
                         </div>
-                        <div class="msg muted">Got the designs — I'll share updates by EOD</div>
+                        <div class="msg muted"></div>
                     </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
+
+
+        
     </div>
     <div class="chat-window">
         <div class="chat-top">
@@ -322,36 +325,83 @@
     </div>
 </div>
 
-@* <div class="container-fluid h-100">
-    <div class="row chat-container">
+<script nonce="@Html.ScriptNonce()">
 
-        <!-- People list -->
-        <div class="col-md-3 col-12 people-list active p-0" id="peopleList">
-            <div class="list-group list-group-flush">
-                @foreach(var user in Model)
-                {
-                    <button class="list-group-item list-group-item-action d-flex align-items-center" data-user-id="@user.UserId">
-                        <img src="~/images/user-no-img.png" class="rounded-circle me-2" alt="no img">
-                        <span>@user.UserName</span>
-                    </button>
+    $('#sendBtn').on('click', function(){
+        const messageInput = $('#messageInput');
+        const message = messageInput.val().trim();
+        const request = {
+            message: message,
+            date: new Date().toISOString(),
+            userId : $('.chat-persons-list #peopleListItems .person').first().data('id'), // Example: get the first user's ID
+            isMe : true
+        };
+        sendMessage(request);
+    });
+
+    function sendMessage(request){
+        $.ajax({
+            url: '/Chat/SendMessage',
+            type: 'POST',
+            data: request,
+            success: function (result) {
+                if(result?.success && result?.data){
+                    createMessage(request)
+                } else {
+                    console.error('Failed to send message:', result?.message);
                 }
-            </div>
-        </div>
+            },
+            error: function (error) {
+                console.error('Error fetching users:', error);
+            }
+        })
+    }
 
-        <!-- Chat window -->
-        <div class="col-md-9 col-12 chat-window" id="chatWindow">
-            <div class="d-flex align-items-center border-bottom p-2">
-                <button class="btn btn-sm btn-outline-secondary d-md-none me-2" >back</button>
-                <h6 class="m-0" id="chatTitle">Select a person</h6>
-            </div>
-            <div class="messages" id="messages"></div>
-            <div class="chat-input">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="chatInput" placeholder="Type a message...">
-                    <button class="btn btn-primary">Send</button>
-                </div>
-            </div>
-        </div>
+    function createMessage(data){
+        const message = data.message;
+        const user = data.user;
+        const time = new Date(data.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    </div>
-</div> *@
+        const messageDiv = $(document.createElement('div'));
+        messageDiv.addClass('d-flex flex-column').addClass(data.isMe ? 'align-items-end':'');
+
+        const msgContent = document.createElement('div');
+        msgContent.classList.add('msg', data.isMe ? 'from-me':'from-them');
+        msgContent.textContent = message;
+        messageDiv.append(msgContent);
+
+        const timeDiv = $(document.createElement('div'));
+        timeDiv.addClass('time muted');
+        timeDiv.text(time);
+        messageDiv.append(timeDiv);
+
+        $('#messages').append(messageDiv)
+        $('#messageInput').val('')
+    }
+
+     const connection = new signalR.HubConnectionBuilder()
+        .withUrl(`${window.basePath}/hubs/chat`) // Proxy endpoint, not backend URL
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("ReceiveChatMessage", (response) => {
+        if(response?.success && response?.result){
+            createMessage(response.result)
+        } else {
+            console.error('Failed to fetch message:', result?.message);
+        }
+    });
+
+    // Start connection
+    async function startConnection() {
+        try {
+            await connection.start();
+            console.log("SignalR connected.");
+        } catch (err) {
+            console.error("Connection failed: ", err);
+            setTimeout(startConnection, 5000); // retry
+        }
+    }
+
+    startConnection();
+</script>

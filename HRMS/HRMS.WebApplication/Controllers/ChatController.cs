@@ -1,11 +1,12 @@
-﻿using HRMS.SharedKernel.Models.Response;
+﻿using HRMS.SharedKernel.Models.Request;
+using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
 namespace HRMS.WebApplication.Controllers
 {
-    public class ChatController : Controller
+    public class ChatController : BaseController
     {
         private readonly ApiRequest _api;
         public ChatController(ApiRequest api)
@@ -22,6 +23,17 @@ namespace HRMS.WebApplication.Controllers
 
 
             return View("Chat",chats);
+        }
+        public async Task<IActionResult> SendMessage(MessageRequestDto request)
+        {
+            if(ModelState.IsValid)
+            {
+                var response = await _api.PostAsync<bool>("/User/SendMessageByUser", request, true);
+
+                return JsonResponse(response);
+            }
+
+            return JsonBadResponse("Invalid data");
         }
     }
 }

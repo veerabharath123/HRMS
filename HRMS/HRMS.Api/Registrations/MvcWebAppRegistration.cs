@@ -34,6 +34,9 @@ namespace HRMS.Api.Registrations
         {
             app.MapHub<NotificationHub>("/hubs/notification")
                 .RequireCors(_policyName);
+
+            app.MapHub<ChatHub>("/hubs/chat")
+                .RequireCors(_policyName);
         }
     }
 }

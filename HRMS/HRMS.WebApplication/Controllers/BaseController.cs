@@ -18,5 +18,10 @@ namespace HRMS.WebApplication.Controllers
 
             return Json(new { success = false, data = default(T), message = response.Message });
         }
+
+        protected IActionResult JsonBadResponse(string message = "")
+        {
+            return Json(new { success = false, data = string.Empty, message });
+        }
     }
 }

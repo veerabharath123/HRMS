@@ -28,9 +28,10 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
+        private readonly IChatServices _chatServices;
         private readonly IHttpContextAccessor _httpContextAccessor;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor)
+            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
@@ -39,6 +40,7 @@ namespace HRMS.Application.Services
             _documentGenerator = documentGenerator;
             _systemNotificationServices = systemNotificationServices;
             _httpContextAccessor = httpContextAccessor;
+            _chatServices = chatServices;
         }
         public async Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync()
         {
@@ -231,14 +233,19 @@ namespace HRMS.Application.Services
         }
         public async Task<ApiResponseDto<bool>> SendMessageByUser(MessageRequestDto request)
         {
-            var user = await GetUnqiueUserByUserNameAsync(request.Username);
-            if (user is not null)
+            var response = new MessageResponseDto
             {
-                await _systemNotificationServices.SendNotificationAsync(user.GuidId.ToString(), request.Title, request.Message);
-                return ApiResponseDto<bool>.FlagStatus(true, "Message sent");
-            }
+                Date = request.Date,
+                Message = request.Message,
+                IsMe = false
+            };
 
-            return ApiResponseDto<bool>.FlagStatus(true, "User not found");
+            await _chatServices.SendMessageToUserAsync(request.UserId.ToString(), response);
+
+            //TODO: Save message to database
+
+            return ApiResponseDto<bool>.FlagStatus(true, "Message sent");
+
         }
     }
 }
