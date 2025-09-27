@@ -172,3 +172,84 @@ body {
     padding:2px;
     border:1px solid lightgrey;
 }
+/* Base minimal button */
+.btn-minimal {
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* PRIMARY */
+.btn-minimal-primary {
+    color: #4f46e5;
+}
+
+    .btn-minimal-primary:hover {
+        background: rgba(79, 70, 229, 0.08);
+        color: #4338ca;
+    }
+
+    .btn-minimal-primary:active {
+        background: rgba(79, 70, 229, 0.15);
+    }
+
+/* SUCCESS */
+.btn-minimal-success {
+    color: #16a34a;
+}
+
+    .btn-minimal-success:hover {
+        background: rgba(22, 163, 74, 0.08);
+        color: #15803d;
+    }
+
+    .btn-minimal-success:active {
+        background: rgba(22, 163, 74, 0.15);
+    }
+
+/* WARNING */
+.btn-minimal-warning {
+    color: #d97706;
+}
+
+    .btn-minimal-warning:hover {
+        background: rgba(217, 119, 6, 0.08);
+        color: #b45309;
+    }
+
+    .btn-minimal-warning:active {
+        background: rgba(217, 119, 6, 0.15);
+    }
+
+/* DANGER */
+.btn-minimal-danger {
+    color: #dc2626;
+}
+
+    .btn-minimal-danger:hover {
+        background: rgba(220, 38, 38, 0.08);
+        color: #b91c1c;
+    }
+
+    .btn-minimal-danger:active {
+        background: rgba(220, 38, 38, 0.15);
+    }
+
+/* DARK */
+.btn-minimal-dark {
+    color: #374151;
+}
+
+    .btn-minimal-dark:hover {
+        background: rgba(55, 65, 81, 0.08);
+        color: #111827;
+    }
+
+    .btn-minimal-dark:active {
+        background: rgba(55, 65, 81, 0.15);
+    }

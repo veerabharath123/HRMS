@@ -26,6 +26,8 @@
     <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/js/advance.search.table.js" nonce="@Html.ScriptNonce()"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
+    <link href="~/lib/toastr.js/toastr.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+    <script src="~/lib/toastr.js/toastr.min.js" nonce="@Html.ScriptNonce()"></script>
     <style nonce="@Html.ScriptNonce()">
         body {
             min-height: 100vh;
@@ -89,7 +91,7 @@
         /* Content */
         .content {
             margin-left: 220px;
-            padding: 1.5rem;
+            padding: .5rem;
             margin-top: 56px;
             flex: 1;
             transition: margin-left 0.3s;

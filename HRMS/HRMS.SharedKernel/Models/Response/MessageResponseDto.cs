@@ -10,5 +10,6 @@ namespace HRMS.SharedKernel.Models.Response
     public class MessageResponseDto:MessageRequestDto
     {
         public bool IsMe { get; set; }
+        public string Username { get; set; } = string.Empty;
     }
 }

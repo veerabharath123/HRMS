@@ -11,6 +11,7 @@
         display: grid;
         grid-template-columns: 312px 1fr;
         gap: 1rem;
+        overflow-y:auto
     }
 
     /* Responsive: collapse to single column on small screens */
@@ -18,6 +19,36 @@
         .chat-section {
             grid-template-columns: 1fr;
         }
+
+        .chat-persons-list {
+            display: none
+        }
+        .chat-persons-list.active{
+            display: block !important
+        }
+        .chat-window.active{
+            display: flex !important
+        }
+
+        .chat-window { 
+            display: none !important
+        }
+
+        .chat-screen.active{
+            display: flex
+        }
+
+        .no-chat-screen{
+            display: none !important;
+        }
+
+        .back-btn{
+            display: flex !important;
+        }
+    }
+
+    .back-btn {
+        display: none
     }
 
     .people-head {
@@ -44,7 +75,7 @@
         box-shadow: var(--shadow);
         overflow: auto;
         max-height: calc(100% - 3rem);
-        display: flex;
+        display: flex !important;
         flex-direction: column;
     }
 
@@ -240,9 +271,31 @@
     body.dark .people-list .list-group::-webkit-scrollbar-thumb {
         background: rgba(255,255,255,0.05)
     }
+
+    .avatar-box{
+        gap: 8px;
+        align-items: center
+    }
+
+    .chat-top .avatar{
+        width: 48px;
+        height: 48px;
+        border-radius: 12px
+    }
+
+    .chat-top .username{
+        font-weight: 700
+    }
+
+    .chat-screen{
+        display: none;
+        flex-direction: column;
+        height: 100%
+    }
+
 </style>
 <div class="chat-section">
-    <div class="chat-persons-list">
+    <div class="chat-persons-list active">
         <div class="people-head">
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-light rounded-circle" id="toggleTheme" title="Toggle theme"><i class="bi bi-moon-fill"></i></button>
@@ -255,7 +308,7 @@
                 </div>
             </div>
 
-            <div class="d-flex ms-2" style="gap:8px;align-items:center">
+            <div class="d-flex ms-2 avatar-box">
                 <div class="avatar avatar-sm rounded-pill bg-primary text-white d-flex align-items-center justify-content-center profile">VB</div>
             </div>
         </div>
@@ -280,52 +333,80 @@
         
     </div>
     <div class="chat-window">
-        <div class="chat-top">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar bg-info text-white" style="width:48px;height:48px;border-radius:12px">MP</div>
-                <div>
-                    <div style="font-weight:700">Maya Patel</div>
-                    <div class="muted small">Online • UX Designer</div>
+        <div class="chat-screen">
+            <div class="chat-top">
+                <div class="back-btn align-items-center gap-2 ">
+                    <button class="btn-minimal btn-minimal-primary"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar bg-info text-white d-flex align-items-center justify-content-center">MP</div>
+                    <div>
+                        <div class="username"></div>
+                        <div class="muted small"></div>
+                    </div>
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone-fill"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 </div>
             </div>
-            <div class="ms-auto d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone-fill"></i></button>
-                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-three-dots"></i></button>
+
+            <div class="chat-body" id="chatBody">
+                <div class="messages" id="messages">
+
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <div class="input-box">
+                    <button class="btn btn-sm" id="attachBtn" title="Attach"><i class="bi bi-paperclip"></i></button>
+                    <input id="messageInput" placeholder="Type a message or use @@ to mention" autocomplete="off">
+                    <button class="btn btn-sm" id="emojiBtn" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
+                </div>
+                <button class="btn btn-primary" id="sendBtn">Send</button>
             </div>
         </div>
-
-        <div class="chat-body" id="chatBody">
-            <div class="messages" id="messages">
-                <div class="d-flex flex-column">
-                    <div class="msg from-them">Hey — did you get a chance to see the new homepage layout?</div>
-                    <div class="time muted">2:12 PM</div>
-                </div>
-
-                <div class="d-flex flex-column align-items-end">
-                    <div class="msg from-me">Yes — I like the new header. The spacing needs a small tweak.</div>
-                    <div class="time muted">2:14 PM</div>
-                </div>
-
-                <div class="d-flex flex-column">
-                    <div class="msg from-them">Perfect. I'll update the Figma and share a link.</div>
-                    <div class="time muted">2:15 PM</div>
-                </div>
-
+        <div class="no-chat-screen">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center gap-3 p-4">
+                <div class="avatar avatar-lg bg-primary text-white d-flex align-items-center justify-content-center rounded-circle">💬</div>
+                <h4 class="mb-0">Select a chat to start messaging</h4>
+                <p class="text-muted">Your conversations will appear here.</p>"
             </div>
-        </div>
-
-        <div class="chat-input">
-            <div class="input-box">
-                <button class="btn btn-sm" id="attachBtn" title="Attach"><i class="bi bi-paperclip"></i></button>
-                <input id="messageInput" placeholder="Type a message or use @@ to mention" autocomplete="off">
-                <button class="btn btn-sm" id="emojiBtn" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
-            </div>
-            <button class="btn btn-primary" id="sendBtn">Send</button>
         </div>
     </div>
 </div>
 
 <script nonce="@Html.ScriptNonce()">
+
+    $('.back-btn button').on('click', function () {
+        // Show people list, hide chat screen
+        $('.chat-persons-list').addClass('active');
+        $('.chat-window').removeClass('active');
+        $('.chat-screen').removeClass('active');
+        $('.no-chat-screen').removeClass('d-none').show();
+    });
+
+    $('.person').on('click', function () {
+        const $this = $(this);
+
+        // Remove old active person
+        $('.person').removeClass('active');
+        $this.addClass('active');
+
+        // Get name from clicked person
+        const name = $this.find('.name').text();
+        $('.chat-top .username').text(name);
+
+        // Hide placeholder, show chat screen
+        $('.no-chat-screen').addClass('d-none').hide();
+        $('.chat-screen').addClass('active').show();
+
+        // On small screens: hide people list, show chat window
+        if (window.innerWidth <= 992) {
+            $('.chat-persons-list').removeClass('active');
+            $('.chat-window').addClass('active');
+        }
+    });
 
     $('#sendBtn').on('click', function(){
         const messageInput = $('#messageInput');
@@ -333,7 +414,7 @@
         const request = {
             message: message,
             date: new Date().toISOString(),
-            userId : $('.chat-persons-list #peopleListItems .person').first().data('id'), // Example: get the first user's ID
+            userId : $('#peopleListItems .person.active').first().data('id'), // Example: get the first user's ID
             isMe : true
         };
         sendMessage(request);
@@ -386,7 +467,9 @@
 
     connection.on("ReceiveChatMessage", (response) => {
         if(response?.success && response?.result){
-            createMessage(response.result)
+            const result = response.result
+            createMessage(result)
+            toastr.info(result.message, result.username);
         } else {
             console.error('Failed to fetch message:', result?.message);
         }

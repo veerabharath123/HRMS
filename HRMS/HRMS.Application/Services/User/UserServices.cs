@@ -3,6 +3,7 @@ using HRMS.Application.Common.Class.DocTemplateBuilder;
 using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
 using HRMS.Application.Common.Utitlities;
+using HRMS.Application.Services.CommonFunctions;
 using HRMS.Domain.Common;
 using HRMS.Domain.Constants;
 using HRMS.Domain.Entites;
@@ -20,7 +21,7 @@ using static HRMS.Domain.Records.UserRecords;
 
 namespace HRMS.Application.Services
 {
-    public class UserServices : IUserServices
+    public class UserServices : CommonFunctionsSerivces, IUserServices
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJwtTokenServices _jwtTokenServices;
@@ -29,7 +30,6 @@ namespace HRMS.Application.Services
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
         private readonly IChatServices _chatServices;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
             ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices)
         {
@@ -237,7 +237,8 @@ namespace HRMS.Application.Services
             {
                 Date = request.Date,
                 Message = request.Message,
-                IsMe = false
+                IsMe = false,
+                Username = GetCurrentUsername()
             };
 
             await _chatServices.SendMessageToUserAsync(request.UserId.ToString(), response);
