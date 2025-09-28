@@ -2,6 +2,7 @@
 
 @{
     ViewData["Module"] = "Chats";
+    ViewData["Title"] = "Chats";
 }
 <style nonce="@Html.ScriptNonce()">
     .chat-section {
@@ -20,27 +21,18 @@
             grid-template-columns: 1fr;
         }
 
-        .chat-persons-list {
-            display: none
-        }
-        .chat-persons-list.active{
-            display: block !important
-        }
-        .chat-window.active{
-            display: flex !important
-        }
-
-        .chat-window { 
-            display: none !important
-        }
-
-        .chat-screen.active{
-            display: flex
-        }
-
-        .no-chat-screen{
+        .no-chat-screen, .chat-window, .chat-persons-list {
             display: none !important;
         }
+
+        .chat-screen, .chat-window.active {
+            display:flex !important
+        }
+
+            .chat-persons-list.active{
+                display:block !important
+            }
+        
 
         .back-btn{
             display: flex !important;
@@ -75,7 +67,7 @@
         box-shadow: var(--shadow);
         overflow: auto;
         max-height: calc(100% - 3rem);
-        display: flex !important;
+        display: flex;
         flex-direction: column;
     }
 
@@ -293,6 +285,24 @@
         height: 100%
     }
 
+    .chat-screen.active{
+        display:flex
+    }
+
+    .no-chat-screen{
+        display: none;
+    }
+
+    .no-chat-screen.active{
+        display: block
+    }
+
+    #messageInput{
+        background: #d3d3d380;
+        border-radius: 20px;
+        padding:10px 20px;
+    }
+
 </style>
 <div class="chat-section">
     <div class="chat-persons-list active">
@@ -336,7 +346,7 @@
         <div class="chat-screen">
             <div class="chat-top">
                 <div class="back-btn align-items-center gap-2 ">
-                    <button class="btn-minimal btn-minimal-primary"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="btn-minimal btn-minimal-dark"><i class="fa-solid fa-arrow-left"></i></button>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="avatar bg-info text-white d-flex align-items-center justify-content-center">MP</div>
@@ -346,8 +356,7 @@
                     </div>
                 </div>
                 <div class="ms-auto d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-telephone-fill"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <button class="btn-minimal btn-minimal-dark"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 </div>
             </div>
 
@@ -359,11 +368,11 @@
 
             <div class="chat-input">
                 <div class="input-box">
-                    <button class="btn btn-sm" id="attachBtn" title="Attach"><i class="bi bi-paperclip"></i></button>
-                    <input id="messageInput" placeholder="Type a message or use @@ to mention" autocomplete="off">
-                    <button class="btn btn-sm" id="emojiBtn" title="Emoji"><i class="bi bi-emoji-smile"></i></button>
+                    <button class="btn-minimal btn-minimal-dark" id="attachBtn" title="Attach"><i class="fa-solid fa-paperclip"></i></button>
+                    <input id="messageInput" placeholder="Type a message" autocomplete="off">
+                    <button class="btn-minimal btn-minimal-dark" id="emojiBtn" title="Emoji"><i class="fa-solid fa-face-smile"></i></button>
                 </div>
-                <button class="btn btn-primary" id="sendBtn">Send</button>
+                <button class="btn btn-primary rounded-pill" id="sendBtn">Send</button>
             </div>
         </div>
         <div class="no-chat-screen">
@@ -377,35 +386,46 @@
 </div>
 
 <script nonce="@Html.ScriptNonce()">
+    function chatResize(){
+        if(window.innerWidth <= 992){
+            resetChatScreen()
+        } else{
+            $('.no-chat-screen').addClass('active');
+            $('.chat-screen').removeClass('active');
+            $('.person').removeClass('active');
+        }
+    }
 
-    $('.back-btn button').on('click', function () {
-        // Show people list, hide chat screen
+    $(document).on('DOMContentLoaded', chatResize)
+    window.onresize = chatResize;
+
+    function resetChatScreen(){
         $('.chat-persons-list').addClass('active');
         $('.chat-window').removeClass('active');
         $('.chat-screen').removeClass('active');
-        $('.no-chat-screen').removeClass('d-none').show();
-    });
+        $('.no-chat-screen').removeClass('active');
+        $('.person').removeClass('active');
+    }
+
+    $('.back-btn button').on('click',resetChatScreen);
 
     $('.person').on('click', function () {
-        const $this = $(this);
+        if($(this).hasClass('active')){
+            $('.no-chat-screen').addClass('active');
+            $('.chat-screen').removeClass('active');
+            $('.person').removeClass('active');
+            $(this).removeClass('active');
 
-        // Remove old active person
-        $('.person').removeClass('active');
-        $this.addClass('active');
-
-        // Get name from clicked person
-        const name = $this.find('.name').text();
-        $('.chat-top .username').text(name);
-
-        // Hide placeholder, show chat screen
-        $('.no-chat-screen').addClass('d-none').hide();
-        $('.chat-screen').addClass('active').show();
-
-        // On small screens: hide people list, show chat window
-        if (window.innerWidth <= 992) {
-            $('.chat-persons-list').removeClass('active');
-            $('.chat-window').addClass('active');
+            return
         }
+
+
+        $('.chat-window').addClass('active')
+        $('.chat-persons-list').removeClass('active')
+        $('.person').removeClass('active');
+        $(this).addClass('active');
+        $('.no-chat-screen').removeClass('active');
+        $('.chat-screen').addClass('active');
     });
 
     $('#sendBtn').on('click', function(){

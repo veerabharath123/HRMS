@@ -3,6 +3,7 @@ using HRMS.Infrastructure.Storage.Providers;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using static HRMS.Domain.Constants.FileConstants;
 
 namespace HRMS.Infrastructure.Storage.Factory
 {
@@ -16,19 +17,15 @@ namespace HRMS.Infrastructure.Storage.Factory
         public IFileStorageProvider CreateProvider(FileLocationConfigDto locationConfig)
         {
             var jsonConfig = JsonConvert.DeserializeObject<dynamic?>(locationConfig.ConfigJson);
-            var providerType = jsonConfig?.ProviderType?.ToString();
+            string? providerType = jsonConfig?.ProviderType?.ToString();            
 
-            if(string.IsNullOrWhiteSpace(providerType) || jsonConfig is null)
-            {
+            if (jsonConfig is null || !Enum.TryParse(providerType, out FileStorageProvider provider))
                 throw new ArgumentException("ProviderType or JsonConfig is missing in the configuration.");
-            }
 
-            return providerType switch
+            return provider switch
             {
-                "FtpStorageProvider" => new FtpStorageProvider(jsonConfig!.baseUrl,jsonConfig!.username, GetConfigValue(locationConfig.ConfigName, jsonConfig.passowrd), jsonConfig.useSsl),
-                //"LocalFileStorageProvider" => new LocalFileStorageProvider(jsonConfig),
-                //"AzureBlobStorageProvider" => new AzureBlobStorageProvider(jsonConfig),
-                //"AmazonS3FileStorageProvider" => new AmazonS3FileStorageProvider(jsonConfig),
+                FileStorageProvider.Ftp => new FtpStorageProvider(jsonConfig!.baseUrl,jsonConfig!.username, GetConfigValue(locationConfig.ConfigName, jsonConfig.passowrd), jsonConfig.useSsl),
+                FileStorageProvider.Local => new LocalStorageProvider(jsonConfig),
                 _ => throw new NotSupportedException($"The provider type '{providerType}' is not supported.")
             };
         }

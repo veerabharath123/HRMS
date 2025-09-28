@@ -218,6 +218,25 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                 throw;
             }
         }
+        public async Task<bool> Update(Expression<Func<TEntity, bool>> predicate, Action<TEntity> transform)
+        {
+            try
+            {
+                var entity = await Entities.FirstOrDefaultAsync(predicate);
+
+                if (entity == null)
+                    return false;
+
+                transform.Invoke(entity);
+                Entities.Update(entity);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         public virtual void Save()
         {

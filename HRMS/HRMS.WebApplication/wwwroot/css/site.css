@@ -186,7 +186,7 @@ body {
 
 /* PRIMARY */
 .btn-minimal-primary {
-    color: #4f46e5;
+    color: dodgerblue;
 }
 
     .btn-minimal-primary:hover {
@@ -251,5 +251,18 @@ body {
     }
 
     .btn-minimal-dark:active {
+        background: rgba(55, 65, 81, 0.15);
+    }
+
+.btn-minimal-secondary {
+    color: lightgrey;
+}
+
+    .btn-minimal-secondary:hover {
+        background: rgba(255, 65, 81, 0.08);
+        color: #111827;
+    }
+
+    .btn-minimal-secondary:active {
         background: rgba(55, 65, 81, 0.15);
     }
