@@ -1,4 +1,5 @@
 ﻿using HRMS.Application.Common.Interface;
+using HRMS.Domain.Common;
 using HRMS.Domain.Constants;
 using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Common.Class;
@@ -96,8 +97,8 @@ namespace HRMS.Application.Services.File
         {
             var settings = await _unitOfWork.SystemSettingsRepo.TableNoTracking.Where(x => x.SettingName.StartsWith("FileProcess")).ToListAsync(cancellationToken);
 
-            var batchSize = GetBatchSizeSetting(settings);
-            var retentionDays = GetRetentionDaysSetting(settings);
+            var batchSize = settings.GetSystemSetting("FileBatchSize", 50);
+            var retentionDays = settings.GetSystemSetting("FileRetentionDays", r => DateTime.Now.Date.AddDays(-r), 10);
 
             var files = await _unitOfWork.StoredFilesRepo.Table
                         .Where(s => !s.IsProcessed && !s.IsDeleted && s.CreatedDate < retentionDays)
@@ -126,36 +127,6 @@ namespace HRMS.Application.Services.File
             }
 
             return ApiResponseDto<bool>.FlagStatus(true, FileConstants.MAINTENANCE_PROCESS_SUCCESS_MSG);
-        }
-        private static T? GetSystemSetting<T>(List<SystemSettings> settings, string settingName)
-        {
-            var setting = settings.FirstOrDefault(x => x.SettingName == settingName);
-            
-            if (setting is null)
-                return default;
-
-            return JsonConvert.DeserializeObject<T>(setting.SettingValue!);
-        }
-        private static T2 GetSystemSetting<T1,T2>(List<SystemSettings> settings, string settingName, Func<T1?,T2> transform)
-        {
-            var setting = settings.FirstOrDefault(x => x.SettingName == settingName);
-            return transform.Invoke(JsonConvert.DeserializeObject<T1>(setting?.SettingValue));
-        }
-        private static int GetBatchSizeSetting(List<SystemSettings> settings)
-        {
-            var s = GetSystemSetting<int,DateTime>(settings, "FileProcessBatchSize", (v) => DateTime.Now);
-            var setting = GetSystemSetting<int>(settings, "FileProcessBatchSize");
-            //var setting = settings.FirstOrDefault(x => x.SettingName == "FileProcessBatchSize");
-            //if (setting is null || !int.TryParse(setting.SettingValue, out int batchSize) || batchSize <= 0)
-            //    batchSize = 10; 
-            return setting;
-        }
-        private static DateTime GetRetentionDaysSetting(List<SystemSettings> settings)
-        {
-            var setting = settings.FirstOrDefault(x => x.SettingName == "FileProcessRetentionDays");
-            if (setting is null || !int.TryParse(setting.SettingValue, out int retentionDays) || retentionDays <= 0)
-                retentionDays = 10; 
-            return DateTime.Now.Date.AddDays(-retentionDays);
         }
     }
 }
