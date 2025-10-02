@@ -23,6 +23,7 @@ namespace HRMS.Domain.Constants
         {
             Local,
             Ftp,
+            S3
         }
     }
 }

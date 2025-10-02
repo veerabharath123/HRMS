@@ -130,3 +130,10 @@ create table SystemSettings
 	UpdatedUser varchar(50)   default '',
 	IsDeleted bit default 0
 );
+
+insert into FileLocationConfigurations (GuidId, ConfigName,ConfigJson, IsActive, CreatedUser, IsDeleted) values
+(newid(), 
+'S3BucketConfig',
+'{\n  bucket: \"HRMSAPP\",\n  key: \"HRMSAPPKEY\",\n  secret: \"K005v5PTs8iqSgO1kne3ngkpVBPwCS4\",\n  serviceurl: \"s3.us-east-005.backblazeb2.com\"\n}',
+1, 
+'System',0)

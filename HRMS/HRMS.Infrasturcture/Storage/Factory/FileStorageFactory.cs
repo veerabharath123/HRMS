@@ -26,6 +26,7 @@ namespace HRMS.Infrastructure.Storage.Factory
             {
                 FileStorageProvider.Ftp => new FtpStorageProvider(jsonConfig!.baseUrl,jsonConfig!.username, GetConfigValue(locationConfig.ConfigName, jsonConfig.passowrd), jsonConfig.useSsl),
                 FileStorageProvider.Local => new LocalStorageProvider(jsonConfig),
+                FileStorageProvider.S3 => new S3StorageProvider(jsonConfig!.bucket,jsonConfig.key, jsonConfig.secret, jsonConfig.serviceurl),
                 _ => throw new NotSupportedException($"The provider type '{providerType}' is not supported.")
             };
         }
@@ -35,3 +36,7 @@ namespace HRMS.Infrastructure.Storage.Factory
         }
     }
 }
+
+
+
+
