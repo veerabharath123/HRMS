@@ -30,8 +30,10 @@ namespace HRMS.Application.Services
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
         private readonly IChatServices _chatServices;
+        private readonly IEmailServices _emailServices;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices)
+            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices,
+            IEmailServices emailServices)
         {
             _unitOfWork = unitOfWork;
             _jwtTokenServices = jwtTokenServices;
@@ -41,6 +43,7 @@ namespace HRMS.Application.Services
             _systemNotificationServices = systemNotificationServices;
             _httpContextAccessor = httpContextAccessor;
             _chatServices = chatServices;
+            _emailServices = emailServices;
         }
         public async Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync()
         {
@@ -113,6 +116,14 @@ namespace HRMS.Application.Services
                 return ApiResponseDto<LoginResponseDto>.FailureStatus("User {0} does not exists", request.UserName);
 
             var isValid = PasswordHasher.VerifyPasswordHash(request.Password, user.Password, user.HashSalt);
+
+            await _emailServices.SendMailAsync(new EmailMessageDto
+            {
+                To = [new EmailAddressDto { EmailAddress = user.Email, DisplayName = user.UserName }],
+                Subject = "Login Alert",
+                Body = $"<p>Hi {user.UserName},</p><p>Your account was just accessed on {DateTime.UtcNow} UTC. If this was not you, please reset your password immediately or contact support.</p><p>Thank you,<br/>HRMS Team</p>",
+                IsHtml = true
+            });
 
             if (isValid) return await CreateLoginResponseAsync(user);
 

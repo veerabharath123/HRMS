@@ -20,10 +20,10 @@ namespace HRMS.Domain.Common
             return JsonConvert.DeserializeObject<T>(setting.SettingValue) ?? defaultValue;
         }
 
-        public static T2? GetSystemSetting<T1,T2>(this IEnumerable<SystemSettings> systemSettings, string settingName, Func<T1?, T2> transform, T1? defaultValue = default)
+        public static T2? GetSystemSetting<T1,T2>(this IEnumerable<SystemSettings> systemSettings, string settingName, Func<T1?, T2> transformSetting, T1? defaultValue = default)
         {
-            var setting = systemSettings.GetSystemSetting<T1>(settingName, );
-            return transform.Invoke(setting);
+            var setting = systemSettings.GetSystemSetting(settingName, defaultValue);
+            return transformSetting.Invoke(setting);
         }
     }
 }

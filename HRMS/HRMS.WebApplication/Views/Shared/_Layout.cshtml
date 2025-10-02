@@ -32,64 +32,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
-    
-    <link rel="stylesheet" href="~/HRMS.WebApplication.styles.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
-    <link href="https://cdn.datatables.net/2.3.3/css/dataTables.bootstrap5.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
-    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js" nonce="@Html.ScriptNonce()"></script>
-    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js" nonce="@Html.ScriptNonce()"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" nonce="@Html.ScriptNonce()" />
-    <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
-    <script src="~/js/advance.search.table.js" nonce="@Html.ScriptNonce()"></script>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
+    <link href="~/css/site.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+    <style nonce="@Html.ScriptNonce()">
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+
+        .bg-image {
+            background: url('@Url.Content("/images/bg-light.jpg")') no-repeat center center/cover;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem;
+            color: #2d2d2d;
+        }
+
+        .form-control {
+            background: #cfcfcf82;
+            border: none;
+            color: #2d2d2d;
+        }
+
+            .form-control:focus {
+                background: #cfcfcf82;
+                box-shadow: none;
+                color: #2d2d2d;
+            }
+
+            .form-control::placeholder {
+                color: #00000085;
+            }
+
+        .btn-primary {
+            background: #0d6efd;
+            border: none;
+        }
+
+        /* Responsive: center card on small screens */
+        @@media (max-width: 768px) {
+            .bg-image {
+                justify-content: center;
+            }
+        }
+
+        /* 🌙 Dark mode styles */
+        @@media (prefers-color-scheme: dark) {
+            .bg-image {
+                background: url('@Url.Content("/images/bg-dark.jpg")') no-repeat center center/cover;
+            }
+
+            .glass-card {
+                background: rgba(0, 0, 0, 0.4);
+                color: #f1f1f1;
+            }
+
+            .form-control {
+                background: rgba(255, 255, 255, 0.1);
+                color: #f1f1f1;
+            }
+
+                .form-control:focus {
+                    background: rgba(255, 255, 255, 0.15);
+                    color: #fff;
+                }
+
+                .form-control::placeholder {
+                    color: #bbb;
+                }
+
+            .logo {
+                border: 2px solid #ffffff82;
+            }
+        }
+
+        .logo {
+            aspect-ratio: 1/1;
+            width: 50px;
+            margin: .5rem auto;
+            border-radius: 50%;
+            border: 2px solid #2b2b2b;
+            padding: 1px;
+        }
+
+        .logo-block {
+            text-align: center
+        }
+    </style>
 </head>
 <body>
-    <script nonce="@Html.ScriptNonce()">
-        window.basePath = '@(Context.Request.PathBase.Value)';
-        console.log("Base Path:", window.basePath);
-    </script>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">HRMS.WebApplication</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="Chats">Chat</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Logout">Logout</a>
-                        </li>
-                        <li class="nav-item">
-                            @User.Identity.Name;
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">        
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - HRMS.WebApplication - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-
-    <script src="~/js/site.js" asp-append-version="true" nonce="@Html.ScriptNonce()"></script>
-    
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderBody()
 </body>
 </html>

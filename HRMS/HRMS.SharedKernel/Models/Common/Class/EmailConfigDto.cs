@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HRMS.SharedKernel.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace HRMS.SharedKernel.Models.Common.Class
 {
+    [AppSettingConfig]
     public class EmailConfigDto
     {
         public string SmtpServer { get; set; } = string.Empty;

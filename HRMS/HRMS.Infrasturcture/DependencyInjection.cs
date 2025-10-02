@@ -1,5 +1,6 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
+using HRMS.Infrastructure.Email;
 using HRMS.Infrastructure.FileLogging;
 using HRMS.Infrastructure.ImageCompressor;
 using HRMS.Infrastructure.Jwt;
@@ -40,6 +41,7 @@ namespace HRMS.Infrastructure
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()
                 .AddScoped<IDocumentGenerator, DocumentGenerator.DocumentGenerator>()
                 .AddScoped<IImageCompressor, SkiaSharpCompressor>()
+                .AddScoped<IEmailServices, MailkitServices>()
                 .AddAppConfigs(configuration)
                 .AddRecaptcha(configuration);
         
