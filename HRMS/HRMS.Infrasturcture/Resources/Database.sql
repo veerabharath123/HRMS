@@ -1,32 +1,98 @@
-create table Roles
-(
-	Id      int primary key identity(1,1),
-	GuidId  uniqueidentifier default newid() not null,
-	Name    varchar(50) not null,
-	Description   varchar(500) not null,
-	IsActive    bit default 1,
+--#region SP : CheckIfTableExists
 
-	CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime     default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0
-);
+IF OBJECT_ID('dbo.CheckIfTableExists', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.CheckIfTableExists;
+GO
+CREATE PROCEDURE dbo.CheckIfTableExists
+    @TableName NVARCHAR(128),
+    @SchemaName NVARCHAR(128) = 'dbo',
+    @IsExists BIT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-create table Permissions
-(
-	Id      int primary key identity(1,1),
-	GuidId  uniqueidentifier default newid() not null,
-	Name    varchar(50) not null,
-	Description   varchar(500) not null,
-	IsActive    bit default 1,
+    IF (@TableName IS NULL OR LTRIM(RTRIM(@TableName)) = '')
+    BEGIN
+        RAISERROR('Table name is required.', 16, 1);
+        RETURN;
+    END;
 
-	CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime     default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0
-);
+    IF EXISTS (
+        SELECT 1
+        FROM sys.tables
+        WHERE name = @TableName
+          AND schema_id = SCHEMA_ID(@SchemaName)
+    )
+	BEGIN
+		PRINT 'TABLE: ''' + @TableName + ''' already exists.'
+        SET @IsExists = 1;
+	END
+    ELSE
+        SET @IsExists = 0;
+END;
+GO
+
+--#endregion SP : CheckIfTableExists
+
+--#region Tables
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'Roles';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	create table Roles
+	(
+		Id      int primary key identity(1,1),
+		GuidId  uniqueidentifier default newid() not null,
+		Name    varchar(50) not null,
+		Description   varchar(500) not null,
+		IsActive    bit default 1,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'Permissions';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	create table Permissions
+	(
+		Id      int primary key identity(1,1),
+		GuidId  uniqueidentifier default newid() not null,
+		Name    varchar(50) not null,
+		Description   varchar(500) not null,
+		IsActive    bit default 1,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+GO
 
 create table Users
 (
@@ -131,9 +197,17 @@ create table SystemSettings
 	IsDeleted bit default 0
 );
 
-insert into FileLocationConfigurations (GuidId, ConfigName,ConfigJson, IsActive, CreatedUser, IsDeleted) values
-(newid(), 
-'S3BucketConfig',
-'{\n  bucket: \"HRMSAPP\",\n  key: \"HRMSAPPKEY\",\n  secret: \"K005v5PTs8iqSgO1kne3ngkpVBPwCS4\",\n  serviceurl: \"s3.us-east-005.backblazeb2.com\"\n}',
-1, 
-'System',0)
+--#endregion
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM FileLocationConfigurations
+    WHERE ConfigName = 'S3BucketConfig'
+      AND IsDeleted = 0
+)
+BEGIN
+    INSERT INTO FileLocationConfigurations 
+        (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
+    VALUES
+        (NEWID(), 'S3BucketConfig', '{\n  bucket: \"HRMSAPP\",\n  key: \"HRMSAPPKEY\",\n  secret: \"K005v5PTs8iqSgO1kne3ngkpVBPwCS4\",\n  serviceurl: \"s3.us-east-005.backblazeb2.com\"\n}', 1, 'System', 0);
+END
