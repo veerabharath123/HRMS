@@ -1,5 +1,6 @@
 --#region SP : CheckIfTableExists
 
+
 IF OBJECT_ID('dbo.CheckIfTableExists', 'P') IS NOT NULL
     DROP PROCEDURE dbo.CheckIfTableExists;
 GO
