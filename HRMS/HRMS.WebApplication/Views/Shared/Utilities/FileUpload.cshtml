@@ -1,0 +1,69 @@
+﻿
+<style nonce="@Html.ScriptNonce()">
+    .upload-container {
+        border: 2px dashed var(--bs-secondary);
+        border-radius: 1rem;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .upload-container:hover {
+            background-color: #eef4ff;
+            border-color: var(--bs-primary);
+        }
+
+        .upload-container.dragover {
+            background-color: #e0f2fe;
+            border-color: var(--bs-primary);
+        }
+
+    .upload-icon {
+        font-size: 2.5rem;
+        color: var(--bs-primary);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        width: 80%;
+    }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
+            margin: 0 10px;
+        }
+        .upload-content{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div id="uploadBox" class="upload-container text-center p-4">
+                <div class="upload-content">
+                    <i class="fa-solid fa-file-arrow-up upload-icon mb-3"></i>
+                    <h5 class="fw-semibold">Select files to upload</h5>
+                    <input type="file" id="upload" hidden />
+                    <button class="btn btn-primary px-4" id="upload-btn">Browse Files</button>
+                    
+
+                    <div class="divider my-3">
+                        <span>or</span>
+                    </div>
+                    
+                    <p class="text-muted small mb-3">drag & drop, copy and paste files</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

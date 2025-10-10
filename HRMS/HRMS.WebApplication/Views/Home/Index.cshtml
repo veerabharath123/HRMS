@@ -2,9 +2,11 @@
     ViewData["Title"] = "Home Page";
     ViewData["Module"] = "Home";
     (string, string) tableModel = ("Index Table", "index-table");
+    var upload = "file-upload";
 }
 
 <partial name="Datatables" model="tableModel" />
+<partial name="Utilities/FileUpload" model="upload" />
 
 <script nonce="@Html.ScriptNonce()">
 
