@@ -24,7 +24,7 @@ namespace HRMS.Application.Services.File
             _localStorageProvider = (ILocalStorageProvider)_fileStorageFactory.CreateProvider(new() { ConfigJson = FileConstants.LOCAL_STORAGE_CONFIG });
         }
 
-        public async Task<ApiResponseDto<bool>> UploadImageAsync(string filename, byte[]? filebytes, FileLocationConfigDto configDto)
+        public async Task<ApiResponseDto<bool>> UploadFileAsync(string filename, byte[]? filebytes, FileLocationConfigDto configDto)
         {
             if (filebytes is null || filebytes.Length == 0)
                 return ApiResponseDto<bool>.FailureStatus(FileConstants.CONTENT_EMPTY_MSG);
@@ -59,7 +59,7 @@ namespace HRMS.Application.Services.File
             var file = await StoreFileInDbAsync(request, locationId);
             if (file is null) return ApiResponseDto<Guid?>.FailureStatus(FileConstants.UPLOAD_FAILED_MSG);
 
-            var uploadRes = await UploadImageAsync(request.FileName, request.FileContent, location);
+            var uploadRes = await UploadFileAsync(request.FileName, request.FileContent, location);
             if (!uploadRes.Success) return ApiResponseDto<Guid?>.FailureStatus(uploadRes.Message);
 
             return ApiResponseDto<Guid?>.SuccessStatus(file.GuidId, FileConstants.DOWLOAD_SUCCESS_MSG);

@@ -46,9 +46,9 @@
 
 </style>
 
-<div class="container my-5">
+<div class="container my-3">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
+        <div class="col-12">
             <div id="uploadBox" class="upload-container text-center p-4">
                 <div class="upload-content">
                     <i class="fa-solid fa-file-arrow-up upload-icon mb-3"></i>
@@ -67,3 +67,16 @@
         </div>
     </div>
 </div>
+
+<script nonce="@Html.ScriptNonce()">
+    const btn = $('#upload-btn');
+    const fileControl = $('#upload')
+
+    btn.on('click',() => {
+        fileControl.val('').trigger('click');
+    })
+
+    fileControl.on('change',function(){
+        fileControl.trigger('file:upload',{ e: this.files })
+    })
+</script>

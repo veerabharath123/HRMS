@@ -6,9 +6,32 @@
 }
 
 <partial name="Datatables" model="tableModel" />
-<partial name="Utilities/FileUpload" model="upload" />
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Open Modal
+</button>
+
+<!-- Fullscreen modal on small screens -->
+<div class="modal fade" id="exampleModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <partial name="Utilities/FileUpload" model="upload" />
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script nonce="@Html.ScriptNonce()">
+
+    $('#exampleModal #upload').on('file:upload', function(e, files){
+        console.log(e , files)
+    })
 
     $('#msg').on('submit', function(e) {
         e.preventDefault();

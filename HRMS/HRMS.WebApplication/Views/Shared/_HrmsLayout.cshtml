@@ -126,6 +126,10 @@
             padding: 0.5rem;
             border-radius: 0.5rem;
         }
+
+        #countdownBar{
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -157,7 +161,7 @@
                             <li><a class="dropdown-item" href="#">Profile</a></li>
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="@Url.Action("Logout","Login")">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="@Url.Action("Login", "Account")">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -183,6 +187,30 @@
     <main class="content expanded" id="mainContent">
         @RenderBody()
     </main>
+
+    <div class="modal fade" id="timeoutModal" tabindex="-1" aria-labelledby="timeoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timeoutModalLabel">Session Expiring</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Your session will expire in <span id="countdown">30</span> seconds.</p>
+                    <div class="progress">
+                        <div id="countdownBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="stayLoggedIn" class="btn btn-primary">Stay Logged In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script nonce="@Html.ScriptNonce()">
+        
+    </script>
 
     <script defer nonce="@Html.ScriptNonce()">
         const sidebar = $('#sidebarMenu');
@@ -240,6 +268,87 @@
                 content.addClass('expanded');
             }
         });
+
+        let idleTime = 0;
+        const maxIdleMinutes = 30; // for testing
+        const warningSeconds = 30;
+        let idleInterval = setInterval(incrementIdleTime, 60000); // every 1 min
+
+        // Reset idle time on activity
+        $(document).on('mousemove keydown scroll click', function () {
+            idleTime = 0;
+        });
+
+        // Detect when user comes back to tab
+        $(document).on('visibilitychange', function () {
+            if (!document.hidden) {
+                $.ajax({
+                    url: '/Account/SessionStatus',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.expired) {
+                            logout();
+                        } else {
+                            idleTime = Math.max(maxIdleMinutes - Math.floor(data.remainingSeconds / 60), 0);
+                        }
+                    },
+                    statusCode: {
+                        401: function () { logout(); } // handle unauthorized
+                    }
+                });
+            }
+        });
+
+        function incrementIdleTime() {
+            idleTime++;
+            if (idleTime >= maxIdleMinutes) {
+                clearInterval(idleInterval);
+                showWarningModal();
+            }
+        }
+
+        function showWarningModal() {
+            const $modal = $('#timeoutModal');
+            const modal = new bootstrap.Modal($modal[0], { backdrop: 'static', keyboard: false });
+            modal.show();
+
+            let countdown = warningSeconds;
+            const $countdown = $('#countdown');
+            const $countdownBar = $('#countdownBar');
+
+            const interval = setInterval(function () {
+                countdown--;
+                $countdown.text(countdown);
+                $countdownBar.css('width', (countdown / warningSeconds * 100) + '%');
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    logout();
+                }
+            }, 1000);
+
+            $('#stayLoggedIn').one('click', function () {
+                $.ajax({
+                    url: '/Account/KeepAlive',
+                    method: 'GET',
+                    success: function () {
+                        clearInterval(interval);
+                        modal.hide();
+                        idleTime = 0;
+                        idleInterval = setInterval(incrementIdleTime, 60000);
+                    },
+                    statusCode: {
+                        401: function () { logout(); } // handle unauthorized
+                    }
+                });
+            });
+        }
+
+        function logout() {
+            window.location.href = '@Url.Action("Login", "Account")';
+        }
+
     </script>
 </body>
 </html>

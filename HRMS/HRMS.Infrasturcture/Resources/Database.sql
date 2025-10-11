@@ -200,6 +200,55 @@ create table SystemSettings
 
 --#endregion
 
+--# region Insert/Update SP
+
+IF OBJECT_ID('dbo.InsertSystemSettingIfNotExists', 'P') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.InsertSystemSettingIfNotExists;
+END
+GO
+
+CREATE PROCEDURE dbo.InsertSystemSettingIfNotExists
+    @SettingKey VARCHAR(100),
+    @SettingValue VARCHAR(MAX),
+    @SettingDescription VARCHAR(500) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM SystemSettings
+        WHERE SettingKey = @SettingKey
+          AND IsDeleted = 0
+    )
+    BEGIN
+        INSERT INTO SystemSettings 
+            (GuidId, SettingKey, SettingValue, [Description], IsActive, CreatedUser, IsDeleted)
+        VALUES
+            (
+                NEWID(), 
+                @SettingKey, 
+                @SettingValue, 
+                ISNULL(@SettingDescription, ''), 
+                1, 
+                'System', 
+                0
+            );
+    END
+   ELSE PRINT 'Setting: ''' + @SettingKey + ''' already exists.'
+END
+GO
+
+--#endregion Insert/Update SP
+
+
+EXEC InsertSystemSettingIfNotExists 
+'FileStorageLocation', 
+'1', 
+'File storage location id';
+
+
 IF NOT EXISTS (
     SELECT 1
     FROM FileLocationConfigurations

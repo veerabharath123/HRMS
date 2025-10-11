@@ -23,8 +23,8 @@ namespace HRMS.WebApplication.Registrations
             .AddCookie("AuthCookie", options =>
             {
                 options.Cookie.Name = "AuthCookie";
-                options.LoginPath = "/Login/Login";
-                options.AccessDeniedPath = "/Login/AccessDenied";
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
             builder.Services.Configure<RequestLocalizationOptions>(options =>

@@ -7,10 +7,10 @@ using System.Security.Claims;
 
 namespace HRMS.WebApplication.Controllers
 {
-    public class LoginController : BaseController
+    public class AccountController : BaseController
     {
         private readonly ApiRequest _api;
-        public LoginController(ApiRequest api)
+        public AccountController(ApiRequest api)
         {
             _api = api;
         }
@@ -34,6 +34,7 @@ namespace HRMS.WebApplication.Controllers
             if (res.Success && res.Result is not null)
             {
                 await LoadAuthSession(res.Result);
+                HttpContext.Session.SetString("KeepAlive", DateTime.Now.ToString());
                 return RedirectToAction("Index", "Home");
             }
 
@@ -51,14 +52,14 @@ namespace HRMS.WebApplication.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(nameof(SignUp),request);
+                return View(nameof(SignUp), request);
             }
 
             var res = await _api.PostAsync<LoginResponseDto>("/User/SignUpUser", request);
 
-            if(res.Success && res.Result is not null)
+            if (res.Success && res.Result is not null)
             {
-                LoadAuthSession(res.Result);
+                await LoadAuthSession(res.Result);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -96,6 +97,35 @@ namespace HRMS.WebApplication.Controllers
             HttpContext?.Session.Clear();
 
             return RedirectToAction(nameof(Login));
+        }
+
+        public IActionResult KeepAlive()
+        {
+            HttpContext.Session.SetString("KeepAlive", DateTime.Now.ToString());
+            // Optional: store session timeout in minutes
+            HttpContext.Session.SetInt32("SessionTimeoutMinutes", 1);
+            return Ok();
+        }
+        public IActionResult SessionStatus()
+        {
+            // Check if session exists
+            if (HttpContext.Session.IsAvailable)
+            {
+                // Calculate remaining time
+                var sessionTimeout = HttpContext.Session.GetInt32("SessionTimeoutMinutes") ?? 30;
+                var lastActivity = HttpContext.Session.GetString("KeepAlive");
+
+                if (DateTime.TryParse(lastActivity, out var lastActivityTime))
+                {
+                    var elapsed = DateTime.Now - lastActivityTime;
+                    var remainingSeconds = (int)((sessionTimeout * 60) - elapsed.TotalSeconds);
+                    remainingSeconds = Math.Max(remainingSeconds, 0);
+
+                    return Json(new { expired = remainingSeconds <= 0, remainingSeconds });
+                }
+            }
+
+            return Json(new { expired = true, remainingSeconds = 0 });
         }
     }
 }
