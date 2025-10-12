@@ -42,6 +42,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            
         }
 
 </style>
@@ -71,12 +72,32 @@
 <script nonce="@Html.ScriptNonce()">
     const btn = $('#upload-btn');
     const fileControl = $('#upload')
+    const uploadBox = $('#uploadBox')
 
-    btn.on('click',() => {
-        fileControl.val('').trigger('click');
+    // btn.on('click',() => {
+    //     fileControl.val('').trigger('click');
+    // })
+    uploadBox.on('click', function(e) {
+        fileControl.val('')[0].click();
     })
 
     fileControl.on('change',function(){
-        fileControl.trigger('file:upload',{ e: this.files })
+        fileControl.trigger('file:upload',{ files: this.files })
+    })
+
+    uploadBox.on({
+        'drop': function (e) {
+            e.preventDefault()
+            uploadBox.removeClass('dragover')
+            fileControl.trigger('file:upload',{ files: e.originalEvent.dataTransfer.files });
+        },
+        'dragover': function (e) {
+            e.preventDefault()       
+            uploadBox.addClass('dragover')
+        },
+        'dragleave':function(e){
+            e.preventDefault()
+            uploadBox.removeClass('dragover')
+        }
     })
 </script>

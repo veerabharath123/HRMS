@@ -7,6 +7,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="csrf-token" content="@AntiForgery.GetAndStoreTokens(ViewContext.HttpContext).RequestToken" />
     <title>HRMS Dashboard</title>
     @* <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> *@
     @* <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script> *@
@@ -64,23 +66,35 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                padding: 0.75rem 1rem;
                 border-radius: .5rem;
                 transition: all 0.3s;
                 color: var(--bs-body-color);
+                min-height:40px;
+                padding: 1rem;
             }
+
+                .sidebar .nav-link i{
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center
+                }
 
                 .sidebar .nav-link span {
                     transition: opacity 0.3s;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
                 }
 
             .sidebar.collapsed .nav-link.active {
-                width:53px
+                justify-content: normal
             }
 
             .sidebar.collapsed .nav-link span {
                 opacity: 0;
                 visibility: hidden;
+                display: none;
             }
 
             .sidebar .nav-link.active {
@@ -130,6 +144,14 @@
         #countdownBar{
             width: 100%;
         }
+
+        .user-img{
+            width:2rem;
+        }
+
+        .sidebar.collapsed li {
+            
+        }
     </style>
 </head>
 <body>
@@ -147,21 +169,37 @@
             </button>
 
             <div class="collapse navbar-collapse mt-2 mt-lg-0" id="topNav">
+                               
                 <form class="d-flex ms-auto my-2 my-lg-0" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search...">
-                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                    <input class="form-control form-control-sm me-2" type="search" placeholder="Search...">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
                 </form>
                 <ul class="navbar-nav ms-3">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <img src="" class="rounded-circle me-2" alt="Profile">
-                            <span>Admin</span>
+                            <img src="~/images/user-no-img.png" class="rounded-circle me-2 img-thumbnail user-img" alt="Profile">
+                            <span class="">@User.Identity?.Name</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fa-solid fa-user me-2"></i>
+                                    Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fa-solid fa-gear me-2"></i>
+                                    Settings
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="@Url.Action("Login", "Account")">Logout</a></li>
+                            <li>
+                                <a class="dropdown-item" href="@Url.Action("Login", "Account")">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i>
+                                    Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -172,8 +210,8 @@
     <!-- Sidebar -->
     <div class="sidebar collapsed d-flex flex-column p-2" id="sidebarMenu">
         <ul class="nav nav-pills flex-column">
-            <li class="nav-item"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="fas fa-chart-line"></i> <span>Dashboards</span></a></li>
-            <li class="nav-item">
+            <li class="nav-item" data-bs-toggle="tooltip" title="Dashboard" data-bs-placement="right"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="fas fa-chart-line"></i> <span>Dashboards</span></a></li>
+            <li class="nav-item" data-bs-toggle="tooltip" title="Chats" data-bs-placement="right">
                 <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="fa-solid fa-message"></i> <span>Chats</span></a>
             </li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-users"></i> <span>Employees</span></a></li>
@@ -213,6 +251,11 @@
     </script>
 
     <script defer nonce="@Html.ScriptNonce()">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
         const sidebar = $('#sidebarMenu');
         const content = $('#mainContent');
         const toggleBtn = $('#sidebarToggle');
@@ -347,6 +390,85 @@
 
         function logout() {
             window.location.href = '@Url.Action("Login", "Account")';
+        }
+
+                const logoutUrl = '/Account/Logout';
+
+        // Get CSRF token
+        function getCsrfToken() {
+            return $('meta[name="csrf-token"]').attr('content');
+        }
+
+        // Toaster helper
+        function showError(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error(message, 'Error');
+            } else {
+                alert(message);
+            }
+        }
+
+        // GET request
+        function ajaxGet(url, data = {}, successCallback) {
+            $.ajax({
+                url: url,
+                method: 'GET',
+                data: data,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) successCallback(res.response);
+                    else showError(res.message || 'An error occurred.');
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) window.location.href = logoutUrl;
+                    else showError('Server error: ' + xhr.statusText);
+                }
+            });
+        }
+
+        // POST JSON request with CSRF token
+        function ajaxPost(url, data = {}, successCallback) {
+            $.ajax({
+                url: url,
+                method: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify(data),
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken()
+                },
+                success: function (res) {
+                    if (res.success) successCallback(res.response);
+                    else showError(res.message || 'An error occurred.');
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) window.location.href = logoutUrl;
+                    else showError('Server error: ' + xhr.statusText);
+                }
+            });
+        }
+
+        // POST file upload with CSRF token
+        function ajaxPostFile(url, formData, successCallback) {
+            // Append CSRF token to FormData
+            formData.append('__RequestVerificationToken', getCsrfToken());
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) successCallback(res.response);
+                    else showError(res.message || 'An error occurred.');
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) window.location.href = logoutUrl;
+                    else showError('Server error: ' + xhr.statusText);
+                }
+            });
         }
 
     </script>

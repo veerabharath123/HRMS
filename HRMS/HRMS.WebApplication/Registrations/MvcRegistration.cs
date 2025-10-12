@@ -1,6 +1,7 @@
 ﻿using HRMS.WebApplication.Class;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
@@ -16,7 +17,10 @@ namespace HRMS.WebApplication.Registrations
                 serverOptions.AddServerHeader = false;
             });
             
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+            });
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
             builder.Services.AddAuthentication("AuthCookie")

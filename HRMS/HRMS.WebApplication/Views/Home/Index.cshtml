@@ -29,14 +29,14 @@
 
 <script nonce="@Html.ScriptNonce()">
 
-    $('#exampleModal #upload').on('file:upload', function(e, files){
-        console.log(e , files)
+    $('#exampleModal #upload').on('file:upload', function(e, res){
+        console.log(e , res.files)
     })
 
     $('#msg').on('submit', function(e) {
         e.preventDefault();
         const username = $('#username').val();
-        const title = '@User.Identity.Name';
+        const title = '@User.Identity?.Name';
         const message = $('#message').val();
         if (username && title && message) {
            $.ajax({

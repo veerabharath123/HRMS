@@ -27,7 +27,8 @@ namespace HRMS.WebApplication.Controllers
         {
             return View();
         }
-
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
         public IActionResult GetDatatables()
         {
             return Json(new List<object>
