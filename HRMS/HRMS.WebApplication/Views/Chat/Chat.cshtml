@@ -441,21 +441,18 @@
     });
 
     function sendMessage(request){
-        $.ajax({
-            url: '/Chat/SendMessage',
-            type: 'POST',
-            data: request,
-            success: function (result) {
+        ajaxPost(
+            '@Url.Action("SendMessage", "Chat")',
+            request,
+            function (result) {
                 if(result?.success && result?.data){
                     createMessage(request)
                 } else {
                     console.error('Failed to send message:', result?.message);
                 }
             },
-            error: function (error) {
-                console.error('Error fetching users:', error);
-            }
-        })
+            { useDefaultSuccessCallBack : false }
+        );
     }
 
     function createMessage(data){
@@ -481,7 +478,7 @@
     }
 
      const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${window.basePath}/hubs/chat`) // Proxy endpoint, not backend URL
+        .withUrl(resolveSafeUrl(`/hubs/chat`))
         .withAutomaticReconnect()
         .build();
 

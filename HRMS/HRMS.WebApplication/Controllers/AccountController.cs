@@ -16,7 +16,7 @@ namespace HRMS.WebApplication.Controllers
         }
         public IActionResult AccessDenied()
         {
-            return View();
+            return View("/Errors/AccessDenied");
         }
         public IActionResult Login()
         {
@@ -126,6 +126,17 @@ namespace HRMS.WebApplication.Controllers
             }
 
             return Json(new { expired = true, remainingSeconds = 0 });
+        }
+        public IActionResult UnauthorizedPage()
+        {
+            var user = HttpContext.User;
+
+            // Case 1: Not logged in or expired
+            if (user?.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return View("/Errors/Unauthorized");
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

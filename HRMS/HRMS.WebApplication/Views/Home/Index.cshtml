@@ -38,12 +38,12 @@
         const username = $('#username').val();
         const title = '@User.Identity?.Name';
         const message = $('#message').val();
+
         if (username && title && message) {
-           $.ajax({
-               url: '@Url.Action("SendMessage", "Home")',
-                type: 'POST',
-                data: { Username: username, Title: title, Message: message },
-                success: function(response) {
+            ajaxPost(
+                '@Url.Action("SendMessage", "Home")',
+                { Username: username, Title: title, Message: message },
+                function(response) {
                     if(response?.success) {
                         const li = document.createElement("li");
                         li.textContent = `$Me: ${message}`;
@@ -51,8 +51,8 @@
                     } else {
                         alert('Failed to send message');
                     }
-                },
-           })
+                }
+            )
         }
         return false
     });
@@ -77,8 +77,8 @@
     });
   
 
-        const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${window.basePath}/hubs/notification`) // Proxy endpoint, not backend URL
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl(resolveSafeUrl('/hubs/notification')) 
         .withAutomaticReconnect()
         .build();
 

@@ -24,7 +24,8 @@ namespace HRMS.WebApplication.Controllers
 
             return View("Chat",chats);
         }
-        public async Task<IActionResult> SendMessage(MessageRequestDto request)
+        [HttpPost]
+        public async Task<IActionResult> SendMessage([FromBody] MessageRequestDto request)
         {
             if(ModelState.IsValid)
             {
