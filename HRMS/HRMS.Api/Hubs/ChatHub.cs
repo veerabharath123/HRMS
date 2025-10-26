@@ -1,4 +1,4 @@
-﻿using HRMS.Infrastructure.Sockets.ConnectionManager;
+﻿using HRMS.Infrastructure.Communication.Messaging.ConnectionManager;
 
 namespace HRMS.Api.Hubs
 {

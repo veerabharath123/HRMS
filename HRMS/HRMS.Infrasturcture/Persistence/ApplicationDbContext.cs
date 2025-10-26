@@ -25,6 +25,11 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<StoredFiles> StoredFiles { get; set; }
         public DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
         public DbSet<SystemSettings> SystemSettings { get; set; }
+        public DbSet<EmployeeGuardian> EmployeeGuardian { get; set; }
+        public DbSet<EmployeeContact> EmployeeContact { get; set; }
+        public DbSet<Employee> Employee { get; set; }
+        public DbSet<Designation> Designation { get; set; }
+        public DbSet<Department> Department { get; set; }
 
         public Task<int> SaveChangesAsync()
         {

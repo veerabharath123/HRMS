@@ -73,6 +73,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                     throw new ArgumentNullException(nameof(entity));
 
                 Entities.AddAsync(entity);
+                AfterEntityChanged();
             }
             catch (Exception)
             {
@@ -104,7 +105,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
         }
 
-        public virtual async Task<bool> Delete(TEntity entity)
+        public virtual async Task<bool> Delete(TEntity? entity)
         {
             try
             {
@@ -112,6 +113,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                     return false;
 
                 Entities.Remove(entity);
+                AfterEntityChanged();
                 return true;
             }
             catch (Exception)
@@ -132,6 +134,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             {
                 var entities = Entities.Where(predicate);
                 Entities.RemoveRange(entities);
+                AfterEntityChanged();
                 return true;
             }
             catch (DbUpdateException ex)
@@ -140,19 +143,19 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
         }
 
-        public virtual async Task<TEntity> Get(object id)
+        public virtual async Task<TEntity?> Get(object id)
         {
             try
             {
                 return await Entities.FindAsync(id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
         }
 
-        public virtual async Task<TEntity> Get(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TEntity?> GetFirst(Expression<Func<TEntity, bool>> predicate)
         {
             try
             {
@@ -212,6 +215,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                     throw new ArgumentNullException(nameof(entity));
 
                 Entities.Update(entity);
+                AfterEntityChanged();
             }
             catch (Exception)
             {
@@ -229,6 +233,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
 
                 transform.Invoke(entity);
                 Entities.Update(entity);
+                AfterEntityChanged();
 
                 return true;
             }
@@ -246,6 +251,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             _context.SaveChangesAsync();
         }
-
+        protected virtual void AfterEntityChanged() { }
     }
 }

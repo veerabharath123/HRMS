@@ -12,6 +12,12 @@ namespace HRMS.Application.Common.Interface
         IRepository<StoredFiles> StoredFilesRepo { get; }
         IRepository<FileLocationConfigurations> FileLocationConfigurationsRepo { get; }
         IRepository<SystemSettings> SystemSettingsRepo { get; }
+        IRepository<EmployeeGuardian> EmployeeGuardianRepo { get; }
+        IRepository<EmployeeContact> EmployeeContactRepo { get; }
+        IRepository<Employee> EmployeeRepo { get; }
+        IRepository<Designation> DesignationRepo { get; }
+        IRepository<Department> DepartmentRepo { get; }
+
 
 
         Task<bool> SaveAsync();

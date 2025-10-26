@@ -215,7 +215,12 @@
             <li class="nav-item" data-bs-toggle="tooltip" title="Chats" data-bs-placement="right">
                 <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="fa-solid fa-message"></i> <span>Chats</span></a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-users"></i> <span>Employees</span></a></li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Employee")" class="nav-link @(currentModule == "Employees" ? "active" : "")">
+                    <i class="fas fa-users"></i>
+                    <span>Employees</span>
+                </a>
+            </li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Leave Management</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-money-bill"></i> <span>Payrolls</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cogs"></i> <span>Admin</span></a></li>

@@ -28,5 +28,9 @@ namespace HRMS.Domain.Constants
             Word,
             Pdf
         }
+        public enum CachedModules
+        {
+            DepartmentManagement
+        }
     }
 }

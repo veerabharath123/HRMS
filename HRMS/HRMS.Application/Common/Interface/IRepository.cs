@@ -14,8 +14,8 @@ namespace HRMS.Application.Common.Interface
         Task<bool> Delete(T entity);
         Task<bool> Delete(object id);
         Task<bool> Delete(Expression<Func<T, bool>> predicate);
-        Task<T> Get(object id);
-        Task<T> Get(Expression<Func<T, bool>> predicate);
+        Task<T?> Get(object id);
+        Task<T?> GetFirst(Expression<Func<T, bool>> predicate);
         Task<int?> GetIdByGuid(Guid guid);
         IEnumerable<T> GetMany(Expression<Func<T, bool>> predicate);
         IEnumerable<T> GetAll();

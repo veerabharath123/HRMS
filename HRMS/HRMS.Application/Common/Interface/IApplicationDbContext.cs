@@ -13,6 +13,11 @@ namespace HRMS.Application.Common.Interface
         DbSet<StoredFiles> StoredFiles { get; set; }
         DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
         DbSet<SystemSettings> SystemSettings { get; set; }
+        DbSet<EmployeeGuardian> EmployeeGuardian { get; set; }
+        DbSet<EmployeeContact> EmployeeContact { get; set; }
+        DbSet<Employee> Employee { get; set; }
+        DbSet<Designation> Designation { get; set; }
+        DbSet<Department> Department { get; set; }
 
     }
 }

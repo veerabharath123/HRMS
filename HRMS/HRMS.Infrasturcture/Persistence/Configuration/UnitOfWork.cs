@@ -1,7 +1,9 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Domain.Entites;
 using HRMS.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
 {
@@ -9,9 +11,11 @@ namespace HRMS.Infrastructure.Persistence.Configuration
     {
         private readonly ApplicationDbContext _context;
         IDbContextTransaction dbContextTransaction;
-        public UnitOfWork(ApplicationDbContext context)
+        private readonly IMemoryCache _cache;
+        public UnitOfWork(ApplicationDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
         #region private repositories
 
@@ -23,6 +27,11 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         private IRepository<StoredFiles> _storedFilesRepo;
         private IRepository<FileLocationConfigurations> _fileLocationConfigurationsRepo;
         private IRepository<SystemSettings> _systemSettingsRepo;
+        private IRepository<EmployeeGuardian> _employeeGuardianRepo;
+        private IRepository<EmployeeContact> _employeeContactRepo;
+        private IRepository<Employee> _employeeRepo;
+        private IRepository<Designation> _designationRepo;
+        private IRepository<Department> _departmentRepo;
 
         #endregion private repositories
 
@@ -92,6 +101,47 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                 return _systemSettingsRepo;
             }
         }
+        public IRepository<EmployeeGuardian> EmployeeGuardianRepo
+        {
+            get
+            {
+                _employeeGuardianRepo ??= new EFRepository<EmployeeGuardian>(_context);
+                return _employeeGuardianRepo;
+            }
+        }
+        public IRepository<EmployeeContact> EmployeeContactRepo
+        {
+            get
+            {
+                _employeeContactRepo ??= new EFRepository<EmployeeContact>(_context);
+                return _employeeContactRepo;
+            }
+        }
+        public IRepository<Employee> EmployeeRepo
+        {
+            get
+            {
+                _employeeRepo ??= new EFRepository<Employee>(_context);
+                return _employeeRepo;
+            }
+        }
+        public IRepository<Designation> DesignationRepo
+        {
+            get
+            {
+                _designationRepo ??= new EFRepository<Designation>(_context);
+                return _designationRepo;
+            }
+        }
+        public IRepository<Department> DepartmentRepo
+        {
+            get
+            {
+                _departmentRepo ??= new CachedEFRepository<Department>(_context, _cache);
+                return _departmentRepo;
+            }
+        }
+
         #endregion public repositories
 
         #region transaction methods
