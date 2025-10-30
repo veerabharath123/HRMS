@@ -1,21 +1,14 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Domain.Constants;
-using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HRMS.Application.Services
 {
     public class DepartmentServices : IDepartmentServices
     {
-        private IUnitOfWork _unitOfWork;
-        private ICacheService _cache;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cache;
         public DepartmentServices(IUnitOfWork unitOfWork, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
