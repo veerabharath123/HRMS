@@ -3,6 +3,34 @@
 
 // Write your JavaScript code.
 
+class Spinner {
+    static show() {
+        const spinner = document.getElementById('spinner');
+        if (spinner) spinner.classList.add('show');
+    }
+
+    static hide() {
+        const spinner = document.getElementById('spinner');
+        if (spinner) spinner.classList.remove('show');
+    }
+}
+
+function setImageSrc(element, base64Data) {
+    const img = $(element);
+
+    if (!base64Data) {
+        console.warn("No image data provided for element:", element);
+        return;
+    }
+
+    // Check if it already starts with a proper base64 data URI
+    if (!base64Data.startsWith("data:image")) {
+        base64Data = `data:image/png;base64,${base64Data}`;
+    }
+
+    img.attr("src", base64Data);
+}
+
 // Get CSRF token
 function getCsrfToken() {
     return $('meta[name="csrf-token"]').attr('content');
@@ -54,7 +82,6 @@ function showNotification(options) {
 function ajaxRequest(options) {
     const config = buildAjaxConfig(options);
     const method = config.method.toUpperCase();
-    const emptyCallBack = () => { };
 
     $.ajax({
         url: config.url,
@@ -64,7 +91,8 @@ function ajaxRequest(options) {
         dataType: config.dataType,
         processData: config.processData,
         headers: prepareHeaders(config, method),
-        beforeSend: config.beforeSend || emptyCallBack,
+        beforeSend: config.beforeSend || (() => Spinner.show()),
+        afterSend: () => Spinner.hide(),
         success: (res) => handleAjaxSuccess(res, config),
         error: config.errorCallback
     });
@@ -163,7 +191,7 @@ function resolveSafeUrl(url) {
     }
 
     // Use window.basePath if defined
-    let base = (typeof window !== 'undefined' && window.basePath) || '';
+    let base = (typeof window !== 'undefined' && window.basePath ? window.basePath?.trim() : '') || '';
     if (base && !base.endsWith('/')) base += '/';
 
     // Normalize and remove accidental double slashes
@@ -219,11 +247,45 @@ function ajaxPostFile(url, formData, successCallback, options = {}) {
     });
 }
 
+// ----------------------------
+// LOAD HTML Partial View
+// ----------------------------
+function ajaxLoadHtml(url, data = {}, targetSelector, options = {}) {
+    ajaxRequest({
+        method: 'POST',
+        url: url,
+        dataType: 'html',
+        data: data,
+        useDefaultSuccessCallBack: false,
+        successCallback: function (html) {
+            // Inject HTML into target container
+            if (targetSelector) {
+                const $target = $(targetSelector);
+                if ($target.length) {
+                    $target.html(html);
+                } else {
+                    console.warn(`ajaxLoadHtml: Target selector "${targetSelector}" not found.`);
+                }
+            }
+
+            // Optional per-request callback
+            if (typeof options.afterLoad === 'function') {
+                options.afterLoad(html);
+            }
+        },
+        errorCallback: options.errorCallback || handleAjaxError,
+        ...options
+    });
+}
+
+
 
 // --------------------
 // Main AJAX Error Handler
 // --------------------
 function handleAjaxError(xhr) {
+    Spinner.hide();
+
     const response = parseAjaxResponse(xhr);
     const message = getErrorMessage(response, xhr.status);
 

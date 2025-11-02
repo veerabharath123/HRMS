@@ -31,6 +31,8 @@
     <link href="~/lib/toastr.js/toastr.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/toastr.js/toastr.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/js/site.js" nonce="@Html.ScriptNonce()"></script>
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+    <link rel="stylesheet" href" nonce="@Html.ScriptNonce()">
     <style nonce="@Html.ScriptNonce()">
         body {
             min-height: 100vh;
@@ -155,7 +157,10 @@
         }
     </style>
 </head>
-<body>
+<body class="position-relative">
+    <div class="" id="spinner">
+        <img src="~/images/spinner.png" class="bg-image" alt="Background" />
+    </div>
     <script nonce="@Html.ScriptNonce()">
         window.basePath = '@(Context.Request.PathBase.Value)';
     </script>
@@ -216,7 +221,7 @@
                 <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="fa-solid fa-message"></i> <span>Chats</span></a>
             </li>
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Employee")" class="nav-link @(currentModule == "Employees" ? "active" : "")">
+                <a href="@Url.Action("GetEmployees", "Employee")" class="nav-link @(currentModule == "Employees" ? "active" : "")">
                     <i class="fas fa-users"></i>
                     <span>Employees</span>
                 </a>

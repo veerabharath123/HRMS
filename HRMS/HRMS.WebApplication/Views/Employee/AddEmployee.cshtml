@@ -1,0 +1,64 @@
+﻿
+@{
+    var title = ViewBag.ModuleTitle;
+}
+<div class="container-fluid">
+    <h2>@title</h2>
+
+    <div class="row mt-4">
+        <div class="col-12 col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Personal Details</h5>
+                    <hr />
+                    <div class="mb-3 mt-3">
+                        <label for="lastname" class="form-label">Lastname:</label>
+                        <input type="text" class="form-control form-control-sm" id="lastname" placeholder="Enter Lastname" name="LastName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="firstname" class="form-label">Firstname:</label>
+                        <input type="text" class="form-control form-control-sm" id="firstname" placeholder="Enter Firstname" name="FirstName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="birthdate" class="form-label">Birthdate:</label>
+                        <input type="date" class="form-control form-control-sm" id="birthdate" placeholder="Enter Birthdate" name="BirthDate">
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="col-8">
+             <div class="row">
+                 <div class="col-md-4 col-6">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Profile Picture</h5>
+                            <hr />
+
+                            <div class="d-flex align-items-center justify-content-center position-relative" id="emp-detail-img-block">
+                                <img src="~/images/user-no-img.png" class="img-thumbnail bg-dark emp-detail-img" />
+                                <div class="d-flex justify-content-center position-absolute gap-3 emp-detail-img-options">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#emp-detail-img-upload-modal"><i class="bi bi-pen"></i></button>
+                                    <button class="btn btn-sm btn-primary"><i class="bi bi-eye-fill"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="emp-detail-img-upload-modal" tabindex="-1">
+                                <div class="modal-dialog modal-fullscreen-sm-down">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Upload Profile Picture</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <partial name="Utilities/FileUpload" model="@("emp-img-file-upload")" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+             </div>
+        </div>
+    </div>
+</div>

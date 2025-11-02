@@ -1,8 +1,53 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
-*@
+﻿@model PaginationResponseDto<EmployeeShortResponseDto>
 @{
-    ViewData["Module"] = "Employees"; 
+    ViewData["Module"] = "Employees";
+    var page = Model.PageNumber;
 }
-<h2>Employee Page</h2>
+
+<div class="container-fluid">
+    <h3>Employees</h3>
+    <div class="row mt-3">
+        <div class="col">
+            <a href="@Url.Action("AddEmployee","Employee")" class="btn btn-success"><i class="bi bi-person-plus-fill"></i> New Employee</a>
+        </div>
+    </div>
+    <div id="employee-cards">
+        <partial name="~/Views/Employee/EmployeeCards.cshtml" model="Model" />
+    </div>
+
+    <div class="modal fade" id="image-viewer" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="image-viewer-label">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img class="w-100" src="~/images/hrms-app-logo.png" alt="no-image">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script nonce="@Html.ScriptNonce()">
+    function loadEmployeeImages(images){
+        for(const image of images){
+            setImageSrc(`div.card#${image.id} > img`, image.data)
+        }
+    }
+    function getEmployeeImages(ids){
+
+    }
+
+    getEmployeeImages($('div.card').map((i,x) => $(x).attr('id')));
+
+    $('div.card > img').on('click', function () {
+        const src = this.src; 
+
+        const $img = $('#image-viewer img');
+        $img.attr('src', src).css({ transform: 'none' });
+
+        const modal = new bootstrap.Modal(document.getElementById('image-viewer'));
+        modal.show();
+    });
+</script>

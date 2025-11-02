@@ -1,4 +1,5 @@
 ﻿using HRMS.SharedKernel.Models.Response;
+using HRMS.WebApplication.Models;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
@@ -52,29 +53,32 @@ namespace HRMS.WebApplication.Class
 
             return uri.Scheme.Equals(Uri.UriSchemeHttps);
         }
-
-        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<object>> PostAsync(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            return PostAsync<object?, object>(actionPath, data, authRequired, cancellationToken);
+        }
+        public Task<ApiResponseModel<TResponse>> PostAsync<TResponse>(string actionPath, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if(!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus("Invalid URL"));
 
             return PostAsync<object?, TResponse>(uri!, null, authRequired, cancellationToken);
         }
-        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<TResponse>> PostAsync<TResponse>(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus("Invalid URL"));
 
             return PostAsync<object?, TResponse>(uri!, data, authRequired, cancellationToken);
         }
-        public Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus("Invalid URL"));
 
             return PostAsync<TRequest, TResponse>(uri!, data, authRequired, cancellationToken);
         }
-        private async Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        private async Task<ApiResponseModel<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -88,17 +92,17 @@ namespace HRMS.WebApplication.Class
             catch (WebException ex)
             {
                 // Handle exceptions (log them, rethrow them, etc.)
-                return ApiResponseDto<TResponse>.FailureStatus(ex.ToString());
+                return ApiResponseModel<TResponse>.FailureStatus(ex.ToString());
             }
         }
-        private static async Task<ApiResponseDto<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
+        private static async Task<ApiResponseModel<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
 
-            // Try to deserialize as ApiResponseDto<TResponse>
+            // Try to deserialize as ApiResponseModel<TResponse>
             try
             {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponseDto<TResponse>>(content);
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponseModel<TResponse>>(content);
                 if (apiResponse != null)
                     return apiResponse;
             }
@@ -109,11 +113,11 @@ namespace HRMS.WebApplication.Class
             {
                 var result = JsonConvert.DeserializeObject<TResponse>(content);
                 if (response.IsSuccessStatusCode)
-                    return ApiResponseDto<TResponse>.SuccessStatus(result, "Request successful");
+                    return ApiResponseModel<TResponse>.SuccessStatus(result, "Request successful");
                 else
-                    return ApiResponseDto<TResponse>.FailureStatus("Request Failed");
+                    return ApiResponseModel<TResponse>.FailureStatus("Request Failed");
             }
-            catch { return ApiResponseDto<TResponse>.FailureStatus(content); }
+            catch { return ApiResponseModel<TResponse>.FailureStatus(content); }
         }
     }
 }
