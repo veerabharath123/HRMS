@@ -330,3 +330,24 @@ body {
     opacity:0;
     transition: opacity .2s ease-in-out;
 }
+.d-center{
+    display:flex;
+    justify-content:center;
+    align-items: center;
+}
+.shadow-md-only {
+    box-shadow: none !important;
+}
+@media (max-width: 576px) {
+    .shadow-sm-only {
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
+}
+@media (max-width: 991px) {
+    .shadow-md-only {
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
+}
+.accordion-button::after {
+    display: none !important;
+}

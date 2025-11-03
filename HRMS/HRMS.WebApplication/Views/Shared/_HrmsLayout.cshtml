@@ -112,6 +112,7 @@
             margin-top: 56px;
             flex: 1;
             transition: margin-left 0.3s;
+            overflow: auto
         }
 
             .content.expanded {
@@ -132,7 +133,7 @@
 
         .content {
             margin-left: 0 !important;
-            overflow:auto
+            
         }
 
         }
@@ -170,11 +171,11 @@
             <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="fas fa-bars"></i></button>
             <a class="navbar-brand fw-bold" href="#">HRMS</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon d-center"><i class="bi bi-toggles"></i></span>
             </button>
 
-            <div class="collapse navbar-collapse mt-2 mt-lg-0" id="topNav">
+            <div class="collapse navbar-collapse mt-2 mt-lg-0 shadow-md-only" id="topNav">
                                
                 <form class="d-flex ms-auto my-2 my-lg-0" role="search">
                     <input class="form-control form-control-sm me-2" type="search" placeholder="Search...">
@@ -182,7 +183,7 @@
                 </form>
                 <ul class="navbar-nav ms-3">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" role="button" data-bs-toggle="dropdown">
                             <img src="~/images/user-no-img.png" class="rounded-circle me-2 img-thumbnail user-img" alt="Profile">
                             <span class="">@User.Identity?.Name</span>
                         </a>
@@ -252,6 +253,20 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" id="stayLoggedIn" class="btn btn-primary">Stay Logged In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="image-viewer" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="image-viewer-label">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img class="w-100" src="~/images/hrms-app-logo.png" alt="no-image">
                 </div>
             </div>
         </div>

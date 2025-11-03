@@ -5,11 +5,13 @@
 
 class Spinner {
     static show() {
+        return
         const spinner = document.getElementById('spinner');
         if (spinner) spinner.classList.add('show');
     }
 
     static hide() {
+        return
         const spinner = document.getElementById('spinner');
         if (spinner) spinner.classList.remove('show');
     }

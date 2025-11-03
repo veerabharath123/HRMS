@@ -1,44 +1,26 @@
 ﻿
 @{
     var title = ViewBag.ModuleTitle;
+    ViewData["Module"] = "Employees";
 }
 <div class="container-fluid">
-    <h2>@title</h2>
+    <h2 class="mt-3">@title</h2>
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
 
-    <div class="row mt-4">
-        <div class="col-12 col-md-4">
+    <div class="row">
+        <div class="col-lg-8 col-12 mt-3">
             <div class="card shadow">
                 <div class="card-body">
-                    <h5 class="card-title">Personal Details</h5>
+                    <h5>Profile Picture & Bio</h5>
                     <hr />
-                    <div class="mb-3 mt-3">
-                        <label for="lastname" class="form-label">Lastname:</label>
-                        <input type="text" class="form-control form-control-sm" id="lastname" placeholder="Enter Lastname" name="LastName">
-                    </div>
-                    <div class="mb-3">
-                        <label for="firstname" class="form-label">Firstname:</label>
-                        <input type="text" class="form-control form-control-sm" id="firstname" placeholder="Enter Firstname" name="FirstName">
-                    </div>
-                    <div class="mb-3">
-                        <label for="birthdate" class="form-label">Birthdate:</label>
-                        <input type="date" class="form-control form-control-sm" id="birthdate" placeholder="Enter Birthdate" name="BirthDate">
-                    </div>
-                </div>
-            </div>
-        </div>
-         <div class="col-8">
-             <div class="row">
-                 <div class="col-md-4 col-6">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <h5 class="card-title">Profile Picture</h5>
-                            <hr />
+                    <div class="row">
 
+                        <div class="col-4 col-sm-3 col-md-3">
                             <div class="d-flex align-items-center justify-content-center position-relative" id="emp-detail-img-block">
                                 <img src="~/images/user-no-img.png" class="img-thumbnail bg-dark emp-detail-img" />
                                 <div class="d-flex justify-content-center position-absolute gap-3 emp-detail-img-options">
                                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#emp-detail-img-upload-modal"><i class="bi bi-pen"></i></button>
-                                    <button class="btn btn-sm btn-primary"><i class="bi bi-eye-fill"></i></button>
+                                    <button class="btn btn-sm btn-primary" id="emp-img-view"><i class="bi bi-eye-fill"></i></button>
                                 </div>
                             </div>
 
@@ -56,9 +38,291 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col">
+                            <div class="mb-3 h-100 d-flex flex-column">
+                                <textarea name="Bio" class="form-control form-control-sm h-100" id="bio" placeholder="Enter your Bio..."></textarea>
+                            </div>
+                        </div>
                     </div>
-                 </div>
-             </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-md-6 mt-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>Personal Info</h5>
+                            <hr />
+
+                            <div class="mb-3 mt-3">
+                                <label for="lastname" class="form-label">Lastname:</label>
+                                <input type="text" class="form-control form-control-sm" id="lastname" placeholder="Enter Lastname" name="LastName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="firstname" class="form-label">Firstname:</label>
+                                <input type="text" class="form-control form-control-sm" id="firstname" placeholder="Enter Firstname" name="FirstName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="birthdate" class="form-label">Birthdate:</label>
+                                <input type="date" class="form-control form-control-sm" id="birthdate" placeholder="Enter Birthdate" name="BirthDate">
+                            </div>
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Gender:</label>
+                                <select class="form-select form-select-sm" name="GenderId" id="gender">
+                                    <option selected>Select Gender</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="matrial-status" class="form-label">Marital Status:</label>
+                                <select class="form-select form-select-sm" name="MaritalStatusId" id="matrial-status">
+                                    <option selected>Select Status</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>Employee Roles</h5>
+                            <hr />
+                            <div class="mb-3 mt-3">
+                                <label for="department" class="form-label">Department:</label>
+                                <select class="form-select form-select-sm" name="DepartmentId" id="department">
+                                    <option selected>Select Department</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="designation" class="form-label">Designation:</label>
+                                <select class="form-select form-select-sm" name="DesignationId" id="designation">
+                                    <option selected>Select Designation</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="joining-date" class="form-label">Joining Date:</label>
+                                <input type="date" class="form-control form-control-sm" id="joining-date" name="JoiningDate" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="regination-date" class="form-label">Resignation Date:</label>
+                                <input type="date" class="form-control form-control-sm" id="regination-date" name="ResignationDate" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="relieving-date" class="form-label">Relieving Date:</label>
+                                <input type="date" class="form-control form-control-sm" id="relieving-date" name="RelievingDate" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>Employee Family Details</h5>
+                            <hr />
+                            
+                            <button class="btn btn-sm btn-success mb-3">
+                                <i class="bi bi-plus-lg"></i>
+                                Add family member
+                            </button>
+
+                            <div class="accordion" id="family-accordian">
+                                <div class="accordion-item">
+
+                                    <div class="accordion-header" id="headingOne">
+
+                                        <div class="accordion-button" type="button" aria-expanded="true" aria-controls="collapseOne">
+                                            <div class="form-check d-center me-2">
+                                                <input class="form-check-input" type="checkbox" id="is-primary-family" name="IsPrimary" value="something">
+                                            </div>
+                                            <span class="w-100" data-bs-toggle="collapse" data-bs-target="#family-accordion-collapse-1">Family #1</span>
+                                            <div class="d-center ms-2">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="family-accordion-collapse-1" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#address-accordian">
+                                        <div class="accordion-body">
+                                            <div class="row">
+                                                <div class="col-md-6 col-12">
+                                                    <div class="mb-3">
+                                                        <label for="family-name" class="form-label">Name:</label>
+                                                        <input type="text" class="form-control form-control-sm" name="Name" id="family-name" />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="rs-type" class="form-label">Relationship Type:</label>
+                                                        <select class="form-select form-select-sm" id="rs-type">
+                                                            <option selected>Select Relationship</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-12">
+                                                    <div class="mb-3">
+                                                        <label for="family-phone" class="form-label">Family Phone:</label>
+                                                        <input type="text" class="form-control form-control-sm" name="Phone" id="family-phone" />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="family-email" class="form-label">Family Email:</label>
+                                                        <input type="text" class="form-control form-control-sm" name="Email" id="family-email" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-12 " id="emp-grouped-accordions">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>Address Details</h5>
+                            <hr />
+
+                            <button class="btn btn-sm btn-success mb-3">
+                                <i class="bi bi-plus-lg"></i>
+                                New Address
+                            </button>
+                            <div class="accordion" id="address-accordian">
+                                <div class="accordion-item">
+                                    
+                                    <div class="accordion-header" id="headingOne">
+                                        
+                                        <div class="accordion-button" type="button" aria-expanded="true" aria-controls="collapseOne">
+                                            <div class="form-check d-center me-2">
+                                                <input class="form-check-input" type="checkbox" id="is-primary-address" name="IsPrimary" value="something">
+                                            </div>
+                                            <span class="w-100" data-bs-toggle="collapse" data-bs-target="#address-accordion-collapse-1">Address #1</span>
+                                            <div class="d-center ms-2">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="address-accordion-collapse-1" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#address-accordian">
+                                        <div class="accordion-body">
+                                            <div class="mb-3">
+                                                <label for="ad-type" class="form-label">Address Type:</label>
+                                                <select class="form-select form-select-sm" id="ad-type">
+                                                    <option selected>Select Address Type</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="ad-lane-1" class="form-label">Address Lane 1:</label>
+                                                <textarea name="AddressLane1" class="form-control form-control-sm" id="ad-lane-1"></textarea>
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="ad-lane-2" class="form-label">Address Lane 2:</label>
+                                                <textarea name="AddressLane2" class="form-control form-control-sm" id="ad-lane-2"></textarea>
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="city" class="form-label">City:</label>
+                                                <input type="text" class="form-control form-control-sm" name="City" id="city" />
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="state" class="form-label">State:</label>
+                                                <input type="text" class="form-control form-control-sm" name="State" id="state" />
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="country" class="form-label">Country:</label>
+                                                <input type="text" class="form-control form-control-sm" name="Country" id="country" />
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="pincode" class="form-label">Postal Code:</label>
+                                                <input type="text" class="form-control form-control-sm" name="Postal Code" id="pincode" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5>Contact Details</h5>
+                            <hr />
+
+                            <button class="btn btn-sm btn-success mb-3">
+                                <i class="bi bi-plus-lg"></i>
+                                New Contact
+                            </button>
+                            <div class="accordion" id="contact-accordian">
+                                <div class="accordion-item">
+
+                                    <div class="accordion-header" id="headingOne">
+
+                                        <div class="accordion-button" type="button" aria-expanded="true" aria-controls="collapseOne">
+                                            <div class="form-check d-center me-2">
+                                                <input class="form-check-input" type="checkbox" id="is-primary-contact" name="IsPrimary" value="something">
+                                            </div>
+                                            <span class="w-100" data-bs-toggle="collapse" data-bs-target="#contact-accordion-collapse-1">Contact #1</span>
+                                            <div class="d-center ms-2">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="contact-accordion-collapse-1" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#address-accordian">
+                                        <div class="accordion-body">
+                                            <div class="mb-3 mt-3">
+                                                <label for="ct-type" class="form-label">Contact Type:</label>
+                                                <select class="form-select form-select-sm" name="ContactTypeId" id="ct-type">
+                                                    <option selected>Select Contact Type</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="ct-val" class="form-label">Contact Number:</label>
+                                                <input type="text" class="form-control form-control-sm" name="ContactValue" id="ct-val" />
+                                            </div>
+                                            <div class="mb-3 mt-3">
+                                                <label for="ct-descr" class="form-label">Contact Description:</label>
+                                                <textarea name="Description" class="form-control form-control-sm" id="ct-descr"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3 mb-5">
+        <div class="col">
+            <button class="btn btn-sm btn-primary">Save</button>
         </div>
     </div>
 </div>
+<script nonce="@Html.ScriptNonce()">
+    $('#emp-img-view').on('click', function () {
+        const src = $('#emp-detail-img-block img').attr('src');
+
+        const $img = $('#image-viewer img');
+        $img.attr('src', src).css({ transform: 'none' });
+
+        const modal = new bootstrap.Modal(document.getElementById('image-viewer'));
+        modal.show();
+    });
+
+    $('#emp-grouped-accordions .accordion-collapse').on('show.bs.collapse', function () {
+      // Hide all other accordions except the one being opened
+      $('#emp-grouped-accordions .accordion-collapse').not(this).collapse('hide');
+    });
+</script>
