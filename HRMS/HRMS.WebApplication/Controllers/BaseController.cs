@@ -9,7 +9,7 @@ namespace HRMS.WebApplication.Controllers
         {
             return File(fileResponse.FileContent!, fileResponse.FileContentType, fileResponse.FileNameWithExtension);
         }
-        protected IActionResult JsonResponse<T>(ApiResponseDto<T> response)
+        protected IActionResult JsonResponse<T>(Models.ApiResponseModel<T> response)
         {
             if(response.Success)
             {
