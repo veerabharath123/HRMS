@@ -18,6 +18,6 @@ namespace HRMS.Application.Common.Interface
         DbSet<Employee> Employee { get; set; }
         DbSet<Designation> Designation { get; set; }
         DbSet<Department> Department { get; set; }
-
+        DbSet<GeneralReference> GeneralReference { get; set; }
     }
 }

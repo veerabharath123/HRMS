@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using HRMS.Domain.Common;
+﻿using HRMS.Domain.Common;
+using HRMS.SharedKernel.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
 {
@@ -26,6 +28,23 @@ namespace HRMS.Infrastructure.Persistence.Configuration
 
                     if (entityType is not null)
                         ApplyEntityConfigurationM(modelBuilder, entityType, propertyName);
+                }
+            }
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.ClrType.GetProperties())
+                {
+                    if (property.GetCustomAttribute<HashedIdAttribute>() != null)
+                    {
+                        var converterType = typeof(HashedIdConverter<>).MakeGenericType(property.PropertyType);
+                        var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
+
+                        modelBuilder
+                            .Entity(entityType.Name)
+                            .Property(property.Name)
+                            .HasConversion(converter);
+                    }
                 }
             }
         }
@@ -83,7 +102,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
             else
             {
-                builder.HasColumnType("decimal(18,2)"); // Default fallback
+                builder.HasColumnType("decimal(18,0)"); // Default fallback
             }
         }
 

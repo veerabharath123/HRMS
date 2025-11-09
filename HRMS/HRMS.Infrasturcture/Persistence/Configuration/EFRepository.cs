@@ -166,10 +166,12 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                 throw;
             }
         }
-        public virtual async Task<int?> GetIdByGuid(Guid guid)
+        public virtual async Task<int?> GetIdByGuid(Guid? guid)
         {
             try
             {
+                if(!guid.HasValue) return null;
+
                 int? id = await Entities
                     .Where(e => EF.Property<Guid>(e, "GuidId") == guid)
                     .Select(e => EF.Property<int>(e, "Id"))

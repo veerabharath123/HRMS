@@ -315,6 +315,7 @@ BEGIN
 		BirthDate   datetime not null,
 		GenderId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
 		MaritalStatusId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
+		PhotoPictureId INT NULL FOREIGN KEY REFERENCES StoredFiles(Id),
 
 		--organizational details
 		DepartmentId    int FOREIGN KEY REFERENCES Department(Id),
@@ -323,7 +324,6 @@ BEGIN
 		RelievingDate datetime null,
 		ResignationDate datetime null,
 		ReportingManagerId INT NULL FOREIGN KEY REFERENCES Employee(Id),
-
 
 		CreatedDate datetime  not null  default getdate(),
 		CreatedUser varchar(50) not null  default '',

@@ -17,7 +17,7 @@ namespace HRMS.Application.Common.Interface
         IRepository<Employee> EmployeeRepo { get; }
         IRepository<Designation> DesignationRepo { get; }
         IRepository<Department> DepartmentRepo { get; }
-
+        IRepository<GeneralReference> GeneralReferenceRepo { get; }
 
 
         Task<bool> SaveAsync();

@@ -32,6 +32,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         private IRepository<Employee> _employeeRepo;
         private IRepository<Designation> _designationRepo;
         private IRepository<Department> _departmentRepo;
+        private IRepository<GeneralReference> _generalReferenceRepo;
 
         #endregion private repositories
 
@@ -137,8 +138,16 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             get
             {
-                _departmentRepo ??= new CachedEFRepository<Department>(_context, _cache);
+                _departmentRepo ??= new EFRepository<Department>(_context);
                 return _departmentRepo;
+            }
+        }
+        public IRepository<GeneralReference> GeneralReferenceRepo
+        {
+            get
+            {
+                _generalReferenceRepo ??= new EFRepository<GeneralReference>(_context);
+                return _generalReferenceRepo;
             }
         }
 

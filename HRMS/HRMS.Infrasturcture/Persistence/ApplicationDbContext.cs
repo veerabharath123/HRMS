@@ -30,6 +30,7 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<Employee> Employee { get; set; }
         public DbSet<Designation> Designation { get; set; }
         public DbSet<Department> Department { get; set; }
+        public DbSet<GeneralReference> GeneralReference { get; set; }
 
         public Task<int> SaveChangesAsync()
         {
