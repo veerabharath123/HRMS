@@ -1,22 +1,25 @@
 ﻿using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
+using HRMS.WebApplication.Class.BreadCrumbs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 
 namespace HRMS.WebApplication.Controllers
 {
     public class EmployeeController : BaseController
     {
         private readonly ApiRequest _api;
-        public EmployeeController(ApiRequest api)
+        private readonly BreadcrumbManager _breadcrumbManager;
+        public EmployeeController(ApiRequest api , BreadcrumbManager breadcrumbManager)
         {
             _api = api;
+            _breadcrumbManager = breadcrumbManager;
         }
         [HttpGet]
         public async Task<IActionResult> GetEmployees(int? page)
         {
+            InitBreadcrumbs(_breadcrumbManager, "Employess", true);
+
             var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", new
             {                
                 Pagination = new { PageNumber = page ?? 1, PageSize = 20 }
@@ -53,6 +56,8 @@ namespace HRMS.WebApplication.Controllers
         public IActionResult GetEmployeeDetails(Guid employeeId)
         {
             ViewBag.EmpId = employeeId;
+
+            InitBreadcrumbs(_breadcrumbManager, "Employee Details", routeValues: new { employeeId });
             // Logic to get employee details by id
             return View("EmployeeDetails");
         }
@@ -60,6 +65,9 @@ namespace HRMS.WebApplication.Controllers
         public async Task<IActionResult> AddEmployee()
         {
             ViewBag.ModuleTitle = "Add Employee";
+
+            InitBreadcrumbs(_breadcrumbManager, "Add Employee");
+
             return View();
         }
     }

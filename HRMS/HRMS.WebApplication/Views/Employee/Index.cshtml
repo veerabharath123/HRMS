@@ -5,7 +5,9 @@
 }
 
 <div class="container-fluid">
-    <h3>Employees</h3>
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h3 class="mt-1">Employees</h3>
+    
     <div class="row mt-3">
         <div class="col">
             <a href="@Url.Action("AddEmployee","Employee")" class="btn btn-success"><i class="bi bi-person-plus-fill"></i> New Employee</a>

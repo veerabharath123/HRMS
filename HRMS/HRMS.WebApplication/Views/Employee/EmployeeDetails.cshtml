@@ -3,6 +3,8 @@
 *@
 @{
 }
+<partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
 <h2>
     @ViewBag.EmpId
 </h2>
+<a href="@Url.Action("AddEmployee", "Employee")" class="btn btn-success"><i class="bi bi-person-plus-fill"></i> New Employee</a>

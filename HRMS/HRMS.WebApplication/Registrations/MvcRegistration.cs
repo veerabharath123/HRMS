@@ -1,4 +1,5 @@
 ﻿using HRMS.WebApplication.Class;
+using HRMS.WebApplication.Class.BreadCrumbs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,8 @@ namespace HRMS.WebApplication.Registrations
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+            builder.Services.AddScoped<IBreadcrumbCache, SessionBreadcrumbCache>();
+            builder.Services.AddScoped<BreadcrumbManager>();
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
                 options.MinimumSameSitePolicy = SameSiteMode.Strict;
