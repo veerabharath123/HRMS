@@ -1,5 +1,6 @@
 ﻿using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class.BreadCrumbs;
+using HRMS.WebApplication.Extensions;
 using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,8 @@ namespace HRMS.WebApplication.Controllers
 
         protected void InitBreadcrumbs(BreadcrumbManager breadcrumbManager, string name, bool isRootModule = false, object? routeValues = null)
         {
+            if (Request.IsAjaxOrApiRequest()) return;
+
             var route = RouteData.Values;
             var controllerName = route["controller"]?.ToString() ?? "";
             var actionName = route["action"]?.ToString() ?? "";

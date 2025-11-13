@@ -62,29 +62,27 @@ namespace HRMS.Application.Services.Employee
         {
             var newEmployee = new Domain.Entites.Employee();
 
-            var departmentId = await _unitOfWork.DepartmentRepo.GetIdByGuid(request.DepartmentId);
-            var desginationId = await _unitOfWork.DesignationRepo.GetIdByGuid(request.DesignationId);
-            var genderId = await _unitOfWork.GeneralReferenceRepo.GetIdByGuid(request.GenderId);
-            var maritalStatusId = await _unitOfWork.GeneralReferenceRepo.GetIdByGuid(request.MaritalStatusId);
-            var ReportingManagerId = await _unitOfWork.GeneralReferenceRepo.GetIdByGuid(request.ReportingManagerId);
-
             newEmployee.Add(new EmployeeFullRecord(
                 request.LastName,
                 request.FirstName,
                 request.BirthDate,
-                genderId,
-                maritalStatusId ?? 0,
+                request.GenderId,
+                request.MaritalStatusId,
                 request.JoiningDate,
-                departmentId,
-                desginationId,
+                request.DepartmentId,
+                request.DesignationId,
                 request.RelievingDate,
-                ReportingManagerId
+                request.ReportingManagerId
             ));
+
+            var profilePictureId = await _unitOfWork.StoredFilesRepo.GetIdByGuid(request.PhotoPictureId);
+            newEmployee.AddProfilePicture(profilePictureId);
 
             _unitOfWork.EmployeeRepo.Add(newEmployee);
             var saved = await _unitOfWork.SaveAsync();
 
-            return ApiResponseDto.SuccessStatus(saved);
+            return ApiResponseDto.FlagStatus(saved, newEmployee.Id);
         }
+
     }
 }

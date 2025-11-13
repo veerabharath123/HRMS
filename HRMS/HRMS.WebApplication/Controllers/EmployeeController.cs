@@ -66,8 +66,29 @@ namespace HRMS.WebApplication.Controllers
         {
             ViewBag.ModuleTitle = "Add Employee";
 
-            InitBreadcrumbs(_breadcrumbManager, "Add Employee");
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
 
+            return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> EditEmployee(int id)
+        {
+            var response = await _api.PostAsync("/Employees/GetEmployeeById", new { Id = id });
+
+            if(!response.Success)
+            {
+                return View("EmployeeNotFound");
+            }
+
+            ViewBag.ModuleTitle = "Edit Employee";
+
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+
+            return View(response.Result);
+        }
+        [HttpGet]
+        public IActionResult EmployeeNotFound()
+        {
             return View();
         }
     }

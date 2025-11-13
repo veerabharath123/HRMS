@@ -45,7 +45,7 @@ namespace HRMS.Domain.Entites
             RelievingDate = employeeFullRecord.RelievingDate;
             ReportingManagerId = employeeFullRecord.ReportingManagerId;
         }
-        public void AddProfilePicture(int pictureId)
+        public void AddProfilePicture(int? pictureId)
         {
             PhotoPictureId = pictureId;
         }

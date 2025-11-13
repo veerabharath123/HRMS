@@ -10,9 +10,6 @@ namespace HRMS.SharedKernel.Models.Response
     {
         public int StatusCode { get; set; }
         public dynamic? Result { get; set; }
-        public bool HasResult { 
-            get => Result is not null;
-        }
         public string Message { get; set; } = string.Empty;
         public bool Success { get; set; }
         public bool Logout { get; set; }
@@ -37,9 +34,9 @@ namespace HRMS.SharedKernel.Models.Response
         {
             return new ApiResponseDto(200, default, string.Format(message, messageParams), false);
         }
-        public static ApiResponseDto FlagStatus(bool success, string message = "")
+        public static ApiResponseDto FlagStatus(bool success, object? result = null, string message = "")
         {
-            return new ApiResponseDto(200, success, message, success);
+            return new ApiResponseDto(200, success ? result : null, message, success);
         }
         public static ApiResponseDto CustomStatus(int statusCode, bool success, object? result, string message)
         {
