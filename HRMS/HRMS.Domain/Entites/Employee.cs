@@ -10,6 +10,7 @@ namespace HRMS.Domain.Entites
 {
     public class Employee : AuditableWithBaseEntity<int>
     {
+        public string Bio { get; private set; } = string.Empty;
         public string LastName { get; private set; } = string.Empty;
         public string MiddleName { get; private set; } = string.Empty;
         public string FirstName { get; private set; } = string.Empty;
@@ -33,9 +34,11 @@ namespace HRMS.Domain.Entites
         {
             LastName = employeeFullRecord.Lastname;
             FirstName = employeeFullRecord.Firstname;
+            MiddleName = string.Empty;
             BirthDate = employeeFullRecord.Birthdate;
             GenderId = employeeFullRecord.GenderId;
             MaritalStatusId = employeeFullRecord.MaritalStatusId;
+            Bio = employeeFullRecord.Bio;
         }
         public void AddJobDetails(EmployeeFullRecord employeeFullRecord)
         {

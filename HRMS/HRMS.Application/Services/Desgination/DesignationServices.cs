@@ -2,25 +2,29 @@
 using HRMS.Domain.Constants;
 using HRMS.SharedKernel.Models.Common.Class;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace HRMS.Application.Services
+namespace HRMS.Application.Services.Desgination
 {
-    public class DepartmentServices : IDepartmentServices
+    public class DesignationServices : IDesignationServices
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICacheService _cache;
-        public DepartmentServices(IUnitOfWork unitOfWork, ICacheService cache)
+        public DesignationServices(IUnitOfWork unitOfWork, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _cache = cache;
         }
-
-        public async Task<List<BaseRefDto>> GetAllActiveDepartmentsAsync()
+        public async Task<List<BaseRefDto>> GetAllActiveDesignationsAsync()
         {
             var results = await _cache.GetOrCreateAsync(
-                GeneralConstants.CachedModules.DepartmentManagement,
-                () => 
-                    _unitOfWork.DepartmentRepo.TableNoTracking
+                GeneralConstants.CachedModules.DesignationManagement,
+                () =>
+                    _unitOfWork.DesignationRepo.TableNoTracking
                     .Where(d => d.IsActive && !d.IsDeleted)
                     .Select(d => new BaseRefDto
                     {

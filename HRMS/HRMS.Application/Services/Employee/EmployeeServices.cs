@@ -1,4 +1,5 @@
-﻿using HRMS.Application.Common.Class.LinqExtensions;
+﻿using AutoMapper;
+using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using static HRMS.Domain.Records.EmployeeRecords;
@@ -16,9 +18,11 @@ namespace HRMS.Application.Services.Employee
     public class EmployeeServices : IEmployeeServices
     {
         private readonly IUnitOfWork _unitOfWork;
-        public EmployeeServices(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public EmployeeServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
         public async Task<ApiResponseDto> GetPaginatedEmployeesShortAsync(AdvanceTableRequestDto request)
         {
@@ -40,17 +44,17 @@ namespace HRMS.Application.Services.Employee
 
             return ApiResponseDto.SuccessStatus(result);
         }
-        public async Task<ApiResponseDto> AddEmployeeAsync()
+        public async Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request)
         {
             try
             {
                 _unitOfWork.BeginTransaction();
 
-                // Perform multiple operations here
+                var newEmployee = await InsertEmployeeAsync(request);
 
                 _unitOfWork.CommitTransaction();
 
-                return ApiResponseDto.SuccessStatus(null);
+                return newEmployee;
             }
             catch (Exception)
             {
@@ -58,24 +62,24 @@ namespace HRMS.Application.Services.Employee
                 throw;
             }
         }
-        public async Task<ApiResponseDto> InsertEmployeeAsync(EmployeeDto request)
+        private Task<bool> EmployeeExistAsync(Expression<Func<Domain.Entites.Employee, bool>> predicate)
         {
+            return _unitOfWork.EmployeeRepo.TableNoTracking.AnyAsync(predicate);
+        }
+        public async Task<ApiResponseDto> InsertEmployeeAsync(InsertEmployeeRequestDto request)
+        {
+            var exists = await EmployeeExistAsync(e => 
+                e.LastName == request.Employee.LastName 
+                && e.FirstName == request.Employee.FirstName
+                && !e.IsDeleted);
+
+            if (exists) return ApiResponseDto.FailureStatus("Employee with the same name already exists.");
+
             var newEmployee = new Domain.Entites.Employee();
 
-            newEmployee.Add(new EmployeeFullRecord(
-                request.LastName,
-                request.FirstName,
-                request.BirthDate,
-                request.GenderId,
-                request.MaritalStatusId,
-                request.JoiningDate,
-                request.DepartmentId,
-                request.DesignationId,
-                request.RelievingDate,
-                request.ReportingManagerId
-            ));
+            newEmployee.Add(_mapper.Map<EmployeeFullRecord>(request.Employee));
 
-            var profilePictureId = await _unitOfWork.StoredFilesRepo.GetIdByGuid(request.PhotoPictureId);
+            var profilePictureId = await _unitOfWork.StoredFilesRepo.GetIdByGuid(request.Employee.PhotoPictureId);
             newEmployee.AddProfilePicture(profilePictureId);
 
             _unitOfWork.EmployeeRepo.Add(newEmployee);

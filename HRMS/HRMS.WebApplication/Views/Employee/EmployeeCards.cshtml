@@ -7,8 +7,8 @@
 <div class="row mt-3">
     @foreach (var employee in Model.Items)
     {
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card d-flex flex-column align-items-center shadow" id="@employee.Id">
+        <div class="col-6 col-md-4 col-lg-3 mb-3">
+            <div class="card d-flex flex-column align-items-center shadow h-100" id="@employee.Id">
                 <img class="card-img-top card-img w-50 rounded-pill mt-4 border shadow" src="~/images/user-no-img.png" alt="@employee.FullName">
                 <div class="card-body text-center">
                     <h4 class="card-title">@employee.FullName</h4>

@@ -316,6 +316,7 @@ BEGIN
 		GenderId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
 		MaritalStatusId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
 		PhotoPictureId INT NULL FOREIGN KEY REFERENCES StoredFiles(Id),
+		Bio VARCHAR(1000) NULL,
 
 		--organizational details
 		DepartmentId    int FOREIGN KEY REFERENCES Department(Id),

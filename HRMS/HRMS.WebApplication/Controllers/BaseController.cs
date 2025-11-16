@@ -1,8 +1,11 @@
-﻿using HRMS.SharedKernel.Models.Response;
+﻿using HRMS.SharedKernel.Models.Common.Class;
+using HRMS.SharedKernel.Models.Response;
+using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Class.BreadCrumbs;
 using HRMS.WebApplication.Extensions;
 using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HRMS.WebApplication.Controllers
 {
@@ -13,11 +16,11 @@ namespace HRMS.WebApplication.Controllers
         {
             return File(fileResponse.FileContent!, fileResponse.FileContentType, fileResponse.FileNameWithExtension);
         }
-        protected IActionResult JsonResponse<T>(ApiResponseModel<T> response)
+        protected IActionResult JsonResponse<T>(ApiResponseModel<T> response, string? redirectTo = "")
         {
             if(response.Success)
             {
-                return Json(new { success = true, data = response.Result, message = response.Message });
+                return Json(new { success = true, data = response.Result, message = response.Message, redirectTo });
             }
 
             return Json(new { success = false, data = default(T), message = response.Message });
@@ -48,6 +51,16 @@ namespace HRMS.WebApplication.Controllers
             defaultCrumb.Url = Url.Action(defaultCrumb.Action, defaultCrumb.Controller) ?? "/";
 
             ViewBag.Breadcrumbs = breadcrumbManager.UpdateTrail(newCrumb, defaultCrumb, isRootModule);
+        }
+        protected async Task<SelectList> GetDropdownListAsync(string action, object? data = null, bool isAuthRequired = false)
+        {
+            var api = HttpContext.RequestServices.GetService(typeof(ApiRequest)) as ApiRequest;
+            var response = await api!.PostAsync(action, data, isAuthRequired);
+            var departments = response.Success
+                ? response.Result as List<BaseRefDto>
+                : new List<BaseRefDto>();
+
+            return new SelectList(departments, "Id", "Name");
         }
     }
 }

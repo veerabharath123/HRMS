@@ -2,10 +2,14 @@
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Class.BreadCrumbs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HRMS.WebApplication.Controllers
 {
+    [Authorize]
     public class EmployeeController : BaseController
     {
         private readonly ApiRequest _api;
@@ -22,30 +26,10 @@ namespace HRMS.WebApplication.Controllers
 
             var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", new
             {                
-                Pagination = new { PageNumber = page ?? 1, PageSize = 20 }
-            });
-
-            List<EmployeeShortResponseDto> employees =
-            [
-                new EmployeeShortResponseDto
-                {
-                    Id = Guid.NewGuid(),
-                    FullName = "John Doe",
-                    Bio = "Senior Developer with 5 years of experience."
-                },
-                new EmployeeShortResponseDto
-                {
-                    Id = Guid.NewGuid(),
-                    FullName = "Jane Smith",
-                    Bio = "Project Manager specializing in agile methodologies."
-                }
-            ];
-            var pagination = new PaginationResponseDto<EmployeeShortResponseDto>
-            {
-                Items = employees,
-            };
-            
-            return View("Index", pagination);
+                Pagination = new { PageNumber = page ?? 1, PageSize = 24 }
+            },true);
+            await LoadEmployeeDropdownsAsync();
+            return View("Index", result.Result);
         }
         [HttpPost]
         public async Task<IActionResult> GetEmployees([FromBody] AdvanceTableRequestDto request)
@@ -68,7 +52,14 @@ namespace HRMS.WebApplication.Controllers
 
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
 
+            await LoadEmployeeDropdownsAsync();
             return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveEmployee(InsertEmployeeRequestDto request)
+        {
+            var response = await _api.PostAsync("/Employees/AddEmployee", request, true);
+            return JsonResponse(response, Url.Action(nameof(GetEmployees)));
         }
         [HttpGet]
         public async Task<IActionResult> EditEmployee(int id)
@@ -85,6 +76,13 @@ namespace HRMS.WebApplication.Controllers
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
 
             return View(response.Result);
+        }
+        private async Task LoadEmployeeDropdownsAsync()
+        {
+            ViewBag.DepartmentList = await _api.DropdownListAsync("/References/GetAllActiveDepartments", null, true);
+            ViewBag.DesignationList = await _api.DropdownListAsync("/References/GetAllActiveDesignations", null, true);
+            ViewBag.GenderList = await _api.DropdownListAsync("/References/GetAllActiveGenders", null, true);
+            ViewBag.MaritalStatusList = await _api.DropdownListAsync("/References/GetAllActiveMaritalStatus", null, true);
         }
         [HttpGet]
         public IActionResult EmployeeNotFound()

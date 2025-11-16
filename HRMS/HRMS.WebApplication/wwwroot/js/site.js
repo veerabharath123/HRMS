@@ -2,7 +2,7 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-
+const LOGOUT_PATH = '/Account/Logout';
 class Spinner {
     static show() {
         return
@@ -45,7 +45,9 @@ function showNotification(options) {
         title = '',             // title of the message
         message = '',           // message text
         timer = 3000,           // default duration (ms)
-        customOptions = {}      // additional toastr or custom options
+        customOptions = {},      // additional toastr or custom options
+        onComplete = null,     // <-- add optional callback
+        onShow = null 
     } = options || {};
 
     if (typeof toastr === 'undefined') {
@@ -58,6 +60,13 @@ function showNotification(options) {
         closeButton: true,
         progressBar: true,
         preventDuplicates: true,
+        onShown: function () {
+            if (typeof onShow === 'function') onShow();
+        },
+        onHidden: function () {
+            if (typeof onComplete === 'function') onComplete();
+        }
+
     };
 
     const finalOptions = Object.assign({}, defaultOptions, customOptions);
@@ -141,15 +150,6 @@ function prepareRequestData(config) {
 }
 
 function handleAjaxSuccess(res, config) {
-    if (res?.logout) {
-        window.location.href = res.logoutUrl || '/Account/Login';
-        return;
-    }
-
-    if (res?.redirect) {
-        window.location.href = res.redirect;
-        return;
-    }
 
     const useDefaultSuccessCallBack = typeof config?.useDefaultSuccessCallBack === 'boolean'
         ? config?.useDefaultSuccessCallBack 
@@ -171,6 +171,16 @@ function handleAjaxSuccess(res, config) {
         type: 'error',
         message: res?.message || 'Something went wrong!'
     });
+
+    if (res?.logout) {
+        window.location.href = res.logoutUrl || LOGOUT_PATH;
+        return;
+    }
+
+    if (res?.redirectTo) {
+        window.location.href = res.redirectTo;
+        return;
+    }
 }
 
 /**
@@ -354,7 +364,7 @@ function handleStatusCode(status, message) {
 function handleServerActions(response) {
     if (response.logout) {
         setTimeout(() => {
-            window.location.href = '/Account/Logout';
+            window.location.href = LOGOUT_PATH;
         }, 1500);
     }
 

@@ -9,14 +9,74 @@
     <h3 class="mt-1">Employees</h3>
     
     <div class="row mt-3">
-        <div class="col">
-            <a href="@Url.Action("AddEmployee","Employee")" class="btn btn-success"><i class="bi bi-person-plus-fill"></i> New Employee</a>
+        <div class="col-12 clearfix">
+            <a href="@Url.Action("AddEmployee", "Employee")" class="btn btn-success float-start"><i class="bi bi-person-plus-fill"></i> New Employee</a>
+            <button class="btn btn-primary float-end shadow-sm" data-bs-toggle="modal" data-bs-target="#emp-filter-modal">Filters <i class="bi bi-funnel"></i></button>
         </div>
     </div>
     <div id="employee-cards">
         <partial name="~/Views/Employee/EmployeeCards.cshtml" model="Model" />
     </div>
 
+    @* Employee filter modal *@
+    <div class="modal fade" id="emp-filter-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filters</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department:</label>
+                                <select id="department" asp-items="ViewBag.DepartmentList" multiple>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="designation" class="form-label">Designation:</label>
+                                <select id="designation" asp-items="ViewBag.DesignationList" multiple>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="upload-date" class="form-label">Upload Date:</label>
+                                <select id="upload-date">
+                                    <option></option>
+                                    <option>Today</option>
+                                    <option>Last hour</option>
+                                    <option>This week</option>
+                                    <option>This month</option>
+                                    <option>This year</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="sortby" class="form-label">Sort by:</label>
+                                <select id="sortby" placeholder="">
+                                    <option></option>
+                                    <option>Lastname</option>
+                                    <option>Firstname</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info btn-sm">Clear filters</button>
+                    <button class="btn btn-primary btn-sm">Apply filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
 </div>
 <script nonce="@Html.ScriptNonce()">
@@ -32,12 +92,18 @@
     getEmployeeImages($('div.card').map((i,x) => $(x).attr('id')));
 
     $('div.card > img').on('click', function () {
-        const src = this.src; 
+        const $card = $(this).parent();
+        const src = this.src;
+        const title = $card.find('.card-title')?.text() ?? '?';
 
-        const $img = $('#image-viewer img');
-        $img.attr('src', src).css({ transform: 'none' });
+        $('#image-viewer img').attr('src', src).css({ transform: 'none' });
+        $('#image-viewer-label').text(title)
 
         const modal = new bootstrap.Modal(document.getElementById('image-viewer'));
         modal.show();
     });
+    $('#department').selectize({create: false});
+    $('#designation').selectize({create: false});
+    $('#sortby').selectize({create: false});
+    $('#upload-date').selectize({create: false});
 </script>

@@ -1,5 +1,7 @@
-﻿using HRMS.SharedKernel.Models.Response;
+﻿using HRMS.SharedKernel.Models.Common.Class;
+using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
@@ -77,6 +79,13 @@ namespace HRMS.WebApplication.Class
                 return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus("Invalid URL"));
 
             return PostAsync<TRequest, TResponse>(uri!, data, authRequired, cancellationToken);
+        }
+        public async Task<SelectList> DropdownListAsync(string action, object? data = null, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            var response = await PostAsync<List<BaseRefModel>>(action, data, authRequired, cancellationToken);
+            var dropdownList = response.Success && response.HasResult ? response.Result : [];
+
+            return BaseRefModel.ToSelectList(dropdownList!);
         }
         private async Task<ApiResponseModel<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {

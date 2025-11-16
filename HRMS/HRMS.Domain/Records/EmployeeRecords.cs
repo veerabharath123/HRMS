@@ -10,6 +10,7 @@ namespace HRMS.Domain.Records
     public static class EmployeeRecords
     {
         public record EmployeeFullRecord(
+            string Bio,
             string Lastname, 
             string Firstname, 
             DateTime Birthdate, 

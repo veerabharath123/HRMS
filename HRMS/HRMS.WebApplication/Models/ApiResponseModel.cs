@@ -14,6 +14,10 @@ namespace HRMS.WebApplication.Models
         public bool Success { get; set; }
         public bool Logout { get; set; }
 
+        public ApiResponseModel()
+        {
+            
+        }
         internal ApiResponseModel(int statusCode, T? result, string message, bool success)
         {
             StatusCode = statusCode;

@@ -30,7 +30,16 @@ namespace HRMS.Domain.Constants
         }
         public enum CachedModules
         {
-            DepartmentManagement
+            DepartmentManagement,
+            DesignationManagement,
+            GenderManagement,
+            MaritalStatusManagement,
+        }
+        public enum GeneralReferenceCategories
+        {
+            Gender,
+            MaritalStatus,
+            Relationship,
         }
     }
 }
