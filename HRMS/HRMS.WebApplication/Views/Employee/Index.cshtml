@@ -11,7 +11,7 @@
     <div class="row mt-3">
         <div class="col-12 clearfix">
             <a href="@Url.Action("AddEmployee", "Employee")" class="btn btn-success float-start"><i class="bi bi-person-plus-fill"></i> New Employee</a>
-            <button class="btn btn-primary float-end shadow-sm" data-bs-toggle="modal" data-bs-target="#emp-filter-modal">Filters <i class="bi bi-funnel"></i></button>
+            <button class="btn btn-primary float-end shadow-sm" data-bs-toggle="modal" data-bs-target="#emp-filter-modal">Filters <i class="bi bi-funnel"></i></button
         </div>
     </div>
     <div id="employee-cards">
@@ -27,52 +27,58 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="department" class="form-label">Department:</label>
-                                <select id="department" asp-items="ViewBag.DepartmentList" multiple>
-                                </select>
+                    <form id="emp-filter-form">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department:</label>
+                                    <select id="department" asp-items="ViewBag.DepartmentList" multiple name="Department">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="designation" class="form-label">Designation:</label>
+                                    <select id="designation" asp-items="ViewBag.DesignationList" multiple name="Desgination">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="upload-date" class="form-label">Upload Date:</label>
+                                    <select id="upload-date" name="UploadDate">
+                                        <option></option>
+                                        <option>Today</option>
+                                        <option>Last hour</option>
+                                        <option>This week</option>
+                                        <option>This month</option>
+                                        <option>This year</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="designation" class="form-label">Designation:</label>
-                                <select id="designation" asp-items="ViewBag.DesignationList" multiple>
-                                </select>
+                        <hr />
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label for="sortby" class="form-label">Sort by:</label>
+                                    <select id="sortby" placeholder="">
+                                        <option></option>
+                                        <option>Lastname</option>
+                                        <option>Firstname</option>
+                                    </select>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                      <input class="form-check-input" type="checkbox" id="sort-order" value="true">
+                                      <label class="form-check-label" for="sort-order">Desc</label>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="upload-date" class="form-label">Upload Date:</label>
-                                <select id="upload-date">
-                                    <option></option>
-                                    <option>Today</option>
-                                    <option>Last hour</option>
-                                    <option>This week</option>
-                                    <option>This month</option>
-                                    <option>This year</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label for="sortby" class="form-label">Sort by:</label>
-                                <select id="sortby" placeholder="">
-                                    <option></option>
-                                    <option>Lastname</option>
-                                    <option>Firstname</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-info btn-sm">Clear filters</button>
-                    <button class="btn btn-primary btn-sm">Apply filters</button>
+                    <button class="btn btn-primary btn-sm" id="emp-filter-btn">Apply filters</button>
                 </div>
             </div>
         </div>
@@ -102,8 +108,116 @@
         const modal = new bootstrap.Modal(document.getElementById('image-viewer'));
         modal.show();
     });
-    $('#department').selectize({create: false});
+    const department = $('#department').selectize({create: false});
     $('#designation').selectize({create: false});
-    $('#sortby').selectize({create: false});
+   $('#sortby').selectize({create: false});
     $('#upload-date').selectize({create: false});
+
+    $('#emp-filter-btn').on('click', function(){
+        
+        const request = JSON.stringify({
+            currentPage: 1,
+            maxPages: 10,
+            pageLength: 24,
+            Filter: buildFilters(),
+            Sort: buildSort()
+        })
+
+        
+        ajaxLoadHtml(
+            '@Url.Action("GetEmployees","Employee")',
+            request, 
+            '#employee-cards'
+        );
+    })
+
+    function buildFilters(){
+        const filters = []
+        const departmentSel = department[0].selectize;
+        departmentSel.items.forEach(function (value) {
+            const txt = departmentSel.options[value].text;
+
+            filters.push({
+                property: 'Department',
+                comparator: '=',
+                value: txt,
+                operator:'And' 
+            });
+        });
+
+        const designations = $('#designation').val() || [];
+        designations.forEach((val, index) => {
+            filters.push({
+                property: 'Designation',
+                comparator: '=',
+                value: val,
+                operator:  'And'
+            });
+        });
+
+        const uploadDate = $('#upload-date').val();
+        switch(uploadDate){
+            case 'Today':
+                filters.push({
+                    property: 'UploadDate',
+                    comparator: '>=',
+                    value: new Date().toISOString().split('T')[0],
+                    operator: filters.length > 0 ? 'And' : ''
+                });
+                break;
+            case 'Last hour':
+                const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+                filters.push({
+                    property: 'UploadDate',
+                    comparator: '>=',
+                    value: oneHourAgo,
+                    operator: filters.length > 0 ? 'And' : ''
+                });
+                break;
+            case 'This week':
+                const now = new Date();
+                const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString().split('T')[0];
+                filters.push({
+                    property: 'UploadDate',
+                    comparator: '>=',
+                    value: firstDayOfWeek,
+                    operator: filters.length > 0 ? 'And' : ''
+                });
+                break;
+            case 'This month':
+                const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+                filters.push({
+                    property: 'UploadDate',
+                    comparator: '>=',
+                    value: firstDayOfMonth,
+                    operator: filters.length > 0 ? 'And' : ''
+                });
+                break;
+            case 'This year':
+                const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+                filters.push({
+                    property: 'UploadDate',
+                    comparator: '>=',
+                    value: firstDayOfYear,
+                    operator: filters.length > 0 ? 'And' : ''
+                });
+                break;
+        }
+
+        $('#sortby').val() && filters.push({
+            property: $('#sortby').val(),
+            desc: $('#sort-order').is(':checked'),
+        });
+
+        return filters;
+    }
+    function buildSort(){
+        const sorts = [];
+        $('#sortby').val() && sorts.push({
+            property: $('#sortby').val(),
+            desc: $('#sort-order').is(':checked'),
+        });
+        return sorts;
+    }
+
 </script>

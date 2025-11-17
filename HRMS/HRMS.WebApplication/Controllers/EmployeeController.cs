@@ -32,10 +32,11 @@ namespace HRMS.WebApplication.Controllers
             return View("Index", result.Result);
         }
         [HttpPost]
-        public async Task<IActionResult> GetEmployees([FromBody] AdvanceTableRequestDto request)
+        public async Task<IActionResult> GetEmployees(AdvanceTableRequestDto request)
         {
-            var result = await _api.PostAsync("/Employees/GetPaginatedEmployeesShort", request);
-            return JsonResponse(result);
+            request ??= new();
+            var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", request, true);
+            return PartialView("EmployeeCards", result.Result);
         }
         public IActionResult GetEmployeeDetails(Guid employeeId)
         {
