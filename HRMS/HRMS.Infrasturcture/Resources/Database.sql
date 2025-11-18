@@ -483,7 +483,7 @@ EXEC InsertSystemSettingIfNotExists
 'FileStorageLocation', 
 '1', 
 'File storage location id';
-
+	
 
 IF NOT EXISTS (
     SELECT 1
@@ -495,7 +495,20 @@ BEGIN
     INSERT INTO FileLocationConfigurations 
         (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'S3BucketConfig', '{\n  bucket: \"HRMSAPP\",\n  key: \"HRMSAPPKEY\",\n  secret: \"K005v5PTs8iqSgO1kne3ngkpVBPwCS4\",\n  serviceurl: \"s3.us-east-005.backblazeb2.com\"\n}', 1, 'System', 0);
+        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"HRMSAPPKEY","serviceurl":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","secret":"s3.us-east-005.backblazeb2.com"}', 1, 'System', 0);
+END
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM FileLocationConfigurations
+    WHERE ConfigName = 'FtpLocalConfig'
+      AND IsDeleted = 0
+)
+BEGIN
+    INSERT INTO FileLocationConfigurations 
+        (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
+    VALUES
+        (NEWID(), 'FtpLocalConfig', '{"FtpBaseUrl":"hrmsftp.local","FtpUsername":"VeeraBharath","FtpPassword":"ftppswd001"}', 1, 'System', 0);
 END
 
 IF OBJECT_ID('dbo.GeneralReference', 'U') IS NOT NULL

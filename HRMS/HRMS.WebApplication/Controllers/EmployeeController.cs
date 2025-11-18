@@ -4,8 +4,6 @@ using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Class.BreadCrumbs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HRMS.WebApplication.Controllers
 {

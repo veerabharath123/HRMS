@@ -234,7 +234,7 @@ namespace HRMS.Application.Services
                 FtpPassword = "ftppswd001"
             };
 
-            var remotePath = $"{Path.GetFileNameWithoutExtension(request.FileName)}-{Guid.NewGuid()}.{Path.GetExtension(request.FileName)}";
+            var remotePath = $"{Path.GetFileNameWithoutExtension(request.FileName)}|{Guid.NewGuid()}.{Path.GetExtension(request.FileName)}";
 
             using var stream = new MemoryStream(request.FileContent!);
 

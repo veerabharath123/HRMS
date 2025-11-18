@@ -23,6 +23,27 @@ namespace HRMS.Application.Services.File
             _unitOfWork = unitOfWork;
             _localStorageProvider = (ILocalStorageProvider)_fileStorageFactory.CreateProvider(new() { ConfigJson = FileConstants.LOCAL_STORAGE_CONFIG });
         }
+        private async Task<FileLocationConfigDto> GetStorageLocationConfigAsync()
+        {
+            var setting = await _unitOfWork.SystemSettingsRepo.TableNoTracking.FirstOrDefaultAsync(x => x.SettingName == "FileStorageLocation");
+
+            if (!int.TryParse(setting?.SettingValue, out int locationId))
+                throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG);
+
+            var location = await _unitOfWork.FileLocationConfigurationsRepo.TableNoTracking
+                                .Where(x => x.Id == locationId)
+                                .Select(l => new FileLocationConfigDto
+                                {
+                                    ConfigName = l.ConfigName,
+                                    ConfigJson = l.ConfigJson,
+                                    Id = l.Id
+                                })
+                                .FirstOrDefaultAsync();
+
+            return location is null 
+                ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG) 
+                : location;
+        }
 
         public async Task<ApiResponseDto> UploadFileAsync(string filename, byte[]? filebytes, FileLocationConfigDto configDto)
         {
@@ -39,24 +60,9 @@ namespace HRMS.Application.Services.File
         }
         public async Task<ApiResponseDto> SaveFileAsync(FileRequestDto request)
         {
-            var setting = await _unitOfWork.SystemSettingsRepo.TableNoTracking.FirstOrDefaultAsync(x => x.SettingName == "FileStorageLocation");
+            var location = await GetStorageLocationConfigAsync();
 
-            if (!int.TryParse(setting?.SettingValue, out int locationId))
-                return ApiResponseDto.FailureStatus(FileConstants.NO_STORAGE_CONFIG_MSG);
-
-            var location = await _unitOfWork.FileLocationConfigurationsRepo.TableNoTracking
-                                .Where(x => x.Id == locationId)
-                                .Select(l => new FileLocationConfigDto
-                                {
-                                    ConfigName = l.ConfigName,
-                                    ConfigJson = l.ConfigJson,
-                                })
-                                .FirstOrDefaultAsync();
-
-            if (location is null)
-                return ApiResponseDto.FailureStatus(FileConstants.NO_STORAGE_CONFIG_MSG);
-
-            var file = await StoreFileInDbAsync(request, locationId);
+            var file = await StoreFileInDbAsync(request, location.Id);
             if (file is null) return ApiResponseDto.FailureStatus(FileConstants.UPLOAD_FAILED_MSG);
 
             var uploadRes = await UploadFileAsync(request.FileName, request.FileContent, location);

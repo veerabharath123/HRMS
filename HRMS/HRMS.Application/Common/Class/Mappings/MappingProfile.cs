@@ -15,7 +15,6 @@ namespace HRMS.Application.Common.Class.Mappings
     {
         public MappingProfile()
         {
-            // DTO → Record
             CreateMap<EmployeeDto, EmployeeFullRecord>();
         }
     }
