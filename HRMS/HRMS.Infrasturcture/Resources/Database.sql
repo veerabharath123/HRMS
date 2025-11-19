@@ -182,6 +182,8 @@ create table FileLocationConfigurations
 	IsDeleted bit default 0
 );
 
+select * from SystemSettings
+
 create table SystemSettings
 (
 	Id      int primary key identity(1,1),
@@ -478,7 +480,6 @@ GO
 
 --#endregion Insert/Update SP
 
-
 EXEC InsertSystemSettingIfNotExists 
 'FileStorageLocation', 
 '1', 
@@ -495,7 +496,7 @@ BEGIN
     INSERT INTO FileLocationConfigurations 
         (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"HRMSAPPKEY","serviceurl":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","secret":"s3.us-east-005.backblazeb2.com"}', 1, 'System', 0);
+        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"HRMSAPPKEY","secret":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","serviceurl":"s3.us-east-005.backblazeb2.com", "ProviderType":"S3"}', 1, 'System', 0);
 END
 
 IF NOT EXISTS (
@@ -508,7 +509,7 @@ BEGIN
     INSERT INTO FileLocationConfigurations 
         (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'FtpLocalConfig', '{"FtpBaseUrl":"hrmsftp.local","FtpUsername":"VeeraBharath","FtpPassword":"ftppswd001"}', 1, 'System', 0);
+        (NEWID(), 'FtpLocalConfig', '{"FtpBaseUrl":"hrmsftp.local","FtpUsername":"VeeraBharath","FtpPassword":"ftppswd001", "ProviderType":"Ftp"}', 1, 'System', 0);
 END
 
 IF OBJECT_ID('dbo.GeneralReference', 'U') IS NOT NULL

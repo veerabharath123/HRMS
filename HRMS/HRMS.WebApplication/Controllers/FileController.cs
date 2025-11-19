@@ -12,13 +12,13 @@ namespace HRMS.WebApplication.Controllers
             _api = api;
         }
         [HttpPost]
-        public async Task<IActionResult> FileUpload(IFormFile file)
+        public async Task<IActionResult> FileUpload([FromForm] IFormFile file)
         {
             var request = await ToFileDtoAsync(file);
-            var response = await _api.PostAsync<Guid>("Files/UploadFileAsync", request, true);
+            var response = await _api.PostAsync<Guid>("/Files/UploadFile", request, true);
             return JsonResponse(response);
         }
-        public static async Task<object> ToFileDtoAsync(IFormFile file)
+        private static async Task<object> ToFileDtoAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");

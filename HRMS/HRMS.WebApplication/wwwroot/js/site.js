@@ -141,6 +141,7 @@ function prepareHeaders(config, method) {
 
 function prepareRequestData(config) {
     if (
+        config.contentType !== false &&
         config.contentType?.includes('application/json') &&
         config.processData !== false
     ) {

@@ -20,11 +20,11 @@
 
                             <div class="col-4 col-sm-3 col-md-3">
                                 <div class="d-flex align-items-center justify-content-center position-relative" id="emp-detail-img-block">
-                                    <input type="hidden" asp-for="Employee.PhotoPictureId" />
+                                    <input type="hidden" asp-for="Employee.PhotoPictureId" id="emp-photo-id" />
                                     <img src="~/images/user-no-img.png" class="img-thumbnail bg-dark emp-detail-img" />
                                     <div class="d-flex justify-content-center position-absolute gap-3 emp-detail-img-options">
-                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#emp-detail-img-upload-modal"><i class="bi bi-pen"></i></button>
-                                        <button class="btn btn-sm btn-primary" id="emp-img-view"><i class="bi bi-eye-fill"></i></button>
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#emp-detail-img-upload-modal"><i class="bi bi-pen"></i></button>
+                                        <button type="button" class="btn btn-sm btn-primary" id="emp-img-view"><i class="bi bi-eye-fill"></i></button>
                                     </div>
                                 </div>
 
@@ -36,7 +36,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <partial name="Utilities/FileUpload" model="@("emp-img-file-upload")" />
+                                                <partial name="Utilities/_FileUpload" />
                                             </div>
                                         </div>
                                     </div>
@@ -316,6 +316,14 @@
     </form>
 </div>
 <script nonce="@Html.ScriptNonce()">
+    $('#emp-detail-img-upload-modal #upload').on('file:upload',function(e , files){
+        console.log(files.files[0])
+        const formData = new FormData();
+        
+        formData.append('file',files.files[0])
+        ajaxPostFile('@Url.Action("FileUpload", "File")',formData,function(res){ console.log(res) } )
+    })
+
     $('#emp-img-view').on('click', function () {
         const src = $('#emp-detail-img-block img').attr('src');
 

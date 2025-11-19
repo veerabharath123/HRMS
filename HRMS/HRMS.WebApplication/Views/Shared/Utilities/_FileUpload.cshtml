@@ -55,7 +55,7 @@
                     <i class="fa-solid fa-file-arrow-up upload-icon mb-3"></i>
                     <h5 class="fw-semibold">Select files to upload</h5>
                     <input type="file" id="upload" hidden />
-                    <button class="btn btn-primary px-4" id="upload-btn">Browse Files</button>
+                    <button type="button" class="btn btn-primary px-4" id="upload-btn">Browse Files</button>
                     
 
                     <div class="d-center flex-column">
@@ -79,7 +79,7 @@
     // btn.on('click',() => {
     //     fileControl.val('').trigger('click');
     // })
-    uploadBox.on('click', function(e) {
+    uploadBox.on('click', function() {
         fileControl.val('')[0].click();
     })
 

@@ -24,9 +24,9 @@ namespace HRMS.Infrastructure.Storage.Factory
 
             return provider switch
             {
-                FileStorageProvider.Ftp => new FtpStorageProvider(jsonConfig!.baseUrl,jsonConfig!.username, GetConfigValue(locationConfig.ConfigName, jsonConfig.passowrd), jsonConfig.useSsl),
+                FileStorageProvider.Ftp => new FtpStorageProvider(jsonConfig!.FtpBaseUrl.ToString(), jsonConfig!.FtpUsername.ToString(), jsonConfig.FtpPassword.ToString(), false),
                 FileStorageProvider.Local => new LocalStorageProvider(jsonConfig),
-                FileStorageProvider.S3 => new S3StorageProvider(jsonConfig!.bucket,jsonConfig.key, jsonConfig.secret, jsonConfig.serviceurl),
+                FileStorageProvider.S3 => new S3StorageProvider(jsonConfig!.bucket.ToString(), jsonConfig.key.ToString(), jsonConfig.secret.ToString(), jsonConfig.serviceurl.ToString()),
                 _ => throw new NotSupportedException($"The provider type '{providerType}' is not supported.")
             };
         }

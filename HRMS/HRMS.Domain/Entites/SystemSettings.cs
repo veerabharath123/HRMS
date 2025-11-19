@@ -9,7 +9,7 @@ namespace HRMS.Domain.Entites
 {
     public class SystemSettings : AuditableWithBaseEntity<int>
     {
-        public string SettingName { get; set; } = string.Empty;
+        public string SettingKey { get; set; } = string.Empty;
         public string SettingValue { get; set; } = string.Empty;
         public bool IsActive { get; set; }
     }

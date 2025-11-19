@@ -25,8 +25,8 @@ namespace HRMS.Api.Controllers.V1
             
             return Ok(ApiResponseDto.SuccessStatus(new Dictionary<string,string>(),"Test Json"));
         }
-        [HttpPost]
-        public async Task<IActionResult> UploadFileAsync([FromBody] FileRequestDto request)
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UploadFile([FromBody] FileRequestDto request)
         {
             var response = await _fileServices.SaveFileAsync(request);
             return Ok(response);

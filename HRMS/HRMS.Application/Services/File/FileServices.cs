@@ -21,11 +21,11 @@ namespace HRMS.Application.Services.File
         {
             _fileStorageFactory = fileStorageFactory;
             _unitOfWork = unitOfWork;
-            _localStorageProvider = (ILocalStorageProvider)_fileStorageFactory.CreateProvider(new() { ConfigJson = FileConstants.LOCAL_STORAGE_CONFIG });
+            //_localStorageProvider = (ILocalStorageProvider)_fileStorageFactory.CreateProvider(new() { ConfigJson = FileConstants.LOCAL_STORAGE_CONFIG });
         }
         private async Task<FileLocationConfigDto> GetStorageLocationConfigAsync()
         {
-            var setting = await _unitOfWork.SystemSettingsRepo.TableNoTracking.FirstOrDefaultAsync(x => x.SettingName == "FileStorageLocation");
+            var setting = await _unitOfWork.SystemSettingsRepo.TableNoTracking.FirstOrDefaultAsync(x => x.SettingKey == "FileStorageLocation");
 
             if (!int.TryParse(setting?.SettingValue, out int locationId))
                 throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG);
@@ -79,9 +79,9 @@ namespace HRMS.Application.Services.File
             _unitOfWork.StoredFilesRepo.Add(file);
 
             if (await _unitOfWork.SaveAsync())
-                return null;
+                return file;
 
-            return file;
+            return null;
         }
 
         public async Task<ApiResponseDto> MarkFileAsProcessByIdAsync(Guid Id)
@@ -101,7 +101,7 @@ namespace HRMS.Application.Services.File
 
         public async Task<ApiResponseDto> ProcessFileMaintenanceAsync(CancellationToken cancellationToken = default)
         {
-            var settings = await _unitOfWork.SystemSettingsRepo.TableNoTracking.Where(x => x.SettingName.StartsWith("FileProcess")).ToListAsync(cancellationToken);
+            var settings = await _unitOfWork.SystemSettingsRepo.TableNoTracking.Where(x => x.SettingKey.StartsWith("FileProcess")).ToListAsync(cancellationToken);
 
             var batchSize = settings.GetSystemSetting("FileBatchSize", 50);
             var retentionDays = settings.GetSystemSetting("FileRetentionDays", r => DateTime.Now.Date.AddDays(-r), 10);
