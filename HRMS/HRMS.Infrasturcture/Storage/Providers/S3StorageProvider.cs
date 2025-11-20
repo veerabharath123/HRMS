@@ -17,7 +17,7 @@ namespace HRMS.Infrastructure.Storage.Providers
         public S3StorageProvider(string bucket, string key, string secret, string serviceUrl)
         {
             _bucket = bucket;
-            _client = new AmazonS3Client(key, secret, new AmazonS3Config { ServiceURL = serviceUrl, ForcePathStyle = true });
+            _client = new AmazonS3Client(key, secret, new AmazonS3Config { ServiceURL = serviceUrl, ForcePathStyle = true, AuthenticationRegion = "us-east-005" });
         }
 
         public async Task<bool> UploadAsync(string fileKey, Stream fileStream, CancellationToken ct = default)

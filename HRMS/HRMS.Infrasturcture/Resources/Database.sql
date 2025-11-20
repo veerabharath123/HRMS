@@ -485,6 +485,8 @@ EXEC InsertSystemSettingIfNotExists
 '1', 
 'File storage location id';
 	
+	truncate table FileLocationConfigurations;
+	select * from FileLocationConfigurations;
 
 IF NOT EXISTS (
     SELECT 1
@@ -496,7 +498,7 @@ BEGIN
     INSERT INTO FileLocationConfigurations 
         (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"HRMSAPPKEY","secret":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","serviceurl":"s3.us-east-005.backblazeb2.com", "ProviderType":"S3"}', 1, 'System', 0);
+        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"005cb40cb0898000000000002","secret":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","serviceurl":"https://s3.us-east-005.backblazeb2.com","Region":"us-east-005", "ProviderType":"S3"}', 1, 'System', 0);
 END
 
 IF NOT EXISTS (

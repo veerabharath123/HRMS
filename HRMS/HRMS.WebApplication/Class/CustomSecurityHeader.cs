@@ -29,7 +29,7 @@ namespace HRMS.WebApplication.Class
                     "script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://maps.googleapis.com https://maps.gstatic.com https://cdn.datatables.net 'nonce-{0}'; " +
                     "style-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net https://cdnjs.cloudflare.com 'nonce-{0}' 'strict-dynamic'; " +
                     "style-src-elem 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net https://cdnjs.cloudflare.com 'nonce-{0}' 'strict-dynamic'; " +
-                    "img-src 'self' https://maps.gstatic.com/ data: https://maps.gstatic.com; " +
+                    "img-src 'self' https://maps.gstatic.com/ data: https://maps.gstatic.com blob:; " +
                     "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
                     "form-action 'self'; media-src 'self';" +
                     "frame-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;" +

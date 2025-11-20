@@ -5,13 +5,11 @@
 const LOGOUT_PATH = '/Account/Logout';
 class Spinner {
     static show() {
-        return
         const spinner = document.getElementById('spinner');
         if (spinner) spinner.classList.add('show');
     }
 
     static hide() {
-        return
         const spinner = document.getElementById('spinner');
         if (spinner) spinner.classList.remove('show');
     }
@@ -43,7 +41,7 @@ function showNotification(options) {
     const {
         type = 'info',          // 'error', 'success', 'warning', 'info'
         title = '',             // title of the message
-        message = '',           // message text
+        message = 'Something went wrong',           // message text
         timer = 3000,           // default duration (ms)
         customOptions = {},      // additional toastr or custom options
         onComplete = null,     // <-- add optional callback
@@ -104,6 +102,7 @@ function ajaxRequest(options) {
         headers: prepareHeaders(config, method),
         beforeSend: config.beforeSend || (() => Spinner.show()),
         afterSend: () => Spinner.hide(),
+        complete: () => Spinner.hide(),
         success: (res) => handleAjaxSuccess(res, config),
         error: config.errorCallback
     });
@@ -164,7 +163,7 @@ function handleAjaxSuccess(res, config) {
             return callback(res);
 
         if (useDefaultSuccessCallBack && res?.success) {
-            callback(res.response, res.message);
+            callback(res.data, res.message);
         }
     }
 

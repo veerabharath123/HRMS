@@ -316,12 +316,37 @@
     </form>
 </div>
 <script nonce="@Html.ScriptNonce()">
+    const modal = new bootstrap.Modal(document.getElementById('emp-detail-img-upload-modal'));
+
     $('#emp-detail-img-upload-modal #upload').on('file:upload',function(e , files){
         console.log(files.files[0])
         const formData = new FormData();
-        
+        const $imgId = $('#emp-photo-id').val('')
+
         formData.append('file',files.files[0])
-        ajaxPostFile('@Url.Action("FileUpload", "File")',formData,function(res){ console.log(res) } )
+        ajaxPostFile(
+            '@Url.Action("FileUpload", "File")',
+            formData,
+            function(res){ 
+                if(res?.success && res?.data){
+                    const id = res.data;
+                    $imgId.val(id);
+                    showNotification({
+                        type: 'success',
+                        message: res?.message || 'Image save!'
+                    });
+                    modal.hide();
+                    const imageUrl = URL.createObjectURL(files.files[0]);
+                    $('#emp-detail-img-block img').attr('src',imageUrl)
+                } else{
+                    showNotification({
+                        type: 'success',
+                        message: res?.message 
+                    });
+                }
+            },
+            { useDefaultSuccessCallBack: false }
+        )
     })
 
     $('#emp-img-view').on('click', function () {

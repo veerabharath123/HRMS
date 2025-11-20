@@ -351,3 +351,7 @@ body {
 .accordion-button::after {
     display: none !important;
 }
+.emp-detail-img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
