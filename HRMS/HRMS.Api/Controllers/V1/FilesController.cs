@@ -28,7 +28,7 @@ namespace HRMS.Api.Controllers.V1
         [HttpPost("[action]")]
         public async Task<IActionResult> UploadFile([FromBody] FileRequestDto request)
         {
-            var response = await _fileServices.SaveFileAsync(request);
+            var response = await _fileServices.UploadFileAsync(request);
             return Ok(response);
         }
     }

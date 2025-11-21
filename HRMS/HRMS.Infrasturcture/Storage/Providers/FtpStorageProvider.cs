@@ -1,11 +1,6 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.SharedKernel.Models.Common.Class;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace HRMS.Infrastructure.Storage.Providers
@@ -22,6 +17,13 @@ namespace HRMS.Infrastructure.Storage.Providers
             _username = username;
             _password = password;
             _useSsl = useSsl;
+        }
+        public FtpStorageProvider(FtpConfigDto config)
+        {
+            _baseUrl = config.FtpBaseUrl;
+            _username = config.FtpUsername;
+            _password = config.FtpPassword;
+            _useSsl = config.UseSsl;
         }
         private bool TryParseUri(string remotePath, out Uri? uri)
         {
@@ -78,7 +80,7 @@ namespace HRMS.Infrastructure.Storage.Providers
             }
         }
 
-        public async Task<Stream?> FetchAsync(string filename, CancellationToken cancellationToken = default)
+        public async Task<byte[]?> FetchAsync(string filename, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -91,7 +93,7 @@ namespace HRMS.Infrastructure.Storage.Providers
                 var memoryStream = new MemoryStream();
                 await responseStream.CopyToAsync(memoryStream, cancellationToken);
                 memoryStream.Position = 0;
-                return memoryStream;
+                return memoryStream.ToArray();
             }
             catch
             {

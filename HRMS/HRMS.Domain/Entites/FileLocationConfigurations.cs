@@ -11,6 +11,7 @@ namespace HRMS.Domain.Entites
     {
         public string ConfigName { get; set; } = string.Empty;
         public string ConfigJson { get; set; } = string.Empty;
+        public string ProviderType { get; set; } = string.Empty;
         public bool IsActive { get; set; }
     }
 }

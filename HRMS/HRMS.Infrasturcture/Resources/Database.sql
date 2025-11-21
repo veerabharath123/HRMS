@@ -173,6 +173,7 @@ create table FileLocationConfigurations
 	GuidId  uniqueidentifier default newid() not null,
 	ConfigName varchar(100) not null,
 	ConfigJson varchar(max) not null,
+	ProviderType varchar(50) not null,
 	IsActive    bit default 1,
 
 	CreatedDate datetime  not null  default getdate(),
@@ -181,6 +182,8 @@ create table FileLocationConfigurations
 	UpdatedUser varchar(50)   default '',
 	IsDeleted bit default 0
 );
+
+drop table if exists FileLocationConfigurations
 
 select * from SystemSettings
 
@@ -496,9 +499,9 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO FileLocationConfigurations 
-        (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
+        (GuidId, ConfigName, ConfigJson,ProviderType, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'S3BucketConfig', '{"bucket":"HRMSAPP","key":"005cb40cb0898000000000002","secret":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","serviceurl":"https://s3.us-east-005.backblazeb2.com","Region":"us-east-005", "ProviderType":"S3"}', 1, 'System', 0);
+        (NEWID(), 'S3BucketConfig', '{"BucketName":"HRMSAPP","AccessKeyId":"005cb40cb0898000000000002","SecretKey":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","ServiceUrl":"https://s3.us-east-005.backblazeb2.com","Region":"us-east-005" }','S3', 1, 'System', 0);
 END
 
 IF NOT EXISTS (

@@ -1,6 +1,9 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using HRMS.Application.Common.Interface;
+using HRMS.SharedKernel.Models.Common.Class;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +22,11 @@ namespace HRMS.Infrastructure.Storage.Providers
             _bucket = bucket;
             _client = new AmazonS3Client(key, secret, new AmazonS3Config { ServiceURL = serviceUrl, ForcePathStyle = true, AuthenticationRegion = "us-east-005" });
         }
+        public S3StorageProvider(S3BucketConfigDto config)
+        {
+            _bucket = config.BucketName;
+            _client = new AmazonS3Client(config.AccessKeyId, config.SecretKey, new AmazonS3Config { ServiceURL = config.ServiceUrl, ForcePathStyle = true, AuthenticationRegion = config.Region });
+        }
 
         public async Task<bool> UploadAsync(string fileKey, Stream fileStream, CancellationToken ct = default)
         {
@@ -31,15 +39,15 @@ namespace HRMS.Infrastructure.Storage.Providers
             catch { return false; }
         }
 
-        public async Task<Stream?> FetchAsync(string fileKey, CancellationToken ct = default)
+        public async Task<byte[]?> FetchAsync(string fileKey, CancellationToken ct = default)
         {
             try
             {
-                var res = await _client.GetObjectAsync(_bucket, fileKey, ct);
-                var ms = new MemoryStream();
+                using var res = await _client.GetObjectAsync(_bucket, fileKey, ct);
+                using var ms = new MemoryStream();
                 await res.ResponseStream.CopyToAsync(ms, ct);
                 ms.Position = 0;
-                return ms;
+                return ms.ToArray();
             }
             catch { return null; }
         }

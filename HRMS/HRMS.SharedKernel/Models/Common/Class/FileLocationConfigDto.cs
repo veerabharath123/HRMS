@@ -10,6 +10,7 @@ namespace HRMS.SharedKernel.Models.Common.Class
     {
         public string ConfigName { get; set; } = string.Empty;
         public string ConfigJson { get; set; } = string.Empty;
+        public string ProviderType { get; set; } = string.Empty;
         public int Id { get; set; }
     }
 }

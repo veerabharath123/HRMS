@@ -6,6 +6,6 @@ namespace HRMS.Application.Services.File
     public interface IFileServices
     {
         Task<ApiResponseDto> ProcessFileMaintenanceAsync(CancellationToken cancellationToken = default);
-        Task<ApiResponseDto> SaveFileAsync(FileRequestDto request);
+        Task<ApiResponseDto> UploadFileAsync(FileRequestDto request);
     }
 }
