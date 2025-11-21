@@ -32,5 +32,12 @@ namespace HRMS.Api.Controllers.V1
             var result = await _employeeServices.AddEmployeeAsync(request);
             return Ok(result);
         }
+        [Authorize]
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetEmployeeImages([FromBody] List<int> request)
+        {
+            var result = await _employeeServices.GetEmployeeImagesAsync(request);
+            return Ok(result);
+        }
     }
 }

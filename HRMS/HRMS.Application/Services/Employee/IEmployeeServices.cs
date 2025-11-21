@@ -7,5 +7,6 @@ namespace HRMS.Application.Services.Employee
     {
         Task<ApiResponseDto> GetPaginatedEmployeesShortAsync(AdvanceTableRequestDto request);
         Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request);
+        Task<ApiResponseDto> GetEmployeeImagesAsync(List<int> empIdList);
     }
 }

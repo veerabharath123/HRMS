@@ -13,4 +13,10 @@ namespace HRMS.SharedKernel.Models.Common.Class
         public string ProviderType { get; set; } = string.Empty;
         public int Id { get; set; }
     }
+
+    public class FileFetchConfigDto: FileDto
+    {
+        public FileLocationConfigDto? locationConfig { get; set; } 
+
+    }
 }

@@ -88,5 +88,12 @@ namespace HRMS.WebApplication.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEmployeeImages(List<int> empIdList)
+        {
+            var response = await _api.PostAsync("/Employees/GetEmployeeImages", empIdList, true);
+            return JsonResponse(response);
+        }
     }
 }

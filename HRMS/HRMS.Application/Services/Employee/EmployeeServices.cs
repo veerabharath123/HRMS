@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
+using HRMS.Application.Services.File;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
@@ -19,10 +20,12 @@ namespace HRMS.Application.Services.Employee
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public EmployeeServices(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IFileServices _fileServices;
+        public EmployeeServices(IUnitOfWork unitOfWork, IMapper mapper, IFileServices fileServices)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _fileServices = fileServices;
         }
         public async Task<ApiResponseDto> GetPaginatedEmployeesShortAsync(AdvanceTableRequestDto request)
         {
@@ -33,7 +36,7 @@ namespace HRMS.Application.Services.Employee
 
                                 select new EmployeeShortResponseDto
                                 {
-                                    Id = emp.GuidId,
+                                    Id = emp.Id,
                                     FullName = emp.FirstName + " " + emp.LastName,
                                     Bio = $"Department: {dept.Name}, Designation: {des.Name}"
                                 }
@@ -88,5 +91,28 @@ namespace HRMS.Application.Services.Employee
             return ApiResponseDto.FlagStatus(saved, newEmployee.Id);
         }
 
+        public async Task<ApiResponseDto> GetEmployeeImagesAsync(List<int> empIdList)
+        {
+            var employee = await _unitOfWork.EmployeeRepo.Table
+                .Where(e => empIdList.Contains(e.Id) && !e.IsDeleted).ToListAsync();
+
+            var employeeImages = new List<object>();
+
+            foreach (var emp in employee)
+            {
+                if(emp.PhotoPictureId is null) 
+                    continue;
+
+                var result = await _fileServices.GetFileByStoredFileIdAsync(emp.PhotoPictureId.Value);
+
+                employeeImages.Add(new
+                {
+                    Id = emp.Id,
+                    ImageBase64 = result
+                });
+            }
+
+            return ApiResponseDto.SuccessStatus(employeeImages);
+        }
     }
 }

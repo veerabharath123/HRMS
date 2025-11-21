@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 
 namespace HRMS.Application.Services.File
 {
@@ -21,14 +22,16 @@ namespace HRMS.Application.Services.File
             _fileStorageFactory = fileStorageFactory;
             _unitOfWork = unitOfWork;
         }
-        private async Task<FileLocationConfigDto> GetFileLocationConfigAsync(int fileId)
+        private async Task<FileFetchConfigDto> GetFileLocationConfigAsync(int fileId)
         {
             var file = await _unitOfWork.StoredFilesRepo.Table
                         .FirstOrDefaultAsync(s => s.Id == fileId && !s.IsDeleted);
 
-            return file is null
+            var location = file is null
                 ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG)
                 : await GetStorageLocationConfigAsync(file.FileLocationId);
+
+            return new FileFetchConfigDto{ FileName = file.FileName, FileContentType = file.FileContentType, FileExtension = file.FileExtension, locationConfig = location };
         }
         private async Task<FileLocationConfigDto> GetFileLocationConfigAsync()
         {
@@ -57,6 +60,17 @@ namespace HRMS.Application.Services.File
             return location is null
                 ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG)
                 : location;
+        }
+        public async Task<string> GetFileByStoredFileIdAsync(int storedFileId)
+        {
+            var file = await _unitOfWork.StoredFilesRepo.Table
+                        .FirstOrDefaultAsync(s => s.Id == storedFileId && !s.IsDeleted);
+
+            var location = file is null
+                ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG)
+                : await GetStorageLocationConfigAsync(file.FileLocationId);
+
+            return await RetrieveFileFromStorageAsync(file.FileName, location);
         }
 
         public async Task<string> RetrieveFileFromStorageAsync(string filename, FileLocationConfigDto configDto, CancellationToken cancellationToken = default)

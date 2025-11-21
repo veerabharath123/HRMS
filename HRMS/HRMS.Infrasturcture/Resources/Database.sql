@@ -183,7 +183,7 @@ create table FileLocationConfigurations
 	IsDeleted bit default 0
 );
 
-drop table if exists FileLocationConfigurations
+drop table FileLocationConfigurations
 
 select * from SystemSettings
 

@@ -88,11 +88,19 @@
 <script nonce="@Html.ScriptNonce()">
     function loadEmployeeImages(images){
         for(const image of images){
-            setImageSrc(`div.card#${image.id} > img`, image.data)
+            setImageSrc(`div.card#${image.id} > img`, image.imageBase64)
         }
     }
     function getEmployeeImages(ids){
+        console.log(ids);
 
+        ajaxPost({
+            url: '@Url.Action("GetEmployeeImages","Employee")',
+            data: JSON.stringify({ empIdList: ids }),
+            success: function (response) {
+                loadEmployeeImages(response);
+            }
+        })
     }
 
     getEmployeeImages($('div.card').map((i,x) => $(x).attr('id')));
