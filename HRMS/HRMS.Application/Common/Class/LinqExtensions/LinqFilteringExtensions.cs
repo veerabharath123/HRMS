@@ -3,6 +3,7 @@ using HRMS.SharedKernel.Models.Request;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 
 namespace HRMS.Application.Common.Class.LinqExtensions
 {
@@ -35,7 +36,7 @@ namespace HRMS.Application.Common.Class.LinqExtensions
                 var constant = Expression.Constant(Convert.ChangeType(filter.Value, targetType), targetType);
                 if(prop.PropertyType != targetType) member = Expression.Convert(member, targetType);
 
-                Expression expr = filter.Comparator switch 
+                Expression expr = (Enum.TryParse(filter.Comparator, out FilterComparator result) ? result : FilterComparator.NotImp) switch 
                 { 
                     FilterComparator.Equals => Expression.Equal(member, constant), 
                     FilterComparator.NotEquals => Expression.NotEqual(member, constant), 
@@ -52,7 +53,7 @@ namespace HRMS.Application.Common.Class.LinqExtensions
                 if (combined == null)
                     combined = expr;
                 else
-                    combined = filter.Operator == FilterOperator.And
+                    combined = (Enum.TryParse(filter.Operator, out FilterOperator op) ? op : FilterOperator.And) == FilterOperator.And
                         ? Expression.AndAlso(combined, expr)
                         : Expression.OrElse(combined, expr);
             }
@@ -72,5 +73,38 @@ namespace HRMS.Application.Common.Class.LinqExtensions
                 typeof(string).GetMethod(method, [typeof(string)])!,
                 Expression.Call(constant, nameof(string.ToLower), Type.EmptyTypes));
         }
+
+        private static object? GetActualValue(object? value, Type targetType)
+        {
+            if (value is JsonElement element)
+            {
+                if (targetType == typeof(string))
+                    return element.GetString();
+
+                if (targetType == typeof(int))
+                    return element.GetInt32();
+
+                if (targetType == typeof(long))
+                    return element.GetInt64();
+
+                if (targetType == typeof(decimal))
+                    return element.GetDecimal();
+
+                if (targetType == typeof(double))
+                    return element.GetDouble();
+
+                if (targetType == typeof(bool))
+                    return element.GetBoolean();
+
+                if (targetType == typeof(DateTime))
+                    return element.GetDateTime();
+
+                // fallback to string conversion
+                return element.ToString();
+            }
+
+            return value;
+        }
+
     }
 }

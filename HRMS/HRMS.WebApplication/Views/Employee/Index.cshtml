@@ -1,7 +1,6 @@
-﻿@model PaginationResponseDto<EmployeeShortResponseDto>
+﻿
 @{
     ViewData["Module"] = "Employees";
-    var page = Model.PageNumber;
 }
 
 <div class="container-fluid">
@@ -15,7 +14,7 @@
         </div>
     </div>
     <div id="employee-cards">
-        <partial name="~/Views/Employee/EmployeeCards.cshtml" model="Model" />
+        @* <partial name="~/Views/Employee/EmployeeCards.cshtml" model="Model" /> *@
     </div>
 
     @* Employee filter modal *@
@@ -92,20 +91,23 @@
         }
     }
     function getEmployeeImages(ids){
-        console.log(ids);
+        const request = { IdList: ids.toArray() };
 
-        ajaxPost({
-            url: '@Url.Action("GetEmployeeImages","Employee")',
-            data: JSON.stringify({ empIdList: ids }),
-            success: function (response) {
+        if(!request.IdList?.length) return;
+
+        ajaxPost(
+            '@Url.Action("GetEmployeeImages","Employee")',
+            JSON.stringify(request),
+            function (response) {
                 loadEmployeeImages(response);
             }
-        })
+        )
     }
 
-    getEmployeeImages($('div.card').map((i,x) => $(x).attr('id')));
+    
 
-    $('div.card > img').on('click', function () {
+    $(document).on('click','div.card > img', function () {
+        debugger
         const $card = $(this).parent();
         const src = this.src;
         const title = $card.find('.card-title')?.text() ?? '?';
@@ -117,113 +119,156 @@
         modal.show();
     });
     const department = $('#department').selectize({create: false});
-    $('#designation').selectize({create: false});
-   $('#sortby').selectize({create: false});
+    const designation = $('#designation').selectize({create: false});
+    $('#sortby').selectize({create: false});
     $('#upload-date').selectize({create: false});
+    
+
 
     $('#emp-filter-btn').on('click', function(){
-        
-        const request = JSON.stringify({
-            currentPage: 1,
-            maxPages: 10,
-            pageLength: 24,
-            Filter: buildFilters(),
-            Sort: buildSort()
-        })
+        const request = {
+            Filter: { Filters: buildFilters() },
+            Sort: { SortOptions: buildSort() },
+            Pagination: {
+                PageNumber: 1,
+                PageSize: 24,
+                MaxPages: 10
+            }
+        };
 
-        
         ajaxLoadHtml(
             '@Url.Action("GetEmployees","Employee")',
-            request, 
-            '#employee-cards'
-        );
+            JSON.stringify(request),
+            '#employee-cards',
+            {
+                afterLoad: function(){
+                    getEmployeeImages(
+                        $('#employee-cards').find('div.card')
+                            .map((i,x) => parseInt($(x).attr('id')))
+                    );
+                },
+                 contentType: "application/json",
+                 processData: false
+            }
+        )
+
+        // $.ajax({
+        //     url: '@Url.Action("GetEmployees","Employee")',
+        //     type: "POST",
+        //     data: JSON.stringify(request),
+        //     contentType: "application/json",
+        //     headers: {
+        //         'X-CSRF-TOKEN': getCsrfToken()
+        //     },
+        //     processData: false,
+        //     success: function(html) {
+        //         $('#employee-cards').html(html);
+
+        //         // getEmployeeImages(
+        //         //     $('#employee-cards').find('div.card')
+        //         //         .map((i,x) => parseInt($(x).attr('id')))
+        //         // );
+        //     }
+        // });
     })
 
-    function buildFilters(){
-        const filters = []
-        const departmentSel = department[0].selectize;
-        departmentSel.items.forEach(function (value) {
-            const txt = departmentSel.options[value].text;
+    $('#emp-filter-btn').trigger('click');
 
-            filters.push({
-                property: 'Department',
-                comparator: '=',
-                value: txt,
-                operator:'And' 
-            });
+    function buildFilters() {
+    const filters = [];
+
+    // ----------------------
+    // Department (Selectize)
+    // ----------------------
+    const departmentSel = department[0].selectize;
+    departmentSel.items.forEach(function (value) {
+        const txt = departmentSel.options[value].text;
+
+        filters.push({
+            PropertyName: "Department",
+            Comparator: "Equals",            // enum: FilterComparator.Equals
+            Value: txt,
+            Operator: "Or",                 // enum: FilterOperator.And
+            PropertyType: "String"           // enum: FilterPropertyType.String
         });
+    });
 
-        const designations = $('#designation').val() || [];
-        designations.forEach((val, index) => {
-            filters.push({
-                property: 'Designation',
-                comparator: '=',
-                value: val,
-                operator:  'And'
-            });
+    // ----------------------
+    // Designation (multi-select)
+    // ----------------------
+    const designationSel = designation[0].selectize;
+    designationSel.items.forEach(function (value) {
+        const txt = designationSel.options[value].text;
+
+        filters.push({
+            PropertyName: "Designation",
+            Comparator: "Equals",            // enum: FilterComparator.Equals
+            Value: txt,
+            Operator: "Or",                 // enum: FilterOperator.And
+            PropertyType: "String"           // enum: FilterPropertyType.String
         });
+    });
 
-        const uploadDate = $('#upload-date').val();
-        switch(uploadDate){
-            case 'Today':
-                filters.push({
-                    property: 'UploadDate',
-                    comparator: '>=',
-                    value: new Date().toISOString().split('T')[0],
-                    operator: filters.length > 0 ? 'And' : ''
-                });
-                break;
-            case 'Last hour':
-                const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-                filters.push({
-                    property: 'UploadDate',
-                    comparator: '>=',
-                    value: oneHourAgo,
-                    operator: filters.length > 0 ? 'And' : ''
-                });
-                break;
-            case 'This week':
-                const now = new Date();
-                const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString().split('T')[0];
-                filters.push({
-                    property: 'UploadDate',
-                    comparator: '>=',
-                    value: firstDayOfWeek,
-                    operator: filters.length > 0 ? 'And' : ''
-                });
-                break;
-            case 'This month':
-                const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
-                filters.push({
-                    property: 'UploadDate',
-                    comparator: '>=',
-                    value: firstDayOfMonth,
-                    operator: filters.length > 0 ? 'And' : ''
-                });
-                break;
-            case 'This year':
-                const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
-                filters.push({
-                    property: 'UploadDate',
-                    comparator: '>=',
-                    value: firstDayOfYear,
-                    operator: filters.length > 0 ? 'And' : ''
-                });
-                break;
-        }
+    // ----------------------
+    // UploadDate Logic
+    // ----------------------
+    const uploadDate = $('#upload-date').val();
+    const today = new Date();
 
-        $('#sortby').val() && filters.push({
-            property: $('#sortby').val(),
-            desc: $('#sort-order').is(':checked'),
+    function addDateFilter(dateISOString) {
+        filters.push({
+            PropertyName: "UploadDate",
+            Comparator: "GreaterThanOrEqual",  // ">=" enum
+            Value: dateISOString,
+            Operator: filters.length > 0 ? "And" : "",
+            PropertyType: "Date"
         });
-
-        return filters;
     }
+
+    switch (uploadDate) {
+        case "Today":
+            addDateFilter(new Date().toISOString().split("T")[0]);
+            break;
+
+        case "Last hour":
+            addDateFilter(new Date(Date.now() - 3600000).toISOString());
+            break;
+
+        case "This week":
+            const now = new Date();
+            const firstDayOfWeek = new Date(
+                now.setDate(now.getDate() - now.getDay())
+            ).toISOString().split("T")[0];
+            addDateFilter(firstDayOfWeek);
+            break;
+
+        case "This month":
+            const firstDayOfMonth = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                1
+            ).toISOString().split("T")[0];
+            addDateFilter(firstDayOfMonth);
+            break;
+
+        case "This year":
+            const firstDayOfYear = new Date(
+                today.getFullYear(),
+                0,
+                1
+            ).toISOString().split("T")[0];
+            addDateFilter(firstDayOfYear);
+            break;
+    }
+
+    return filters;
+}
+
     function buildSort(){
         const sorts = [];
         $('#sortby').val() && sorts.push({
-            property: $('#sortby').val(),
-            desc: $('#sort-order').is(':checked'),
+            PropertyName: $('#sortby').val(),
+            Descending: $('#sort-order').is(':checked'),
         });
         return sorts;
     }

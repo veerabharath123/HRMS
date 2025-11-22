@@ -117,7 +117,7 @@ function buildAjaxConfig(options) {
         data: {},
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
-        processData: true,
+        processData: false,
         headers: {},
         useDefaultSuccessCallBack: true,
         successCallback: null,
@@ -278,12 +278,14 @@ function ajaxLoadHtml(url, data = {}, targetSelector, options = {}) {
                 } else {
                     console.warn(`ajaxLoadHtml: Target selector "${targetSelector}" not found.`);
                 }
+
+
+                // Optional per-request callback
+                if (typeof options.afterLoad === 'function') {
+                    options.afterLoad($target);
+                }
             }
 
-            // Optional per-request callback
-            if (typeof options.afterLoad === 'function') {
-                options.afterLoad(html);
-            }
         },
         errorCallback: options.errorCallback || handleAjaxError,
         ...options

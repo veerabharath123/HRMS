@@ -75,7 +75,7 @@ namespace HRMS.WebApplication.Controllers
             {
                 new(ClaimTypes.Name, auth.UserName),
                 new(ClaimTypes.NameIdentifier, auth.UserId.ToString()),
-                new("RequestToken",auth.Token)
+                new("AccessToken",auth.Token)
             };
 
             var identity = new ClaimsIdentity(claims, "AuthCookie");

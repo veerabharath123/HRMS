@@ -27,10 +27,10 @@ namespace HRMS.WebApplication.Controllers
                 Pagination = new { PageNumber = page ?? 1, PageSize = 24 }
             },true);
             await LoadEmployeeDropdownsAsync();
-            return View("Index", result.Result);
+            return View("Index");
         }
         [HttpPost]
-        public async Task<IActionResult> GetEmployees(AdvanceTableRequestDto request)
+        public async Task<IActionResult> GetEmployees([FromBody] AdvanceTableRequestDto request)
         {
             request ??= new();
             var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", request, true);
@@ -90,9 +90,13 @@ namespace HRMS.WebApplication.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetEmployeeImages(List<int> empIdList)
+        public async Task<IActionResult> GetEmployeeImages([FromBody]ListIdRequestDto request)
         {
-            var response = await _api.PostAsync("/Employees/GetEmployeeImages", empIdList, true);
+            if (request == null || request.IdList == null || request.IdList.Count == 0)
+            {
+                return JsonResponse<object>(null);
+            }
+            var response = await _api.PostAsync<List<EmpImageResponseDto>>("/Employees/GetEmployeeImages", request, true);
             return JsonResponse(response);
         }
     }

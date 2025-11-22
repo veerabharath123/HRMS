@@ -34,7 +34,7 @@ namespace HRMS.Api.Controllers.V1
         }
         [Authorize]
         [HttpPost("[action]")]
-        public async Task<IActionResult> GetEmployeeImages([FromBody] List<int> request)
+        public async Task<IActionResult> GetEmployeeImages([FromBody] ListIdRequestDto request)
         {
             var result = await _employeeServices.GetEmployeeImagesAsync(request);
             return Ok(result);

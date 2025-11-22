@@ -162,7 +162,15 @@
 </head>
 <body class="position-relative">
     <div class="" id="spinner">
-        <img src="~/images/spinner.png" class="bg-image" alt="Background" />
+        <!-- From Uiverse.io by NlghtM4re -->
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        @* <img src="~/images/spinner.png" class="bg-image" alt="Background" /> *@
     </div>
     <script nonce="@Html.ScriptNonce()">
         window.basePath = '@(Context.Request.PathBase.Value)';
@@ -350,6 +358,7 @@
         $(document).on('visibilitychange', function () {
             if (document.hidden) return
 
+            return
             ajaxGet(
                 '@Url.Action("SessionStatus", "Account")',
                 function (data) {
@@ -392,6 +401,7 @@
             }, 1000);
 
             $('#stayLoggedIn').one('click', function () {
+                return
                 ajaxGet(
                     '@Url.Action("KeepAlive", "Account")',
                     function (data) {

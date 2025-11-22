@@ -38,7 +38,11 @@ namespace HRMS.Application.Services.Employee
                                 {
                                     Id = emp.Id,
                                     FullName = emp.FirstName + " " + emp.LastName,
-                                    Bio = $"Department: {dept.Name}, Designation: {des.Name}"
+                                    Bio = $"Department: {dept.Name}, Designation: {des.Name}",
+                                    Department = dept.Name,
+                                    Designation = des.Name,
+                                    LastName = emp.LastName,
+                                    FirstName = emp.FirstName
                                 }
                               )
                               .FilterBy(request.Filter)
@@ -91,12 +95,12 @@ namespace HRMS.Application.Services.Employee
             return ApiResponseDto.FlagStatus(saved, newEmployee.Id);
         }
 
-        public async Task<ApiResponseDto> GetEmployeeImagesAsync(List<int> empIdList)
+        public async Task<ApiResponseDto> GetEmployeeImagesAsync(ListIdRequestDto request)
         {
             var employee = await _unitOfWork.EmployeeRepo.Table
-                .Where(e => empIdList.Contains(e.Id) && !e.IsDeleted).ToListAsync();
+                .Where(e => request.IdList.Contains(e.Id) && !e.IsDeleted).ToListAsync();
 
-            var employeeImages = new List<object>();
+            var employeeImages = new List<EmpImageResponseDto>();
 
             foreach (var emp in employee)
             {
@@ -105,7 +109,7 @@ namespace HRMS.Application.Services.Employee
 
                 var result = await _fileServices.GetFileByStoredFileIdAsync(emp.PhotoPictureId.Value);
 
-                employeeImages.Add(new
+                employeeImages.Add(new EmpImageResponseDto
                 {
                     Id = emp.Id,
                     ImageBase64 = result

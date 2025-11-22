@@ -16,14 +16,14 @@ namespace HRMS.WebApplication.Controllers
         {
             return File(fileResponse.FileContent!, fileResponse.FileContentType, fileResponse.FileNameWithExtension);
         }
-        protected IActionResult JsonResponse<T>(ApiResponseModel<T> response, string? redirectTo = "")
+        protected IActionResult JsonResponse<T>(ApiResponseModel<T>? response = null, string? redirectTo = "")
         {
-            if(response.Success)
+            if(response?.Success == true)
             {
                 return Json(new { success = true, data = response.Result, message = response.Message, redirectTo });
             }
 
-            return Json(new { success = false, data = default(T), message = response.Message });
+            return Json(new { success = false, data = default(T), message = response?.Message });
         }
 
         protected IActionResult JsonBadResponse(string message = "")

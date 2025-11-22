@@ -2,12 +2,12 @@
 
 namespace HRMS.SharedKernel.Models.Common.Class
 {
-    public class FilterOptionDto
+    public class FilterOptionDto 
     {
         public string PropertyName { get; set; } = string.Empty;
-        public FilterPropertyType PropertyType { get; set; } = FilterPropertyType.String;
-        public object? Value { get; set; }
-        public FilterComparator Comparator { get; set; }
-        public FilterOperator Operator { get; set; } = FilterOperator.And;
+        public string PropertyType { get; set; } = string.Empty;// = FilterPropertyType.String;
+        public string? Value { get; set; }
+        public string Comparator { get; set; } = string.Empty;
+        public string Operator { get; set; } = string.Empty;// = FilterOperator.And;
     }
 }

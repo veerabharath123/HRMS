@@ -23,6 +23,17 @@ namespace HRMS.WebApplication.Class
             _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
             _httpContextAccessor = httpContextAccessor;
         }
+        private string GetAccessToken()
+        {
+            var token = _httpContextAccessor?.HttpContext?.Session.GetString("AccessToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                token = _httpContextAccessor?.HttpContext?.User.Claims
+                    .FirstOrDefault(c => c.Type == "AccessToken")?.Value?.ToString()
+                    ?? string.Empty;
+            }
+            return token ?? string.Empty;
+        }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri url, object? data, bool authRequired)
         {
@@ -36,8 +47,7 @@ namespace HRMS.WebApplication.Class
 
             if(authRequired)
             {
-                var token = _httpContextAccessor?.HttpContext?.Session.GetString("AccessToken");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token ?? string.Empty);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", GetAccessToken());
             }
 
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en-US"));

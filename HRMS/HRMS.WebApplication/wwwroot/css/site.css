@@ -268,10 +268,13 @@ body {
     }
 .card-img {
     transition: transform .2s ease-in-out;
+    padding: .2rem;
+    border: .2rem solid #4343439c;
+    width: 50% !important;
 }
 .card-img:hover {
     cursor: pointer;
-    transform: scale(1.2)
+    transform: scale(1.1)
 }
 #image-viewer .modal-body {
     display: flex;
@@ -351,7 +354,74 @@ body {
 .accordion-button::after {
     display: none !important;
 }
-.emp-detail-img {
+.emp-detail-img, .card-img {
     aspect-ratio: 1 / 1;
     object-fit: cover;
+}
+
+/* From Uiverse.io by NlghtM4re */
+.loader {
+    height: 120px;
+    width: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+    .loader div {
+        height: 30px;
+        width: 30px;
+        position: absolute;
+        animation: move 2s infinite;
+    }
+
+        .loader div:nth-child(1) {
+            background-color: #072F5F;
+            box-shadow: #072F5F 0px 7px 29px 0px;
+            transform: translate(-30px,-30px);
+            animation-delay: -.5s;
+        }
+
+        .loader div:nth-child(2) {
+            background-color: #1261A0;
+            box-shadow: #1261A0 0px 7px 29px 0px;
+            transform: translate(30px,-30px);
+            animation-delay: -1s;
+        }
+
+        .loader div:nth-child(3) {
+            background-color: #3895D3;
+            box-shadow: #3895D3 0px 7px 29px 0px;
+            transform: translate(30px,30px);
+            animation-delay: -1.5s;
+        }
+
+        .loader div:nth-child(4) {
+            background-color: #58CCED;
+            box-shadow: #58CCED 0px 7px 29px 0px;
+            transform: translate(-30px,30px);
+            animation-delay: -2s;
+        }
+
+@keyframes move {
+    0% {
+        transform: translate(-30px, -30px);
+    }
+
+    25% {
+        transform: translate(30px, -30px);
+    }
+
+    50% {
+        transform: translate(30px, 30px);
+    }
+
+    75% {
+        transform: translate(-30px, 30px);
+    }
+
+    100% {
+        transform: translate(-30px, -30px);
+    }
 }
