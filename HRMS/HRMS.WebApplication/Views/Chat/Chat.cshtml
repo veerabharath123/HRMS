@@ -3,6 +3,10 @@
 @{
     ViewData["Module"] = "Chats";
     ViewData["Title"] = "Chats";
+    for(int i = 0; i < 20; i++)
+    {
+        Model.Add(new ChatUserResponseDto { UserId = Guid.NewGuid(), UserName = $"Username {i}" });
+    }
 }
 <style nonce="@Html.ScriptNonce()">
     .chat-section {
@@ -302,9 +306,124 @@
         border-radius: 20px;
         padding:10px 20px;
     }
-
+    .messages{
+        max-width:85%;
+    }
 </style>
-<div class="chat-section">
+<div class="container-fluid h-100 py-2">
+    <div class="row h-100">
+        <div class="col-lg-4 col-md-12 h-100">
+            <div class="card h-100 shadow">
+                <div class="card-title p-3 border-bottom">
+                    <div class="row">
+                        <div class="col">
+                            <h1 class="mb-2">Chats</h1>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search user">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body h-100 scrollarea">
+                    <div class="list-group list-group-flush ">
+                        @foreach (var user in Model)
+                        {
+                            <div class="p-2 border-bottom bg-body-tertiary">
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex flex-row">
+                                        <img src="~/images/user-no-img.png" alt="avatar"
+                                             class="rounded-circle d-flex align-self-center me-3 shadow-1-strong bg-dark" width="50">
+                                        <div class="pt-1">
+                                            <p class="fw-bold mb-0">@user.UserName</p>
+                                            <p class="small text-muted">Hello, Are you there?</p>
+                                        </div>
+                                    </div>
+                                    <div class="pt-1">
+                                        <p class="small text-muted mb-1">Just now</p>
+                                        <span class="badge bg-success float-end">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8  h-100">
+           @*  <div class="card shadow h-100 d-md-none d-lg-block">
+                <div class="card-body h-100">
+                    <div class="d-flex justify-content-center align-items-center h-100 flex-column">
+                        
+                        <div class="border p-3 rounded d-flex flex-column justify-content-center align-items-center">
+                            <i class="bi bi-chat-dots-fill text-primary"></i>
+                            <b>Start new chat</b>
+                            
+                        </div>
+                    </div>
+                 </div>
+            </div> *@
+            <div class="card shadow h-100">
+                <div class="card-title border-bottom px-3 py-2">
+                    <div class="bg-body-tertiary">
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex flex-row">
+                                <img src="~/images/user-no-img.png" alt="avatar"
+                                     class="rounded-circle d-flex align-self-center me-3 shadow-1-strong bg-dark" width="40">
+                                <div class="pt-1">
+                                    <p class="fw-bold mb-0">Name</p>
+                                    <p class="small text-muted"><span></span>Online</p>
+                                </div>
+                            </div>
+                            <div class="pt-1 d-flex flex-column justify-content-center">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body scrollarea">
+                    @for(int i = 1; i <30; i++)
+                    {
+                        if (i%2==0)
+                        {
+                            <div class="d-flex flex-column align-items-start">
+                                <div class="alert alert-primary message">
+                                    Indicates a successful or positive action.
+                                </div>
+                                <span>
+                                    09:00 
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-items-end">
+                                <div class="alert alert-secondary message">
+                                    Indicates a successful or positive action.
+                                </div>
+                                <span>
+                                    09:00
+                                    <i class="bi bi-send-check-fill"></i>
+                                    <i class="bi bi-eye-fill"></i>
+                                </span>
+                            </div>
+                        }
+
+                    }
+                </div>
+                <div class="card-footer d-flex">
+                    
+                    <button class="btn btn-primary me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+                    <div class="input-group">
+                        <textarea class="form-control" placeholder="Write message..." rows="1"></textarea>
+                        <button class="btn btn-success" type="button"><i class="bi bi-send"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="chat-section d-none">
     <div class="chat-persons-list active">
         <div class="people-head">
             <div class="d-flex align-items-center gap-2">

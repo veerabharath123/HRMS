@@ -11,4 +11,12 @@ namespace HRMS.SharedKernel.Models.Request
     {
         public List<FilterOptionDto> Filters { get; set; } = [];
     }
+    public class FilterGroupDto
+    {
+        public List<FilterOptionDto>? Filters { get; set; } = [];
+        public List<FilterGroupDto>? Groups { get; set; } = [];
+
+        // How to combine filters within this group
+        public string Operator { get; set; } = "And";
+    }
 }

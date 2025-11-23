@@ -45,7 +45,7 @@ namespace HRMS.Application.Services.Employee
                                     FirstName = emp.FirstName
                                 }
                               )
-                              .FilterBy(request.Filter)
+                              .FilterBy(request.FilterGroup)
                               .SortBy(request.Sort)
                               .PaginateAsync(request.Pagination);
 

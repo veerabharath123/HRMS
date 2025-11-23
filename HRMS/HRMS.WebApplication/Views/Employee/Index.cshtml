@@ -10,7 +10,7 @@
     <div class="row mt-3">
         <div class="col-12 clearfix">
             <a href="@Url.Action("AddEmployee", "Employee")" class="btn btn-success float-start"><i class="bi bi-person-plus-fill"></i> New Employee</a>
-            <button class="btn btn-primary float-end shadow-sm" data-bs-toggle="modal" data-bs-target="#emp-filter-modal">Filters <i class="bi bi-funnel"></i></button
+            <button id="filter-modal-btn" class="btn btn-primary float-end shadow-sm" data-bs-toggle="modal" data-bs-target="#emp-filter-modal"><span class="badge bg-warning text-dark me-2"></span> Filters <i class="bi bi-funnel"></i></button
         </div>
     </div>
     <div id="employee-cards">
@@ -76,7 +76,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-info btn-sm">Clear filters</button>
+                    <button class="btn btn-info btn-sm" id="clr-filter-btn">Clear filters</button>
                     <button class="btn btn-primary btn-sm" id="emp-filter-btn">Apply filters</button>
                 </div>
             </div>
@@ -85,6 +85,8 @@
     
 </div>
 <script nonce="@Html.ScriptNonce()">
+    const filterModal = new bootstrap.Modal(document.getElementById('emp-filter-modal'));    
+
     function loadEmployeeImages(images){
         for(const image of images){
             setImageSrc(`div.card#${image.id} > img`, image.imageBase64)
@@ -107,7 +109,6 @@
     
 
     $(document).on('click','div.card > img', function () {
-        debugger
         const $card = $(this).parent();
         const src = this.src;
         const title = $card.find('.card-title')?.text() ?? '?';
@@ -126,8 +127,16 @@
 
 
     $('#emp-filter-btn').on('click', function(){
-        const request = {
-            Filter: { Filters: buildFilters() },
+        const request = getEmpFilterRequest();
+        localStorage.setItem('emp-filter',JSON.stringify(request))
+        loadEmpCards(request)
+    })
+    function getEmpFilterRequest(){
+        return {
+            Filter:{
+                Filters:buildFilters()
+            },
+            FilterGroup: buildGroupedFilters(),
             Sort: { SortOptions: buildSort() },
             Pagination: {
                 PageNumber: 1,
@@ -135,6 +144,10 @@
                 MaxPages: 10
             }
         };
+    }
+    function loadEmpCards(request){
+        const filterCount = request?.FilterGroup?.Groups?.length || 0;
+        $('#filter-modal-btn span').text(filterCount).removeClass('d-none').addClass(!filterCount?'d-none':'')
 
         ajaxLoadHtml(
             '@Url.Action("GetEmployees","Employee")',
@@ -142,37 +155,141 @@
             '#employee-cards',
             {
                 afterLoad: function(){
+                    filterModal.hide()
                     getEmployeeImages(
                         $('#employee-cards').find('div.card')
                             .map((i,x) => parseInt($(x).attr('id')))
                     );
                 },
-                 contentType: "application/json",
-                 processData: false
+                contentType: "application/json",
+                processData: false
             }
         )
+    }
 
-        // $.ajax({
-        //     url: '@Url.Action("GetEmployees","Employee")',
-        //     type: "POST",
-        //     data: JSON.stringify(request),
-        //     contentType: "application/json",
-        //     headers: {
-        //         'X-CSRF-TOKEN': getCsrfToken()
-        //     },
-        //     processData: false,
-        //     success: function(html) {
-        //         $('#employee-cards').html(html);
+    debugger
+    const sessionRequest = localStorage.getItem('emp-filter')
+    loadEmpCards(JSON.parse(sessionRequest) ?? getEmpFilterRequest());
 
-        //         // getEmployeeImages(
-        //         //     $('#employee-cards').find('div.card')
-        //         //         .map((i,x) => parseInt($(x).attr('id')))
-        //         // );
-        //     }
-        // });
-    })
+    function buildGroupedFilters() {
 
-    $('#emp-filter-btn').trigger('click');
+        const root = {
+            Operator: "And",    // dep1 OR dep2 OR dep3
+            Filters: [],
+            Groups: []
+        };
+
+        // ----------------------
+        // Department group
+        // ----------------------
+        const departmentSel = department[0].selectize;
+        if (departmentSel.items.length > 0) {
+
+            const deptGroup = {
+                Operator: "Or",    // dep1 OR dep2 OR dep3
+                Filters: [],
+                Groups: []
+            };
+
+            departmentSel.items.forEach(function (value) {
+                const txt = departmentSel.options[value].text;
+
+                deptGroup.Filters.push({
+                    PropertyName: "Department",
+                    Comparator: "Equals",
+                    Value: txt,
+                    Operator: "Or",
+                    PropertyType: "String"
+                });
+            });
+
+            root.Groups.push(deptGroup);
+        }
+
+        // ----------------------
+        // Designation group
+        // ----------------------
+        const designationSel = designation[0].selectize;
+        if (designationSel.items.length > 0) {
+
+            const desGroup = {
+                Operator: "Or",   // des1 OR des2 OR des3
+                Filters: []
+            };
+
+            designationSel.items.forEach(function (value) {
+                const txt = designationSel.options[value].text;
+
+                desGroup.Filters.push({
+                    PropertyName: "Designation",
+                    Comparator: "Equals",
+                    Value: txt,
+                    Operator: "Or",
+                    PropertyType: "String"
+                });
+            });
+
+            root.Groups.push(desGroup);
+        }
+
+        // ----------------------
+        // Upload Date (AND group)
+        // ----------------------
+        const uploadDate = $('#upload-date').val();
+        const today = new Date();
+
+        function addUploadDate(dateISOString) {
+            root.Groups.push({
+                Operator: "And",
+                Filters: [
+                    {
+                        PropertyName: "UploadDate",
+                        Comparator: "GreaterThanOrEqual",
+                        Value: dateISOString,
+                        Operator: "And",
+                        PropertyType: "Date"
+                    }
+                ]
+            });
+        }
+
+        switch (uploadDate) {
+            case "Today":
+                addUploadDate(new Date().toISOString().split("T")[0]);
+                break;
+
+            case "Last hour":
+                addUploadDate(new Date(Date.now() - 3600000).toISOString());
+                break;
+
+            case "This week":
+                const now = new Date();
+                const firstDayOfWeek = new Date(
+                    now.setDate(now.getDate() - now.getDay())
+                ).toISOString().split("T")[0];
+                addUploadDate(firstDayOfWeek);
+                break;
+
+            case "This month":
+                addUploadDate(
+                    new Date(today.getFullYear(), today.getMonth(), 1)
+                        .toISOString()
+                        .split("T")[0]
+                );
+                break;
+
+            case "This year":
+                addUploadDate(
+                    new Date(today.getFullYear(), 0, 1)
+                        .toISOString()
+                        .split("T")[0]
+                );
+                break;
+        }
+
+        return root.Groups.length ? root : null;
+    }
+
 
     function buildFilters() {
     const filters = [];
@@ -181,96 +298,108 @@
     // Department (Selectize)
     // ----------------------
     const departmentSel = department[0].selectize;
-    departmentSel.items.forEach(function (value) {
-        const txt = departmentSel.options[value].text;
+        departmentSel.items.forEach(function (value) {
+            const txt = departmentSel.options[value].text;
 
-        filters.push({
-            PropertyName: "Department",
-            Comparator: "Equals",            // enum: FilterComparator.Equals
-            Value: txt,
-            Operator: "Or",                 // enum: FilterOperator.And
-            PropertyType: "String"           // enum: FilterPropertyType.String
+            filters.push({
+                PropertyName: "Department",
+                Comparator: "Equals",            // enum: FilterComparator.Equals
+                Value: txt,
+                Operator: "Or",                 // enum: FilterOperator.And
+                PropertyType: "String"           // enum: FilterPropertyType.String
+            });
         });
-    });
 
-    // ----------------------
-    // Designation (multi-select)
-    // ----------------------
-    const designationSel = designation[0].selectize;
-    designationSel.items.forEach(function (value) {
-        const txt = designationSel.options[value].text;
+        // ----------------------
+        // Designation (multi-select)
+        // ----------------------
+        const designationSel = designation[0].selectize;
+        designationSel.items.forEach(function (value) {
+            const txt = designationSel.options[value].text;
 
-        filters.push({
-            PropertyName: "Designation",
-            Comparator: "Equals",            // enum: FilterComparator.Equals
-            Value: txt,
-            Operator: "Or",                 // enum: FilterOperator.And
-            PropertyType: "String"           // enum: FilterPropertyType.String
+            filters.push({
+                PropertyName: "Designation",
+                Comparator: "Equals",            // enum: FilterComparator.Equals
+                Value: txt,
+                Operator: "Or",                 // enum: FilterOperator.And
+                PropertyType: "String"           // enum: FilterPropertyType.String
+            });
         });
-    });
 
-    // ----------------------
-    // UploadDate Logic
-    // ----------------------
-    const uploadDate = $('#upload-date').val();
-    const today = new Date();
+        // ----------------------
+        // UploadDate Logic
+        // ----------------------
+        const uploadDate = $('#upload-date').val();
+        const today = new Date();
 
-    function addDateFilter(dateISOString) {
-        filters.push({
-            PropertyName: "UploadDate",
-            Comparator: "GreaterThanOrEqual",  // ">=" enum
-            Value: dateISOString,
-            Operator: filters.length > 0 ? "And" : "",
-            PropertyType: "Date"
-        });
+        function addDateFilter(dateISOString) {
+            filters.push({
+                PropertyName: "UploadDate",
+                Comparator: "GreaterThanOrEqual",  // ">=" enum
+                Value: dateISOString,
+                Operator: filters.length > 0 ? "And" : "",
+                PropertyType: "Date"
+            });
+        }
+
+        switch (uploadDate) {
+            case "Today":
+                addDateFilter(new Date().toISOString().split("T")[0]);
+                break;
+
+            case "Last hour":
+                addDateFilter(new Date(Date.now() - 3600000).toISOString());
+                break;
+
+            case "This week":
+                const now = new Date();
+                const firstDayOfWeek = new Date(
+                    now.setDate(now.getDate() - now.getDay())
+                ).toISOString().split("T")[0];
+                addDateFilter(firstDayOfWeek);
+                break;
+
+            case "This month":
+                const firstDayOfMonth = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    1
+                ).toISOString().split("T")[0];
+                addDateFilter(firstDayOfMonth);
+                break;
+
+            case "This year":
+                const firstDayOfYear = new Date(
+                    today.getFullYear(),
+                    0,
+                    1
+                ).toISOString().split("T")[0];
+                addDateFilter(firstDayOfYear);
+                break;
+        }
+
+        return filters;
     }
-
-    switch (uploadDate) {
-        case "Today":
-            addDateFilter(new Date().toISOString().split("T")[0]);
-            break;
-
-        case "Last hour":
-            addDateFilter(new Date(Date.now() - 3600000).toISOString());
-            break;
-
-        case "This week":
-            const now = new Date();
-            const firstDayOfWeek = new Date(
-                now.setDate(now.getDate() - now.getDay())
-            ).toISOString().split("T")[0];
-            addDateFilter(firstDayOfWeek);
-            break;
-
-        case "This month":
-            const firstDayOfMonth = new Date(
-                today.getFullYear(),
-                today.getMonth(),
-                1
-            ).toISOString().split("T")[0];
-            addDateFilter(firstDayOfMonth);
-            break;
-
-        case "This year":
-            const firstDayOfYear = new Date(
-                today.getFullYear(),
-                0,
-                1
-            ).toISOString().split("T")[0];
-            addDateFilter(firstDayOfYear);
-            break;
-    }
-
-    return filters;
-}
 
     function buildSort(){
         const sorts = [];
-        $('#sortby').val() && sorts.push({
-            PropertyName: $('#sortby').val(),
+        const sortVal = $('#sortby').val();
+        sortVal && sorts.push({
+            PropertyName: sortVal,
             Descending: $('#sort-order').is(':checked'),
         });
         return sorts;
+    }
+
+    $('#clr-filter-btn').on('click',function(){
+        $('#emp-filter-form').trigger('reset');
+        resetFilters()
+        $('#emp-filter-btn').trigger('click');
+    })
+    function resetFilters() {
+        department[0].selectize.clear();
+        designation[0].selectize.clear();
+        $('#upload-date').val("");
     }
 
 </script>

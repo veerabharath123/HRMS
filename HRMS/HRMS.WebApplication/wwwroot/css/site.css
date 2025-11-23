@@ -425,3 +425,6 @@ body {
         transform: translate(-30px, -30px);
     }
 }
+.scrollarea{
+    overflow:auto
+}
