@@ -24,7 +24,6 @@
     <link href="https://cdn.datatables.net/2.3.3/css/dataTables.bootstrap5.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
     <script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js" nonce="@Html.ScriptNonce()"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/js/advance.search.table.js" nonce="@Html.ScriptNonce()"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
@@ -178,7 +177,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm fixed-top">
         <div class="container-fluid">
-            <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="bi bi-list"></i></button>
             <a class="navbar-brand fw-bold" href="#">HRMS</a>
 
             <button class="navbar-toggler text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
@@ -227,19 +226,19 @@
     <!-- Sidebar -->
     <div class="sidebar collapsed d-flex flex-column p-2" id="sidebarMenu">
         <ul class="nav nav-pills flex-column">
-            <li class="nav-item" data-bs-toggle="tooltip" title="Dashboard" data-bs-placement="right"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="fas fa-chart-line"></i> <span>Dashboards</span></a></li>
+            <li class="nav-item" data-bs-toggle="tooltip" title="Dashboard" data-bs-placement="right"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="bi bi-speedometer2"></i> <span>Dashboards</span></a></li>
             <li class="nav-item" data-bs-toggle="tooltip" title="Chats" data-bs-placement="right">
-                <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="fa-solid fa-message"></i> <span>Chats</span></a>
+                <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="bi bi-chat-dots"></i> <span>Chats</span></a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("GetEmployees", "Employee")" class="nav-link @(currentModule == "Employees" ? "active" : "")">
-                    <i class="fas fa-users"></i>
+                    <i class="bi bi-person-fill"></i>
                     <span>Employees</span>
                 </a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Leave Management</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-money-bill"></i> <span>Payrolls</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cogs"></i> <span>Admin</span></a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar3"></i> <span>Leave Management</span></a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cash-coin"></i> <span>Payrolls</span></a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-house-gear-fill"></i> <span>Admin</span></a></li>
         </ul>
     </div>
 
@@ -269,14 +268,16 @@
     </div>
 
     <div class="modal fade" id="image-viewer" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+        <div class="modal-dialog modal-dialog-centered modal-sm-fullscreen h-100">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="image-viewer-label">Modal title</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100" id="image-viewer-label">Modal title</h4>
                 </div>
                 <div class="modal-body">
-                    <img class="w-100" src="~/images/hrms-app-logo.png" alt="no-image">
+                    <img class="h-100" src="~/images/hrms-app-logo.png" alt="no-image">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Close</button>
                 </div>
             </div>
         </div>

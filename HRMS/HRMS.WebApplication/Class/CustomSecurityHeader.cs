@@ -25,12 +25,12 @@ namespace HRMS.WebApplication.Class
             var nonce = Convert.ToBase64String(nonceBytes);
 
             string CSP = string.Format("default-src 'self'; base-uri 'self'; object-src 'none'; " +
-                    "connect-src 'self' https://maps.googleapis.com https://*.googleapis.com https://*.google.com wss://widget-mediator.zopim.com wss://localhost:44346/ ;" +
-                    "script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://maps.googleapis.com https://maps.gstatic.com https://cdn.datatables.net 'nonce-{0}'; " +
-                    "style-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net https://cdnjs.cloudflare.com 'nonce-{0}' 'strict-dynamic'; " +
-                    "style-src-elem 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net https://cdnjs.cloudflare.com 'nonce-{0}' 'strict-dynamic'; " +
+                    "connect-src 'self' https://maps.googleapis.com https://*.googleapis.com https://*.google.com https://cdn.jsdelivr.net ;" +
+                    "script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://maps.googleapis.com https://maps.gstatic.com https://cdn.datatables.net https://cdn.jsdelivr.net 'nonce-{0}'; " +
+                    "style-src 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net 'nonce-{0}' 'strict-dynamic'; " +
+                    "style-src-elem 'self' https://maps.googleapis.com https://maps.gstatic.com https://fonts.googleapis.com https://cdn.datatables.net 'nonce-{0}' 'strict-dynamic'; " +
                     "img-src 'self' https://maps.gstatic.com/ data: https://maps.gstatic.com blob:; " +
-                    "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+                    "font-src 'self' https://fonts.gstatic.com; " +
                     "form-action 'self'; media-src 'self';" +
                     "frame-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;" +
                     "frame-ancestors 'none'; upgrade-insecure-requests; block-all-mixed-content;",
