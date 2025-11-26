@@ -608,3 +608,114 @@ BEGIN
 END;
 
 ALTER TABLE dbo.Designation WITH CHECK CHECK CONSTRAINT ALL;
+
+CREATE TABLE ConversationTypes (
+	Id Int IDENTITY(1,1) PRIMARY KEY,
+	GuidId  uniqueidentifier default newid() not null,
+	[Name] NVARCHAR(50) NOT NULL UNIQUE ,
+	[Description] NVARCHAR(255),
+
+	CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime     default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0
+);
+
+CREATE TABLE Conversations (
+    Id Int IDENTITY(1,1) PRIMARY KEY,
+	GuidId  uniqueidentifier default newid() not null,
+    [Name] NVARCHAR(200),
+    [Type] Int NOT NULL,
+
+	CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime     default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0,
+
+	FOREIGN KEY ([Type]) REFERENCES ConversationTypes(Id)
+);
+
+CREATE TABLE [Messages] (
+    Id Int IDENTITY(1,1) PRIMARY KEY,
+	GuidId  uniqueidentifier default newid() not null,
+
+    ConversationId INT NOT NULL,
+    SenderId INT NOT NULL,
+	ParentMessageId INT NULL CHECK (ParentMessageId IS NULL OR ParentMessageId <> Id),
+
+    Content NVARCHAR(MAX),           -- message content
+    MessageTypeId INT NOT NULL,
+
+    IsEdited BIT DEFAULT 0,
+
+    CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime     default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0,
+
+    FOREIGN KEY (ConversationId) REFERENCES Conversations(Id),
+    FOREIGN KEY (SenderId) REFERENCES Employee(Id),
+    FOREIGN KEY (MessageTypeId) REFERENCES GeneralReference(Id),
+	FOREIGN KEY (ParentMessageId) REFERENCES [Messages](Id)
+);
+
+CREATE TABLE MessageStatus (
+	Id INT IDENTITY(1,1) PRIMARY KEY,
+	GuidId  uniqueidentifier default newid() not null,
+
+    MessageId Int NOT NULL,	
+    EmployeeId Int NOT NULL,
+    DeliveredAt DATETIME NULL,
+    ReadAt DATETIME NULL,
+
+	CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0,
+
+	CONSTRAINT UQ_MessageStatus UNIQUE (MessageId, EmployeeId),
+    FOREIGN KEY (MessageId) REFERENCES [Messages](Id),
+    FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+);
+
+CREATE TABLE Attachments (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MessageId INT NOT NULL,
+    FileId INT NOT NULL,
+
+	CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0,
+
+    FOREIGN KEY (MessageId) REFERENCES [Messages](Id),
+	FOREIGN KEY (FileId) REFERENCES StoredFiles(Id)
+);
+
+-- 1. Get messages in a conversation
+CREATE INDEX IX_Messages_ConversationId 
+ON Messages (ConversationId, CreatedDate);
+
+-- 2. Get replies (thread)
+CREATE INDEX IX_Messages_ParentMessageId 
+ON Messages (ParentMessageId)
+INCLUDE (CreatedDate, SenderId, Content);
+
+-- 3. MessageStatus (unread, read tracking)
+CREATE INDEX IX_MessageStatus_EmployeeId_ReadAt
+ON MessageStatus (EmployeeId, ReadAt)
+INCLUDE (MessageId);
+
+-- 4. ConversationMembers
+CREATE INDEX IX_ConversationMembers_ConversationId 
+ON ConversationMembers (ConversationId)
+INCLUDE (EmployeeId);
+
+CREATE INDEX IX_ConversationMembers_EmployeeId 
+ON ConversationMembers (EmployeeId)
+INCLUDE (ConversationId);
