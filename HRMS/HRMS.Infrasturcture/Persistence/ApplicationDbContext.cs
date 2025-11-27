@@ -32,6 +32,14 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<Department> Department { get; set; }
         public DbSet<GeneralReference> GeneralReference { get; set; }
 
+        // Chat related
+        public DbSet<ConversationType> ConversationTypes { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageStatus> MessageStatus { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
+        public DbSet<ConversationMember> ConversationMembers { get; set; }
+
         public Task<int> SaveChangesAsync()
         {
             string user = GetCurrentUser();

@@ -34,6 +34,14 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         private IRepository<Department> _departmentRepo;
         private IRepository<GeneralReference> _generalReferenceRepo;
 
+        // chat related
+        private IRepository<ConversationType> _conversationTypesRepo;
+        private IRepository<Conversation> _conversationsRepo;
+        private IRepository<Message> _messagesRepo;
+        private IRepository<MessageStatus> _messageStatusRepo;
+        private IRepository<Attachment> _attachmentsRepo;
+        private IRepository<ConversationMember> _conversationMembersRepo;
+
         #endregion private repositories
 
         #region public repositories
@@ -148,6 +156,61 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             {
                 _generalReferenceRepo ??= new EFRepository<GeneralReference>(_context);
                 return _generalReferenceRepo;
+            }
+        }
+
+        // chat related
+        public IRepository<ConversationType> ConversationTypesRepo
+        {
+            get
+            {
+                _conversationTypesRepo ??= new EFRepository<ConversationType>(_context);
+                return _conversationTypesRepo;
+            }
+        }
+
+        public IRepository<Conversation> ConversationsRepo
+        {
+            get
+            {
+                _conversationsRepo ??= new EFRepository<Conversation>(_context);
+                return _conversationsRepo;
+            }
+        }
+
+        public IRepository<Message> MessagesRepo
+        {
+            get
+            {
+                _messagesRepo ??= new EFRepository<Message>(_context);
+                return _messagesRepo;
+            }
+        }
+
+        public IRepository<MessageStatus> MessageStatusRepo
+        {
+            get
+            {
+                _messageStatusRepo ??= new EFRepository<MessageStatus>(_context);
+                return _messageStatusRepo;
+            }
+        }
+
+        public IRepository<Attachment> AttachmentsRepo
+        {
+            get
+            {
+                _attachmentsRepo ??= new EFRepository<Attachment>(_context);
+                return _attachmentsRepo;
+            }
+        }
+
+        public IRepository<ConversationMember> ConversationMembersRepo
+        {
+            get
+            {
+                _conversationMembersRepo ??= new EFRepository<ConversationMember>(_context);
+                return _conversationMembersRepo;
             }
         }
 
