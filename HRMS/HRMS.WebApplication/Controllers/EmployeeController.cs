@@ -18,14 +18,9 @@ namespace HRMS.WebApplication.Controllers
             _breadcrumbManager = breadcrumbManager;
         }
         [HttpGet]
-        public async Task<IActionResult> GetEmployees(int? page)
+        public async Task<IActionResult> GetEmployees()
         {
             InitBreadcrumbs(_breadcrumbManager, "Employess", true);
-
-            var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", new
-            {                
-                Pagination = new { PageNumber = page ?? 1, PageSize = 24 }
-            },true);
             await LoadEmployeeDropdownsAsync();
             return View("Index");
         }

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using HRMS.Application.Common.Interface;
-using HRMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
@@ -19,6 +12,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         public EFRepository(ApplicationDbContext context)
         {
             _context = context;
+            _entities ??= _context.Set<TEntity>();
         }
 
         protected string GetFullErrorTextAndRollBackEntityChanges(DbUpdateException exception)
@@ -69,11 +63,9 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             try
             {
-                if (entity == null)
-                    throw new ArgumentNullException(nameof(entity));
+                ArgumentNullException.ThrowIfNull(entity);
 
-                Entities.AddAsync(entity);
-                AfterEntityChanged();
+                Entities.Add(entity);
             }
             catch (Exception)
             {
@@ -113,7 +105,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                     return false;
 
                 Entities.Remove(entity);
-                AfterEntityChanged();
                 return true;
             }
             catch (Exception)
@@ -134,7 +125,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             {
                 var entities = Entities.Where(predicate);
                 Entities.RemoveRange(entities);
-                AfterEntityChanged();
                 return true;
             }
             catch (DbUpdateException ex)
@@ -213,11 +203,9 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             try
             {
-                if (entity == null)
-                    throw new ArgumentNullException(nameof(entity));
+                ArgumentNullException.ThrowIfNull(entity);
 
                 Entities.Update(entity);
-                AfterEntityChanged();
             }
             catch (Exception)
             {
@@ -235,7 +223,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration
 
                 transform.Invoke(entity);
                 Entities.Update(entity);
-                AfterEntityChanged();
 
                 return true;
             }
@@ -253,6 +240,5 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             _context.SaveChangesAsync();
         }
-        protected virtual void AfterEntityChanged() { }
     }
 }

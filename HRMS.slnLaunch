@@ -1,6 +1,6 @@
 [
   {
-    "Name": "New Profile",
+    "Name": "Hrms Profile",
     "Projects": [
       {
         "Path": "HRMS\\HRMS.Api\\HRMS.Api.csproj",

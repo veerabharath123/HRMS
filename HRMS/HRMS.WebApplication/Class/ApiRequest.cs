@@ -18,9 +18,11 @@ namespace HRMS.WebApplication.Class
         private readonly string _apiBaseUrl;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        private const string APIBASE_URL_SETTING = "WebAppSettings:ApiBaseUrl";
+
         public ApiRequest(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
+            _apiBaseUrl = configuration[APIBASE_URL_SETTING] ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor;
         }
         private string GetAccessToken()

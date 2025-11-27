@@ -32,4 +32,4 @@ namespace HRMS.Domain.Entites
         }
     }
 }
-}
+

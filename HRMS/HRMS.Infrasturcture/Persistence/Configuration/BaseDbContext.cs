@@ -30,23 +30,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                         ApplyEntityConfigurationM(modelBuilder, entityType, propertyName);
                 }
             }
-
-            //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            //{
-            //    foreach (var property in entityType.ClrType.GetProperties())
-            //    {
-            //        if (property.GetCustomAttribute<HashedIdAttribute>() != null)
-            //        {
-            //            var converterType = typeof(HashedIdConverter<>).MakeGenericType(property.PropertyType);
-            //            var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
-
-            //            modelBuilder
-            //                .Entity(entityType.Name)
-            //                .Property(property.Name)
-            //                .HasConversion(converter);
-            //        }
-            //    }
-            //}
         }
 
 

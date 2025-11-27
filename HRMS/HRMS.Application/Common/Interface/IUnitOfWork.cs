@@ -18,6 +18,14 @@ namespace HRMS.Application.Common.Interface
         IRepository<Designation> DesignationRepo { get; }
         IRepository<Department> DepartmentRepo { get; }
         IRepository<GeneralReference> GeneralReferenceRepo { get; }
+        IRepository<ConversationType> ConversationTypesRepo { get; }
+        IRepository<Conversation> ConversationsRepo { get; }
+        IRepository<Message> MessagesRepo { get; }
+        IRepository<MessageStatus> MessageStatusRepo { get; }
+        IRepository<Attachment> AttachmentsRepo { get; }
+        IRepository<ConversationMember> ConversationMembersRepo { get; }
+
+
 
 
         Task<bool> SaveAsync();

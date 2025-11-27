@@ -29,7 +29,7 @@ namespace HRMS.WebApplication.Class
             }
         }
 
-        private void HandleUnauthorized(AuthorizationFilterContext context)
+        private static void HandleUnauthorized(AuthorizationFilterContext context)
         {
             if (context.HttpContext.Request.IsAjaxOrApiRequest())
             {
@@ -49,7 +49,7 @@ namespace HRMS.WebApplication.Class
             }
         }
 
-        private void HandleForbidden(AuthorizationFilterContext context)
+        private static void HandleForbidden(AuthorizationFilterContext context)
         {
             if (context.HttpContext.Request.IsAjaxOrApiRequest())
             {

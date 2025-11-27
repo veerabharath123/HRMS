@@ -7,40 +7,38 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
 {
-    internal class UnitOfWork : IUnitOfWork
+    internal class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationDbContext _context;
-        IDbContextTransaction dbContextTransaction;
-        private readonly IMemoryCache _cache;
-        public UnitOfWork(ApplicationDbContext context, IMemoryCache cache)
+        IDbContextTransaction? dbContextTransaction;
+        public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            _cache = cache;
         }
         #region private repositories
 
-        private IRepository<User> _userRepo;
-        private IRepository<Roles> _rolesRepo;
-        private IRepository<Permissions> _permissionsRepo;
-        private IRepository<RolePermissions> _rolePermissionsRepo;
-        private IRepository<UserRoles> _userRolesRepo;
-        private IRepository<StoredFiles> _storedFilesRepo;
-        private IRepository<FileLocationConfigurations> _fileLocationConfigurationsRepo;
-        private IRepository<SystemSettings> _systemSettingsRepo;
-        private IRepository<EmployeeGuardian> _employeeGuardianRepo;
-        private IRepository<EmployeeContact> _employeeContactRepo;
-        private IRepository<Employee> _employeeRepo;
-        private IRepository<Designation> _designationRepo;
-        private IRepository<Department> _departmentRepo;
-        private IRepository<GeneralReference> _generalReferenceRepo;
+        private IRepository<User>? _userRepo;
+        private IRepository<Roles>? _rolesRepo;
+        private IRepository<Permissions>? _permissionsRepo;
+        private IRepository<RolePermissions>? _rolePermissionsRepo;
+        private IRepository<UserRoles>? _userRolesRepo;
+        private IRepository<StoredFiles>? _storedFilesRepo;
+        private IRepository<FileLocationConfigurations>? _fileLocationConfigurationsRepo;
+        private IRepository<SystemSettings>? _systemSettingsRepo;
+        private IRepository<EmployeeGuardian>? _employeeGuardianRepo;
+        private IRepository<EmployeeContact>? _employeeContactRepo;
+        private IRepository<Employee>? _employeeRepo;
+        private IRepository<Designation>? _designationRepo;
+        private IRepository<Department>? _departmentRepo;
+        private IRepository<GeneralReference>? _generalReferenceRepo;
 
         // chat related
-        private IRepository<ConversationType> _conversationTypesRepo;
-        private IRepository<Conversation> _conversationsRepo;
-        private IRepository<Message> _messagesRepo;
-        private IRepository<MessageStatus> _messageStatusRepo;
-        private IRepository<Attachment> _attachmentsRepo;
-        private IRepository<ConversationMember> _conversationMembersRepo;
+        private IRepository<ConversationType>? _conversationTypesRepo;
+        private IRepository<Conversation>? _conversationsRepo;
+        private IRepository<Message>? _messagesRepo;
+        private IRepository<MessageStatus>? _messageStatusRepo;
+        private IRepository<Attachment>? _attachmentsRepo;
+        private IRepository<ConversationMember>? _conversationMembersRepo;
 
         #endregion private repositories
 
