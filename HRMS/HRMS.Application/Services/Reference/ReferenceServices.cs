@@ -2,6 +2,8 @@
 using HRMS.Application.Services.Desgination;
 using HRMS.Application.Services.GeneralReference;
 using HRMS.SharedKernel.Models.Common.Class;
+using HRMS.SharedKernel.Models.Response;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,5 +31,20 @@ namespace HRMS.Application.Services
         public Task<List<BaseRefDto>> GetAllActiveDesignationsAsync() => _designationServices.GetAllActiveDesignationsAsync();
         public Task<List<BaseRefDto>> GetAllActiveGendersAsync() => _generalReferenceServices.GetAllActiveGendersAsync();
         public Task<List<BaseRefDto>> GetAllActiveMaritalStatusAsync() => _generalReferenceServices.GetAllActiveMaritalStatusAsync();
+        public async Task<List<ModulesResponseDto>> GetAllActiveModulesAsync()
+        {
+            return await _unitOfWork.ModuleTypeRepo.TableNoTracking.Where(x => !x.IsDeleted)
+                .Select(m => new ModulesResponseDto
+                {
+                    Name = m.Name,
+                    Action = m.Action,
+                    Controller = m.Controller,
+                    IconName = m.IconName,
+                    ListOrder = m.ListOrder,
+                    Title = m.Title
+                })
+                .OrderBy(m => m.ListOrder)
+                .ToListAsync();
+        }
     }
 }

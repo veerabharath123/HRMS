@@ -31,10 +31,12 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<Designation> Designation { get; set; }
         public DbSet<Department> Department { get; set; }
         public DbSet<GeneralReference> GeneralReference { get; set; }
+        public DbSet<ModuleType> ModuleType { get; set; }
 
         // Chat related
         public DbSet<ConversationType> ConversationTypes { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationParticipants> ConversationParticipants { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageStatus> MessageStatus { get; set; }
         public DbSet<Attachment> Attachments { get; set; }

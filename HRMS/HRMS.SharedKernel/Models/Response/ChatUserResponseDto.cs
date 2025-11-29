@@ -11,4 +11,51 @@ namespace HRMS.SharedKernel.Models.Response
         public Guid UserId { get; set; }
         public string UserName { get; set; } = string.Empty;
     }
+    public class ChatConversationListResponseDto
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public List<string> Participants { get; set; } = [];
+        public DateTime? LastMessageDate { get; set; }
+    }
+    public class ChatConversationDetailResponseDto
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public List<ChatConversationListResponseDto> Participants { get; set; } = [];
+        public List<ChatMessageRequestDto> Messages { get; set; } = [];
+    }
+    public class ChatMessageRequestDto
+    {
+        public int Id { get; set; }
+        public int ConversationId { get; set; }
+        public int SenderId { get; set; }
+        public string SenderName { get; set; } = string.Empty;
+
+        public string? Content { get; set; }
+        public int? ParentMessageId { get; set; }
+
+        public DateTime CreatedDate { get; set; }
+
+        public bool IsMine { get; set; }   // For UI: left or right alignment
+
+        public DateTime? DeliveredAt { get; set; }
+        public DateTime? ReadAt { get; set; }
+    }
+    public class ChatMessagesResponseDto
+    {
+        public string Message { get; set; } = string.Empty;
+        public string DeliveredAt { get; set; } = string.Empty;
+        public bool Mine { get; set; }
+        public bool Seen{ get; set; }
+        public bool Delivered{ get; set; }
+    }
+    public class ChatConversationResponseDto
+    {
+        public Guid ConversationId { get; set; }
+        public ChatUserResponseDto ChatUser { get; set; } = new ChatUserResponseDto();
+        public List<ChatMessagesResponseDto> Messages { get; set; } = [];
+    }
 }

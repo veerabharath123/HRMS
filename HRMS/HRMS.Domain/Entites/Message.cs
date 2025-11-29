@@ -10,22 +10,25 @@ namespace HRMS.Domain.Entites
 {
     public class Message : AuditableWithBaseEntity<int>
     {
-        public int ConversationId { get; private set; }
-        public int SenderId { get; private set; }
-        public int? ParentMessageId { get; private set; }
+        public int ConversationId { get; set; }
+        public int SenderId { get; set; }
 
-        public string? Content { get; private set; }
+        public int? ParentMessageId { get; set; }
 
-        // references GeneralReference for message type (e.g., text, image)
-        public int MessageTypeId { get; private set; }
+        public string? Content { get; set; }
+        public int MessageTypeId { get; set; }     // FK to GeneralReference
 
-        public bool IsEdited { get; private set; }
+        public bool IsEdited { get; set; }
 
-        // navigation
-        public Message? ParentMessage { get; private set; }
-        public ICollection<Message>? Replies { get; private set; }
-        public ICollection<Attachment>? Attachments { get; private set; }
-        public ICollection<MessageStatus>? Statuses { get; private set; }
+        // Navigation
+        public Conversation? Conversation { get; set; }
+        public Employee? Sender { get; set; }
+
+        public Message? ParentMessage { get; set; }
+        public ICollection<Message> Replies { get; set; } = [];
+
+        public ICollection<MessageStatus> MessageStatuses { get; set; } = [];
+        public ICollection<Attachment> Attachments { get; set; } = [];
 
         public void Add(int conversationId, int senderId, string? content, int messageTypeId, int? parentMessageId = null)
         {

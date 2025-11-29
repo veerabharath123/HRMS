@@ -431,3 +431,19 @@ body {
 .w-fit{
     width:fit-content
 }
+.d-start{
+    display:flex;
+    justify-content:start;
+    align-items:center;
+}
+.d-col-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.d-col-start {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}

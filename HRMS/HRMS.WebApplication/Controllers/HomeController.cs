@@ -86,43 +86,12 @@ namespace HRMS.WebApplication.Controllers
 
             return JsonResponse(response);
         }
-        //private async Task LoadAuth(AuthResponse auth)
-        //{
-        //    _httpContextAccessor.HttpContext?.Session.SetString(nameof(auth.UserName), auth.UserName);
-        //    var claims = new List<Claim>
-        //    {
-        //        new(nameof(auth.UserName), auth.UserName),
-        //        new(nameof(auth.UserId), auth.UserId.ToString()),
-        //        new("RequestToken",auth.Token)
-        //    };
+        [HttpPost]
+        public async Task<IActionResult> GetSideMenuModules()
+        {
+            var response = await _api.PostAsync<List<ModulesResponseDto>>("/References/GetAllActiveModules", null, true);
 
-        //    if (!auth.Is2FACompleted)
-        //        auth.UserPersmissions.Add("2FA");
-
-        //    foreach (var permission in auth.UserPersmissions)
-        //    {
-        //        claims.Add(new Claim(ClaimTypes.Role, permission));
-        //    }
-
-        //    var identity = new ClaimsIdentity(claims, GeneralConstants.CookieAuthName);
-        //    var principal = new ClaimsPrincipal(identity);
-
-        //    var authProperties = new AuthenticationProperties
-        //    {
-        //        IsPersistent = true,
-        //        ExpiresUtc = auth.ExpiryDate,
-        //    };
-
-        //    await HttpContext.SignInAsync(GeneralConstants.CookieAuthName, principal, authProperties);
-        //}
-
-        //[HttpGet]
-        //public async Task<IActionResult> Logout()
-        //{
-        //    await HttpContext.SignOutAsync(GeneralConstants.CookieAuthName);
-        //    _httpContextAccessor.HttpContext?.Session.Clear();
-
-        //    return RedirectToAction(nameof(Login));
-        //}
+            return PartialView("_SideBarMenu",response?.Result ?? []);
+        }
     }
 }

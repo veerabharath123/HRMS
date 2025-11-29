@@ -12,6 +12,9 @@ namespace HRMS.Domain.Entites
         public int MessageId { get; private set; }
         public int FileId { get; private set; }
 
+        public Message? Message { get; set; }
+        public StoredFiles? File { get; set; }
+
         public void Attach(int messageId, int fileId)
         {
             MessageId = messageId;

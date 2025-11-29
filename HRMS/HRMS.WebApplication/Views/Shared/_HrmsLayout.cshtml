@@ -225,21 +225,7 @@
 
     <!-- Sidebar -->
     <div class="sidebar collapsed d-flex flex-column p-2" id="sidebarMenu">
-        <ul class="nav nav-pills flex-column">
-            <li class="nav-item" data-bs-toggle="tooltip" title="Dashboard" data-bs-placement="right"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="bi bi-speedometer2"></i> <span>Dashboards</span></a></li>
-            <li class="nav-item" data-bs-toggle="tooltip" title="Chats" data-bs-placement="right">
-                <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="bi bi-chat-dots"></i> <span>Chats</span></a>
-            </li>
-            <li class="nav-item">
-                <a href="@Url.Action("GetEmployees", "Employee")" class="nav-link @(currentModule == "Employees" ? "active" : "")">
-                    <i class="bi bi-person-fill"></i>
-                    <span>Employees</span>
-                </a>
-            </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar3"></i> <span>Leave Management</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-cash-coin"></i> <span>Payrolls</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-house-gear-fill"></i> <span>Admin</span></a></li>
-        </ul>
+       
     </div>
 
     <!-- Main Content -->
@@ -315,22 +301,7 @@
             
         });
 
-        // // Charts
-        // new Chart(document.getElementById('lineChart'), {
-        //   type: 'line',
-        //   data: {
-        //     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        //     datasets: [{ label: 'Employees', data: [50, 60, 70, 90, 120], borderColor: 'blue', fill: false }]
-        //   }
-        // });
-
-        // new Chart(document.getElementById('barChart'), {
-        //   type: 'bar',
-        //   data: {
-        //     labels: ['Sick Leave', 'Casual Leave', 'Earned Leave'],
-        //     datasets: [{ label: 'Count', data: [12, 19, 7], backgroundColor: ['#0d6efd', '#198754', '#ffc107'] }]
-        //   }
-        // });
+       
 
         // Restore collapse state on page load
         $(document).on("DOMContentLoaded", () => {
@@ -343,6 +314,26 @@
                 sidebar.addClass("collapsed")
                 content.addClass('expanded');
             }
+
+            ajaxLoadHtml(
+                '@Url.Action("GetSideMenuModules", "Home")',
+                '',
+                '#sidebarMenu',
+                {
+                    afterLoad: function($target){
+                        
+                        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl)
+                        })
+
+                        $target.find('li[data-bs-original-title="@currentModule"]').children().addClass('active')
+                    },
+                    contentType: "application/json",
+                    processData: false,
+                    spinner: false
+                }
+        )
         });
 
         let idleTime = 0;
@@ -420,8 +411,7 @@
             window.location.href = '@Url.Action("Login", "Account")';
         }
 
-        const logoutUrl = '/Account/Logout';
-
+        const logoutUrl = '/Account/Logout';        
         
 
     </script>

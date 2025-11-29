@@ -41,6 +41,12 @@ namespace HRMS.Api.Controllers.V1
             var response = await _referenceServices.GetAllActiveMaritalStatusAsync();
             return Ok(response);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetAllActiveModules()
+        {
+            var response = await _referenceServices.GetAllActiveModulesAsync();
+            return Ok(response);
+        }
 
     }
 }

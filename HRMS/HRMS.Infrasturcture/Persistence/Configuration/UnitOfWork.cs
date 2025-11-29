@@ -31,10 +31,12 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         private IRepository<Designation>? _designationRepo;
         private IRepository<Department>? _departmentRepo;
         private IRepository<GeneralReference>? _generalReferenceRepo;
+        private IRepository<ModuleType>? _moduleTypeRepo;
 
         // chat related
         private IRepository<ConversationType>? _conversationTypesRepo;
         private IRepository<Conversation>? _conversationsRepo;
+        private IRepository<ConversationParticipants>? _conversationParticipantsRepo;
         private IRepository<Message>? _messagesRepo;
         private IRepository<MessageStatus>? _messageStatusRepo;
         private IRepository<Attachment>? _attachmentsRepo;
@@ -176,6 +178,15 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
         }
 
+        public IRepository<ConversationParticipants> ConversationParticipantsRepo
+        {
+            get
+            {
+                _conversationParticipantsRepo ??= new EFRepository<ConversationParticipants>(_context);
+                return _conversationParticipantsRepo;
+            }
+        }
+
         public IRepository<Message> MessagesRepo
         {
             get
@@ -209,6 +220,15 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             {
                 _conversationMembersRepo ??= new EFRepository<ConversationMember>(_context);
                 return _conversationMembersRepo;
+            }
+        }
+
+        public IRepository<ModuleType> ModuleTypeRepo
+        {
+            get
+            {
+                _moduleTypeRepo ??= new EFRepository<ModuleType>(_context);
+                return _moduleTypeRepo;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using HRMS.SharedKernel.Models.Common.Class;
+using HRMS.SharedKernel.Models.Response;
 
 namespace HRMS.Application.Services
 {
@@ -8,5 +9,6 @@ namespace HRMS.Application.Services
         Task<List<BaseRefDto>> GetAllActiveDesignationsAsync();
         Task<List<BaseRefDto>> GetAllActiveGendersAsync();
         Task<List<BaseRefDto>> GetAllActiveMaritalStatusAsync();
+        Task<List<ModulesResponseDto>> GetAllActiveModulesAsync();
     }
 }

@@ -19,8 +19,10 @@ namespace HRMS.Application.Common.Interface
         DbSet<Designation> Designation { get; set; }
         DbSet<Department> Department { get; set; }
         DbSet<GeneralReference> GeneralReference { get; set; }
+        DbSet<ModuleType> ModuleType { get; set; }
         DbSet<ConversationType> ConversationTypes { get; set; }
         DbSet<Conversation> Conversations { get; set; }
+        DbSet<ConversationParticipants> ConversationParticipants { get; set; }
         DbSet<Message> Messages { get; set; }
         DbSet<MessageStatus> MessageStatus { get; set; }
         DbSet<Attachment> Attachments { get; set; }

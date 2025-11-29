@@ -15,6 +15,9 @@ namespace HRMS.Domain.Entites
         public DateTime? DeliveredAt { get; private set; }
         public DateTime? ReadAt { get; private set; }
 
+        public Message? Message { get; set; }
+        public Employee? Employee { get; set; }
+
         public void MarkDelivered(DateTime when)
         {
             DeliveredAt = when;

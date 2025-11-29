@@ -12,6 +12,8 @@ namespace HRMS.Domain.Entites
         public string Name { get; private set; } = string.Empty;
         public string? Description { get; private set; }
 
+        public ICollection<Conversation> Conversations { get; set; } = [];
+
         public void Add(string name, string? description = null)
         {
             Name = name;

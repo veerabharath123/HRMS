@@ -1,6 +1,7 @@
 ﻿using HRMS.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,9 @@ namespace HRMS.Domain.Entites
         public DateTime? RelievingDate { get; private set; }
         public DateTime? ResignationDate { get; private set; }
         public int? ReportingManagerId { get; private set; }
+
+        [NotMapped]
+        public string FullName => $"{FirstName} {LastName}";
 
         public void Add(EmployeeFullRecord employeeFullRecord)
         {

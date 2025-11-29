@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-    ViewData["Module"] = "Home";
+    ViewData["Module"] = "Dashboard";
     //(string, string) tableModel = ("Index Table", "index-table");
 }
 
@@ -21,7 +21,7 @@
 
 <div class="container-fluid chart-container">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
-    <h3 class="mt-1">Dashboard</h3>
+    <h3 class="mt-1">@ViewData["Module"]</h3>
 
     <div class="row mt-3">
         <div class="col-lg-6 col-sm-12 mb-3">

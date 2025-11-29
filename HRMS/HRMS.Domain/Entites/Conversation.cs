@@ -10,28 +10,14 @@ namespace HRMS.Domain.Entites
 {
     public class Conversation : AuditableWithBaseEntity<int>
     {
-        public string? Name { get; private set; }
-
-        // SQL column is named "Type" - map to a clearer property name while keeping column name
-        [Column("Type")]
-        public int ConversationTypeId { get; private set; }
+        public string? Name { get; set; }
+        public int Type { get; set; }
 
         // navigation (optional)
-        public ConversationType? ConversationType { get; private set; }
+        public ConversationType? TypeNavigation { get; set; }
 
-        public ICollection<Message>? Messages { get; private set; }
-        public ICollection<ConversationMember>? Members { get; private set; }
+        public ICollection<ConversationParticipants> Participants { get; set; } = [];
+        public ICollection<Message> Messages { get; set; } = [];
 
-        public void Add(string? name, int conversationTypeId)
-        {
-            Name = name;
-            ConversationTypeId = conversationTypeId;
-        }
-
-        public void Update(string? name, int conversationTypeId)
-        {
-            Name = name;
-            ConversationTypeId = conversationTypeId;
-        }
     }
 }

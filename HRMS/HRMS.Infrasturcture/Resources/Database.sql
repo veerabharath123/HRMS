@@ -609,11 +609,17 @@ END;
 
 ALTER TABLE dbo.Designation WITH CHECK CHECK CONSTRAINT ALL;
 
-CREATE TABLE ConversationTypes (
+CREATE TABLE ModuleType (
 	Id Int IDENTITY(1,1) PRIMARY KEY,
 	GuidId  uniqueidentifier default newid() not null,
+
 	[Name] NVARCHAR(50) NOT NULL UNIQUE ,
+	Title NVARCHAR(50) NOT NULL,
+	IconName NVARCHAR(100) NOT NULL,
+	[Action] NVARCHAR(100),
+	Controller NVARCHAR(100),
 	[Description] NVARCHAR(255),
+	ListOrder INT NOT NULL,
 
 	CreatedDate datetime  not null  default getdate(),
 	CreatedUser varchar(50) not null  default '',
@@ -622,100 +628,205 @@ CREATE TABLE ConversationTypes (
 	IsDeleted bit default 0
 );
 
-CREATE TABLE Conversations (
-    Id Int IDENTITY(1,1) PRIMARY KEY,
-	GuidId  uniqueidentifier default newid() not null,
-    [Name] NVARCHAR(200),
-    [Type] Int NOT NULL,
+IF OBJECT_ID('dbo.ModuleType', 'U') IS NOT NULL
+BEGIN
+    DELETE FROM dbo.ModuleType;
 
-	CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime     default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0,
+    INSERT INTO dbo.ModuleType (Name, Title, IconName, [Action], Controller,CreatedUser ,ListOrder)
+    VALUES
+    ('Dashboard', 'Dashboard', 'bi bi-speedometer2','Index','Home', 'System',1),
+    ('Chats', 'Chats', 'bi bi-chat-dots','Chats','Chat', 'System',2),
+	('Employees', 'Employees', 'bi bi-person-fill','GetEmployees','Employee', 'System', 3),
+	('Leave Management', 'Leave Management', 'bi bi-calendar3','Index','Home', 'System', 4),
+	('Admin', 'Admin', 'bi bi-house-gear-fill','Index','Home', 'System', 6),
+	('Payrolls', 'Payrolls', 'bi bi-cash-coin','Index','Home', 'System', 5);
+END
+ELSE
+BEGIN
+    PRINT 'Table [dbo].[ModuleType] does not exist.';
+END;
 
-	FOREIGN KEY ([Type]) REFERENCES ConversationTypes(Id)
+
+
+-- =============================================
+-- DROP TABLES (Order is important due to FK)
+-- =============================================
+IF OBJECT_ID('Attachments', 'U') IS NOT NULL DROP TABLE Attachments;
+IF OBJECT_ID('MessageStatus', 'U') IS NOT NULL DROP TABLE MessageStatus;
+IF OBJECT_ID('Messages', 'U') IS NOT NULL DROP TABLE Messages;
+IF OBJECT_ID('ConversationParticipants', 'U') IS NOT NULL DROP TABLE ConversationParticipants;
+IF OBJECT_ID('Conversations', 'U') IS NOT NULL DROP TABLE Conversations;
+IF OBJECT_ID('ConversationTypes', 'U') IS NOT NULL DROP TABLE ConversationTypes;
+
+CREATE TABLE ConversationTypes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+    Name NVARCHAR(50) NOT NULL UNIQUE,
+    Description NVARCHAR(255),
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE [Messages] (
-    Id Int IDENTITY(1,1) PRIMARY KEY,
-	GuidId  uniqueidentifier default newid() not null,
+CREATE TABLE Conversations (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+    Name NVARCHAR(200),
+
+    Type INT NOT NULL,  -- FK -> ConversationTypes
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_Conversations_ConversationTypes 
+        FOREIGN KEY (Type) REFERENCES ConversationTypes(Id)
+            ON DELETE NO ACTION
+);
+
+CREATE INDEX IX_Conversations_UpdatedDate 
+ON Conversations (UpdatedDate);
+
+CREATE TABLE ConversationParticipants (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+
+    ConversationId INT NOT NULL,
+    EmployeeId INT NOT NULL,
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_ConversationParticipants_Conversations
+        FOREIGN KEY (ConversationId) REFERENCES Conversations(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_ConversationParticipants_Employee
+        FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT UQ_ConversationParticipants UNIQUE (ConversationId, EmployeeId)
+);
+
+CREATE TABLE Messages (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
 
     ConversationId INT NOT NULL,
     SenderId INT NOT NULL,
-	ParentMessageId INT NULL CHECK (ParentMessageId IS NULL OR ParentMessageId <> Id),
+    ParentMessageId INT NULL,
 
-    Content NVARCHAR(MAX),           -- message content
+    Content NVARCHAR(MAX),
     MessageTypeId INT NOT NULL,
 
-    IsEdited BIT DEFAULT 0,
+    IsEdited BIT NOT NULL DEFAULT 0,
 
-    CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime     default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0,
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
 
-    FOREIGN KEY (ConversationId) REFERENCES Conversations(Id),
-    FOREIGN KEY (SenderId) REFERENCES Employee(Id),
-    FOREIGN KEY (MessageTypeId) REFERENCES GeneralReference(Id),
-	FOREIGN KEY (ParentMessageId) REFERENCES [Messages](Id)
+    CONSTRAINT FK_Messages_Conversations
+        FOREIGN KEY (ConversationId) REFERENCES Conversations(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_Messages_Employee
+        FOREIGN KEY (SenderId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Messages_MessageTypes
+        FOREIGN KEY (MessageTypeId) REFERENCES GeneralReference(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Messages_ParentMessage
+        FOREIGN KEY (ParentMessageId) REFERENCES Messages(Id)
+            ON DELETE NO ACTION
 );
 
-CREATE TABLE MessageStatus (
-	Id INT IDENTITY(1,1) PRIMARY KEY,
-	GuidId  uniqueidentifier default newid() not null,
+CREATE INDEX IX_Messages_ConversationId_CreatedDate
+ON Messages (ConversationId, CreatedDate);
 
-    MessageId Int NOT NULL,	
-    EmployeeId Int NOT NULL,
+
+CREATE TABLE MessageStatus (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+    MessageId INT NOT NULL,
+    EmployeeId INT NOT NULL,
+
     DeliveredAt DATETIME NULL,
     ReadAt DATETIME NULL,
 
-	CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0,
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
 
-	CONSTRAINT UQ_MessageStatus UNIQUE (MessageId, EmployeeId),
-    FOREIGN KEY (MessageId) REFERENCES [Messages](Id),
-    FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+    CONSTRAINT FK_MessageStatus_Messages
+        FOREIGN KEY (MessageId) REFERENCES Messages(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_MessageStatus_Employee
+        FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT UQ_MessageStatus UNIQUE (MessageId, EmployeeId)
 );
 
 CREATE TABLE Attachments (
     Id INT IDENTITY(1,1) PRIMARY KEY,
+
     MessageId INT NOT NULL,
     FileId INT NOT NULL,
 
-	CreatedDate datetime  not null  default getdate(),
-	CreatedUser varchar(50) not null  default '',
-	UpdatedDate datetime default getdate(),
-	UpdatedUser varchar(50)   default '',
-	IsDeleted bit default 0,
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
 
-    FOREIGN KEY (MessageId) REFERENCES [Messages](Id),
-	FOREIGN KEY (FileId) REFERENCES StoredFiles(Id)
+    CONSTRAINT FK_Attachments_Messages
+        FOREIGN KEY (MessageId) REFERENCES Messages(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_Attachments_File
+        FOREIGN KEY (FileId) REFERENCES StoredFiles(Id)
+            ON DELETE NO ACTION
 );
 
--- 1. Get messages in a conversation
-CREATE INDEX IX_Messages_ConversationId 
-ON Messages (ConversationId, CreatedDate);
+CREATE INDEX IX_Attachments_MessageId
+ON Attachments (MessageId);
 
--- 2. Get replies (thread)
-CREATE INDEX IX_Messages_ParentMessageId 
-ON Messages (ParentMessageId)
-INCLUDE (CreatedDate, SenderId, Content);
+DELETE FROM Attachments;
+DELETE FROM MessageStatus;
+DELETE FROM Messages;
+DELETE FROM ConversationParticipants;
+DELETE FROM Conversations;
+DELETE FROM ConversationTypes;
 
--- 3. MessageStatus (unread, read tracking)
-CREATE INDEX IX_MessageStatus_EmployeeId_ReadAt
-ON MessageStatus (EmployeeId, ReadAt)
-INCLUDE (MessageId);
+INSERT INTO ConversationTypes (Name, Description, CreatedUser)
+VALUES
+    ('Direct', 'One-to-one conversation', 'system'),
+    ('Group', 'Group conversation', 'system'),
+    ('System', 'System-generated thread', 'system');
 
--- 4. ConversationMembers
-CREATE INDEX IX_ConversationMembers_ConversationId 
-ON ConversationMembers (ConversationId)
-INCLUDE (EmployeeId);
+	INSERT INTO dbo.GeneralReference (Category, Code, [Value], Description, SortOrder, CreatedUser)
+    VALUES
+    ('MessageType', 'T', 'Text', 'Plain text message', 1, 'System'),
+    ('MessageType', 'I', 'Image', 'Image file message', 2, 'System'),
+    ('MessageType', 'F', 'File', 'File attachment message', 3, 'System'),
+    ('MessageType', 'S', 'System', 'System notification', 4, 'System');
 
-CREATE INDEX IX_ConversationMembers_EmployeeId 
-ON ConversationMembers (EmployeeId)
-INCLUDE (ConversationId);
+	select * from GeneralReference
+
+
+

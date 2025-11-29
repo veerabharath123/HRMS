@@ -100,7 +100,7 @@ function ajaxRequest(options) {
         dataType: config.dataType,
         processData: config.processData,
         headers: prepareHeaders(config, method),
-        beforeSend: config.beforeSend || (() => Spinner.show()),
+        beforeSend: config.beforeSend || (() => { if (config.spinner === true) Spinner.show() }),
         afterSend: () => Spinner.hide(),
         complete: () => Spinner.hide(),
         success: (res) => handleAjaxSuccess(res, config),
