@@ -5,11 +5,13 @@ using HRMS.Application.Services.File;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using static HRMS.Domain.Records.EmployeeRecords;
@@ -21,11 +23,13 @@ namespace HRMS.Application.Services.Employee
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IFileServices _fileServices;
-        public EmployeeServices(IUnitOfWork unitOfWork, IMapper mapper, IFileServices fileServices)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public EmployeeServices(IUnitOfWork unitOfWork, IMapper mapper, IFileServices fileServices, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _fileServices = fileServices;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<ApiResponseDto> GetPaginatedEmployeesShortAsync(AdvanceTableRequestDto request)
         {
@@ -37,7 +41,6 @@ namespace HRMS.Application.Services.Employee
                                 select new EmployeeShortResponseDto
                                 {
                                     Id = emp.Id,
-                                    FullName = emp.FirstName + " " + emp.LastName,
                                     Bio = $"Department: {dept.Name}, Designation: {des.Name}",
                                     Department = dept.Name,
                                     Designation = des.Name,
@@ -117,6 +120,40 @@ namespace HRMS.Application.Services.Employee
             }
 
             return ApiResponseDto.SuccessStatus(employeeImages);
+        }
+        private async Task<int> GetCurrentEmployeeIdAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userId, out int currentUserId))
+            {
+                var emp = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.Id == currentUserId && !u.IsDeleted);
+                if (emp != null)
+                {
+                    return emp.EmployeeId ?? 0;
+                }
+            }
+            return 0;
+        }
+        public async Task<ApiResponseDto> GetEmployeeSearchListByNameOrEmailAsync(string name)
+        {
+            var employeeId = await GetCurrentEmployeeIdAsync();
+            if (employeeId == 0) return ApiResponseDto.FailureStatus("Failed");
+
+            var results = await (from e in _unitOfWork.EmployeeRepo.TableNoTracking
+                          join u in _unitOfWork.UserRepo.TableNoTracking on e.Id equals u.EmployeeId
+                           where !e.IsDeleted && e.Id != employeeId
+                               && (e.FirstName.StartsWith(name) || e.LastName.StartsWith(name) || u.Email.StartsWith(name))
+                            select new EmployeeShortResponseDto
+                            {
+                                Id = e.Id,
+                                FirstName = e.FirstName,
+                                LastName = e.LastName,
+                                Email = u.Email
+                            })
+                            .Take(10)
+                            .ToListAsync();
+
+            return ApiResponseDto.SuccessStatus(results);
         }
     }
 }

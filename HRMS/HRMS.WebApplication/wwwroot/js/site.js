@@ -274,7 +274,23 @@ function ajaxLoadHtml(url, data = {}, targetSelector, options = {}) {
             if (targetSelector) {
                 const $target = $(targetSelector);
                 if ($target.length) {
-                    $target.html(html);
+                    switch (options.htmlMethod?.toLowerCase()) {
+                        case 'append':
+                            $target.append(html);
+                            break;
+                        case 'prepend':
+                            $target.prepend(html);
+                            break;
+                        case 'before':
+                            $target.before(html);
+                            break;
+                        case 'after':
+                            $target.after(html);
+                            break;
+                        default:
+                            // Default is replace
+                            $target.html(html);
+                    }
                 } else {
                     console.warn(`ajaxLoadHtml: Target selector "${targetSelector}" not found.`);
                 }
@@ -375,4 +391,12 @@ function handleServerActions(response) {
             window.location.href = response.redirect;
         }, 1000);
     }
+}
+
+function debounce(fn, delay = 300) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
 }

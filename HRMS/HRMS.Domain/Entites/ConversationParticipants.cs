@@ -10,11 +10,17 @@ namespace HRMS.Domain.Entites
 {
     public class ConversationParticipants:AuditableWithBaseEntity<int>
     {
-        public int ConversationId { get; set; }
-        public int EmployeeId { get; set; }
+        public int ConversationId { get; private set; }
+        public int EmployeeId { get; private set; }
 
-        public Conversation? Conversation { get; set; }
-        public Employee? Employee { get; set; }
+        public Conversation? Conversation { get; private set; }
+        public Employee? Employee { get; private set; }
+
+        public void AddConversation(int conversationId, int employeeId)
+        {
+            ConversationId = conversationId;
+            EmployeeId = employeeId;
+        }
 
     }
 }

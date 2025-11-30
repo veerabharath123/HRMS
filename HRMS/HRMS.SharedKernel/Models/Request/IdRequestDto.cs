@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace HRMS.SharedKernel.Models.Request
 {
-    public class GuidIdRequestDto
+    public class IdRequestDto
     {
         [Required]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
     }
 }

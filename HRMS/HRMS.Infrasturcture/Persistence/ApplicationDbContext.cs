@@ -4,6 +4,7 @@ using HRMS.Domain.Entites;
 using HRMS.Infrastructure.Persistence.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HRMS.Infrastructure.Persistence
 {
@@ -48,7 +49,7 @@ namespace HRMS.Infrastructure.Persistence
 
             foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
             {
-                if (string.IsNullOrWhiteSpace(user))
+                if (!string.IsNullOrWhiteSpace(user))
                 {
                     switch (entry.State)
                     {
@@ -70,7 +71,7 @@ namespace HRMS.Infrastructure.Persistence
             if (user == null || user.Identity is null || !user.Identity.IsAuthenticated)
                 return string.Empty;
 
-            var username = user.FindFirst("Username");
+            var username = user.FindFirst(ClaimTypes.Name);
 
             return username?.Value ?? string.Empty;
         }
@@ -78,7 +79,7 @@ namespace HRMS.Infrastructure.Persistence
         private void SetAuditFieldsCreated(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
             entry1.Entity.CreatedUser = user;
-            entry1.Entity.CreatedDate = _currentDateTime.Date;
+            entry1.Entity.CreatedDate = _currentDateTime;
             SetAuditFieldsModified(entry1, user);
 
 
@@ -86,7 +87,7 @@ namespace HRMS.Infrastructure.Persistence
         private void SetAuditFieldsModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
             entry1.Entity.UpdatedUser = user;
-            entry1.Entity.UpdatedDate = _currentDateTime.Date;
+            entry1.Entity.UpdatedDate = _currentDateTime;
         }
 
 

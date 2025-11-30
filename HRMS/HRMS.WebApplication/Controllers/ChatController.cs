@@ -15,8 +15,8 @@ namespace HRMS.WebApplication.Controllers
         }
         public async Task<IActionResult> Chats()
         {
-            var response = await _api.PostAsync<List<ChatUserResponseDto>>("/User/GetUsers", true);
-            var chats = new List<ChatUserResponseDto>();
+            var response = await _api.PostAsync<List<ChatConversationListResponseDto>>("/Chats/GetChatConversationList", true);
+            var chats = new List<ChatConversationListResponseDto>();
 
             if (response.Success && response.Result is not null)
                 chats = response.Result;
@@ -25,16 +25,40 @@ namespace HRMS.WebApplication.Controllers
             return View("Chat",chats);
         }
         [HttpPost]
-        public async Task<IActionResult> SendMessage([FromBody] MessageRequestDto request)
+        public async Task<IActionResult> SendMessage([FromBody] ChatMessageRequestDto request)
         {
             if(ModelState.IsValid)
             {
-                var response = await _api.PostAsync<bool>("/User/SendMessageByUser", request, true);
+                var response = await _api.PostAsync<ChatMessageResponseDto>("/Chats/SendMessage", request, true);
 
-                return JsonResponse(response);
+                return PartialView("ChatMessage",response.Result);
             }
 
-            return JsonBadResponse("Invalid data");
+            throw new Exception("Invalid data");
+        }
+        [HttpPost]
+        public async Task<IActionResult> StartNewChatWith([FromBody] IdRequestDto request)
+        {
+            if(ModelState.IsValid)
+            {
+                var response = await _api.PostAsync<List<ChatConversationListResponseDto>>("/Chats/StartNewChatWith", request, true);
+
+                return PartialView("ChatUserList",response.Result);
+            }
+
+            throw new Exception("Invalid data");
+        }
+        [HttpPost]
+        public async Task<IActionResult> GetChatConversationDetails([FromBody] IdRequestDto request)
+        {
+            if(ModelState.IsValid)
+            {
+                var response = await _api.PostAsync<ChatConversationDetailResponseDto>("/Chats/GetChatConversationDetails", request, true);
+
+                return PartialView("ChatScreen",response.Result);
+            }
+
+            throw new Exception("Invalid data");
         }
     }
 }

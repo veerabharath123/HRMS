@@ -1,0 +1,33 @@
+﻿@model ChatMessageResponseDto
+
+@if (!Model.IsMine)
+{
+    <div class="d-flex flex-column align-items-start mb-3 message-section" id="m.Id">
+        <div class="message-box-other message-box">
+            @Model.Content
+            <div class="text-end text-action-others">
+                @Model.CreatedDate.ToString("hh:mm tt")
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column align-items-end mb-3 message-section" id="m.Id">
+        <div class="message-box-mine message-box">
+            @Model.Content
+
+            <div class="text-end text-muted text-action-mine">
+                @Model.CreatedDate.ToString("hh:mm tt")
+                @if (Model.DeliveredAt is not null)
+                {
+                    <i class="bi bi-send-check-fill"></i>
+                }
+                @if (Model.ReadAt is not null)
+                {
+                    <i class="bi bi-eye-fill"></i>
+                }
+            </div>
+        </div>
+    </div>
+}

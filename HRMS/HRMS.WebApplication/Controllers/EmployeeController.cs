@@ -2,8 +2,10 @@
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Class.BreadCrumbs;
+using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace HRMS.WebApplication.Controllers
 {
@@ -92,6 +94,20 @@ namespace HRMS.WebApplication.Controllers
                 return JsonResponse<object>(null);
             }
             var response = await _api.PostAsync<List<EmpImageResponseDto>>("/Employees/GetEmployeeImages", request, true);
+            return JsonResponse(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEmployeeSearchListByNameOrEmail([FromBody] EmployeeSearchRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                ApiResponseModel<List<EmployeeShortResponseDto>> defaultRes = new();
+                defaultRes.Result = [];
+                return JsonResponse(defaultRes);
+            }
+
+            var response = await _api.PostAsync<List<EmployeeShortResponseDto>>("/Employees/GetEmployeeSearchListByNameOrEmail", request, true);
             return JsonResponse(response);
         }
     }

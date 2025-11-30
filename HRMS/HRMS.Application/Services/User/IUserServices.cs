@@ -6,7 +6,7 @@ namespace HRMS.Application.Services
     public interface IUserServices
     {
         Task<ApiResponseDto> InsertUserAsync(UserInsertRequestDto request);
-        Task<List<string>> GetPermissionsByUserIdAsync(Guid Id);
+        Task<List<string>> GetPermissionsByUserIdAsync(int Id);
 
         Task<ApiResponseDto> ValidateUserLoginAsync(LoginRequestDto request);
         Task<ApiResponseDto> GetDocument();

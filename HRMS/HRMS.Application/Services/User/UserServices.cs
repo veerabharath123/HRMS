@@ -135,7 +135,7 @@ namespace HRMS.Application.Services
             {
                 Permissions = await GetPermissionsByUserIdAsync(user.Id),
                 Roles = await GetRolesByUserIdAsync(user.Id),
-                UserId = user.GuidId,
+                UserId = user.Id,
                 UserName = user.UserName,
                 TokenExpiry = DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiresIn)
             };
@@ -145,16 +145,10 @@ namespace HRMS.Application.Services
 
             return ApiResponseDto.SuccessStatus(loginResponse);
         }
-        public async Task<List<string>> GetPermissionsByUserIdAsync(Guid Id)
-        {
-            var userId = await _unitOfWork.UserRepo.GetIdByGuid(Id);
-            if (userId is null) return [];
-            return await GetPermissionsByUserIdAsync(userId.Value);
-        }
 
-        private Task<List<string>> GetPermissionsByUserIdAsync(int userId)
+        public async Task<List<string>> GetPermissionsByUserIdAsync(int userId)
         {
-            return (from u in _unitOfWork.UserRolesRepo.TableNoTracking
+            return await (from u in _unitOfWork.UserRolesRepo.TableNoTracking
                                 join rp in _unitOfWork.RolePermissionsRepo.TableNoTracking on u.RoleId equals rp.RoleId
                                 join p in _unitOfWork.PermissionsRepo.TableNoTracking on rp.PermissionId equals p.Id
                                 where u.UserId == userId && !u.IsDeleted && !p.IsDeleted && !rp.IsDeleted

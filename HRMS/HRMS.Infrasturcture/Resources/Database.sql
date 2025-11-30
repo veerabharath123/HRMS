@@ -694,6 +694,7 @@ ON Conversations (UpdatedDate);
 
 CREATE TABLE ConversationParticipants (
     Id INT IDENTITY(1,1) PRIMARY KEY,
+	GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
 
     ConversationId INT NOT NULL,
     EmployeeId INT NOT NULL,
@@ -784,6 +785,7 @@ CREATE TABLE MessageStatus (
 
 CREATE TABLE Attachments (
     Id INT IDENTITY(1,1) PRIMARY KEY,
+	GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
 
     MessageId INT NOT NULL,
     FileId INT NOT NULL,
@@ -825,8 +827,6 @@ VALUES
     ('MessageType', 'I', 'Image', 'Image file message', 2, 'System'),
     ('MessageType', 'F', 'File', 'File attachment message', 3, 'System'),
     ('MessageType', 'S', 'System', 'System notification', 4, 'System');
-
-	select * from GeneralReference
 
 
 

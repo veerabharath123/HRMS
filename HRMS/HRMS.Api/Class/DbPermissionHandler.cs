@@ -22,7 +22,7 @@ namespace HRMS.Api.Class
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
             var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdClaim?.Value, out Guid userId)) return;
+            if (!int.TryParse(userIdClaim?.Value, out int userId)) return;
 
             var cacheKey = $"permissions_{userId}";
 

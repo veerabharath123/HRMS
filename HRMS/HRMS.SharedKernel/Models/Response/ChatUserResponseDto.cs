@@ -18,6 +18,9 @@ namespace HRMS.SharedKernel.Models.Response
         public string Type { get; set; } = string.Empty;
         public List<string> Participants { get; set; } = [];
         public DateTime? LastMessageDate { get; set; }
+        public int UnreadCount { get; set; }
+        public string? LastMessage { get; set; }
+        public int EmployeeId { get; set; }
     }
     public class ChatConversationDetailResponseDto
     {
@@ -25,9 +28,9 @@ namespace HRMS.SharedKernel.Models.Response
         public string? Name { get; set; }
         public string Type { get; set; } = string.Empty;
         public List<ChatConversationListResponseDto> Participants { get; set; } = [];
-        public List<ChatMessageRequestDto> Messages { get; set; } = [];
+        public List<ChatMessageResponseDto> Messages { get; set; } = [];
     }
-    public class ChatMessageRequestDto
+    public class ChatMessageResponseDto
     {
         public int Id { get; set; }
         public int ConversationId { get; set; }
