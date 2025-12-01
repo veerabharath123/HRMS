@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HRMS.Application.Common.Interface
 {
-    public interface IChatServices
+    public interface IChatNotificationServices
     {
         Task SendMessageToUserAsync<TResponse>(string userId, TResponse response);
         Task SendMessageToGroup<TResponse>(string groupName, TResponse response);

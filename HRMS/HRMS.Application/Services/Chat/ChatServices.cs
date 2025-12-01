@@ -17,10 +17,12 @@ namespace HRMS.Application.Services.Chat
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public ChatServices(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        private readonly IChatNotificationServices _chatNotificationServices;
+        public ChatServices(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatNotificationServices)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+            _chatNotificationServices = chatNotificationServices;
         }
         private async Task<int> GetCurrentEmployeeIdAsync()
         {
@@ -169,55 +171,101 @@ namespace HRMS.Application.Services.Chat
 
             return ApiResponseDto.SuccessStatus(convo);
         }
-
-        public async Task<ApiResponseDto> SendMessageAsync(ChatMessageRequestDto request)
+        public async Task<Message> SaveMessageAsync(int employeeId, ChatMessageRequestDto request)
         {
-            int employeeId = await GetCurrentEmployeeIdAsync();
             var messageTypeId = await _unitOfWork.GeneralReferenceRepo.TableNoTracking
                 .Where(mt => mt.Code == "T" && mt.Category == "MessageType")
                 .Select(mt => mt.Id)
-                .FirstAsync();
-
-            if (employeeId == 0 || messageTypeId == 0)
-                return ApiResponseDto.FailureStatus("Failed to send message, please try again later.");
+                .FirstOrDefaultAsync();
 
             var message = new Message
             {
                 ConversationId = request.ConversationId,
                 SenderId = employeeId,
                 Content = request.Content,
-                MessageTypeId = messageTypeId, // Assuming 1 is for text messages
+                MessageTypeId = messageTypeId == 0 ? 1 : messageTypeId, 
                 ParentMessageId = null,
                 IsEdited = false
             };
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
-            // Add Message Status for all participants
+
+            message = await _unitOfWork.MessagesRepo.TableNoTracking
+                        .Include(m => m.Sender)
+                        .FirstAsync(m => m.Id == message.Id);
+
+            return message;
+        }
+        public async Task SaveMessageStatus(int messageId, List<ConversationParticipants> participants)
+        {
+            foreach (var participant in participants)
+            {
+                var status = new MessageStatus();
+                status.Assign(messageId, participant.EmployeeId);
+                _unitOfWork.MessageStatusRepo.Add(status);
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<ApiResponseDto> SendMessageAsync(ChatMessageRequestDto request)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+
+            if (employeeId == 0)
+                return ApiResponseDto.FailureStatus("Failed to send message, please try again later.");
+
+            var message = await SaveMessageAsync(employeeId, request);
+            
             var participants = await _unitOfWork.ConversationParticipantsRepo.TableNoTracking
                 .Where(p => p.ConversationId == request.ConversationId)
                 .ToListAsync();
 
-            foreach (var participant in participants)
-            {
-                var status = new MessageStatus();
-                status.Assign(message.Id, participant.EmployeeId);
-                _unitOfWork.MessageStatusRepo.Add(status);
-            }
-            await _unitOfWork.SaveChangesAsync();
+            await SaveMessageStatus(message.Id, participants);
 
-            return ApiResponseDto.SuccessStatus(new ChatMessageResponseDto
+            var response = new ChatMessageResponseDto
             {
                 Id = message.Id,
                 ConversationId = message.ConversationId,
                 SenderId = message.SenderId,
-                SenderName = participants.FirstOrDefault(p => p.EmployeeId == message.SenderId)?.Employee?.FullName ?? "Unknown",
+                SenderName = message.Sender?.FullName ?? "Unknown",
                 Content = message.Content,
                 ParentMessageId = message.ParentMessageId,
                 CreatedDate = message.CreatedDate,
-                IsMine = true,
                 DeliveredAt = null,
                 ReadAt = null
-            }, "Message sent successfully.");
+            };
+
+            foreach (var participant in participants)
+            {
+                if (participant.EmployeeId != employeeId)
+                {
+                    var user = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId == participant.EmployeeId);
+                    await _chatNotificationServices.SendMessageToUserAsync(user?.Id.ToString() ?? string.Empty, response);
+                }
+            }
+
+            response.IsMine = true;
+            return ApiResponseDto.SuccessStatus(response, "Message sent successfully.");
+        }
+
+        public async Task<ApiResponseDto> MarkMessageAsDeliveredAsync(int messageId)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+
+            if (employeeId == 0)
+                return ApiResponseDto.FailureStatus("Failed to send message, please try again later.");
+
+            var message = await _unitOfWork.MessagesRepo.TableNoTracking.Include(m => m.MessageStatuses).FirstAsync(m => m.Id == messageId);
+
+            var messageStatus = message.MessageStatuses.FirstOrDefault(ms => ms.EmployeeId == employeeId);
+
+            if(messageStatus is not null)
+            {
+                messageStatus.MarkDelivered(DateTime.Now);
+                _unitOfWork.MessageStatusRepo.Update(messageStatus);
+                await _unitOfWork.SaveAsync();
+            }
+            return ApiResponseDto.SuccessStatus("");
         }
     }
 }

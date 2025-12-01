@@ -173,11 +173,8 @@
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -244,14 +241,10 @@
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
-
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
@@ -266,9 +259,7 @@
                                 </button>
                                 <div class="accordion" id="contact-accordian">
                                     <div class="accordion-item">
-
                                         <div class="accordion-header" id="headingOne">
-
                                             <div class="accordion-button" type="button" aria-expanded="true" aria-controls="collapseOne">
                                                 <div class="form-check d-center me-2">
                                                     <input class="form-check-input" type="checkbox" id="is-primary-contact" name="IsPrimary" value="something">
@@ -298,10 +289,7 @@
                                             </div>
                                         </div>
                                     </div>
-
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -319,18 +307,17 @@
     const modal = new bootstrap.Modal(document.getElementById('emp-detail-img-upload-modal'));
 
     $('#emp-detail-img-upload-modal #upload').on('file:upload',function(e , files){
-        console.log(files.files[0])
         const formData = new FormData();
-        const $imgId = $('#emp-photo-id').val('')
+        const $imgId = $('#emp-photo-id').val('');
 
-        formData.append('file',files.files[0])
+        formData.append('file',files.files[0]);
+
         ajaxPostFile(
             '@Url.Action("FileUpload", "File")',
             formData,
             function(res){ 
                 if(res?.success && res?.data){
-                    const id = res.data;
-                    $imgId.val(id);
+                    $imgId.val(res.data);
                     showNotification({
                         type: 'success',
                         message: res?.message || 'Image save!'
@@ -346,8 +333,8 @@
                 }
             },
             { useDefaultSuccessCallBack: false }
-        )
-    })
+        );
+    });
 
     $('#emp-img-view').on('click', function () {
         const src = $('#emp-detail-img-block img').attr('src');

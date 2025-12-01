@@ -60,5 +60,11 @@ namespace HRMS.WebApplication.Controllers
 
             throw new Exception("Invalid data");
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateMessageHtml([FromBody] ChatMessageResponseDto message)
+        {
+            var response = await _api.PostAsync("/Chats/MarkMessageAsDelivered", new { message.Id }, true);
+            return PartialView("ChatMessage", message);
+        }
     }
 }

@@ -145,6 +145,7 @@
             background: #d3d3d33d
     }
 </style>
+
 <div class="container-fluid h-100 py-2">
     <div class="row h-100" id="chat-box">
         <div class="col-lg-4 col-md-12 h-100" id="user-list">
@@ -239,10 +240,12 @@
 <script nonce="@Html.ScriptNonce()">
     $('#open-menu').on('click',function(){
         $('.sliding-menu').addClass('show');
-    })
+    });
+
     $('#close-menu').on('click',function(){
         $('.sliding-menu').removeClass('show');
-    })
+    });
+
     $('.user').on('click',function(){
         const conversationId = this.id;
 
@@ -260,25 +263,25 @@
                 }
             }
         )
-    })
+    });
+
     $(document).on('click','#back-btn',function(){
         $('#chat-box').removeClass('open-chat')
-    })
+    });
 
     $(document).on('click','#sendBtn', function(){
         const messageInput = $('#messageInput');
         const message = messageInput.val().trim();
         const conversationId = messageInput.parent().attr('id');
-        const request = {
+
+        sendMessage({
             ConversationId: conversationId,
             Content: message,
             ParentMessageId: null
-        }
-        sendMessage(request);
+        });
     });
 
     function sendMessage(request){
-        debugger;
         if(!request.Content?.length){
             toastr.warning('Message cannot be empty.');
             return;
@@ -292,11 +295,11 @@
             '#chat-messages',
             { 
                 afterLoad: function($target){
-                    const container = $target[0]
+                    const container = $target[0];
                     const message = $target.find('.message-section:last-child')[0];
 
                     container.scrollTop = message.offsetTop;
-                    $('#messageInput').val('')
+                    $('#messageInput').val('');
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'append'
@@ -305,37 +308,36 @@
     }
 
     function createMessage(data){
-        const message = data.message;
-        const user = data.user;
-        const time = new Date(data.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const messageDiv = $(document.createElement('div'));
-        messageDiv.addClass('d-flex flex-column').addClass(data.isMe ? 'align-items-end':'');
-
-        const msgContent = document.createElement('div');
-        msgContent.classList.add('msg', data.isMe ? 'from-me':'from-them');
-        msgContent.textContent = message;
-        messageDiv.append(msgContent);
-
-        const timeDiv = $(document.createElement('div'));
-        timeDiv.addClass('time muted');
-        timeDiv.text(time);
-        messageDiv.append(timeDiv);
-
-        $('#messages').append(messageDiv)
-        $('#messageInput').val('')
+        ajaxLoadHtml(
+            '@Url.Action("CreateMessageHtml","Chat")',
+            JSON.stringify(data),
+            '#chat-messages',
+            { 
+                afterLoad: function($target){
+                    const container = $target[0];
+                    const message = $target.find('.message-section:last-child')[0];
+                    container.scrollTop = message.offsetTop;
+                },
+                useDefaultSuccessCallBack : false,
+                htmlMethod: 'append'
+            }
+        );
     }
 
-     const connection = new signalR.HubConnectionBuilder()
-        .withUrl(resolveSafeUrl(`/hubs/chat`))
-        .withAutomaticReconnect()
-        .build();
+    const connection = new signalR.HubConnectionBuilder()
+                        .withUrl(resolveSafeUrl(`/hubs/chat`))
+                        .withAutomaticReconnect()
+                        .build();
 
     connection.on("ReceiveChatMessage", (response) => {
+        debugger
         if(response?.success && response?.result){
-            const result = response.result
-            createMessage(result)
-            toastr.info(result.message, result.username);
+            const result = response.result;
+            createMessage(result);
+
+            if(!$('#chat-box').hasClass('open-chat')){
+                toastr.info(result.content, result.senderName);
+            }
         } else {
             console.error('Failed to fetch message:', result?.message);
         }
@@ -360,20 +362,20 @@
         if (!val?.length || val.length <= 2)
             return;
 
-        getEmployeeList(val)
+        getEmployeeList(val);
     });
+
     $('#search-emp button').on('click', function () {
         $('.emp-list').empty();
         $('#search-emp input').val('');
     });
-    $(document).on('click','.new-emp-clickable',function(){
-        const id = this.id;
 
-        if(!id) return
+    $(document).on('click','.new-emp-clickable',function(){
+        if(!this.id) return
 
         ajaxLoadHtml(
             '@Url.Action("StartNewChatWith","Chat")',
-            JSON.stringify({ Id : id } ),
+            JSON.stringify({ Id : id }),
             '.list-group-flush',
             {
                 afterLoad: function(){
@@ -382,7 +384,7 @@
                 }
             }
         )
-    })
+    });
 
     function getEmployeeList(name){
         ajaxPost(

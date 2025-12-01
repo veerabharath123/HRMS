@@ -29,10 +29,10 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
-        private readonly IChatServices _chatServices;
+        private readonly IChatNotificationServices _chatServices;
         private readonly IEmailServices _emailServices;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices,
+            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatServices,
             IEmailServices emailServices)
         {
             _unitOfWork = unitOfWork;
@@ -251,7 +251,6 @@ namespace HRMS.Application.Services
             //TODO: Save message to database
 
             return ApiResponseDto.FlagStatus(true, "Message sent");
-
         }
     }
 }

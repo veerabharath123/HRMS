@@ -13,9 +13,6 @@ namespace HRMS.Infrastructure.Persistence.Configuration.EntityConfiguration
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-            builder.Property(x => x.Content)
-            .HasColumnType("nvarchar(max)");
-
             builder.HasOne(m => m.Sender)
                 .WithMany()
                 .HasForeignKey(m => m.SenderId)

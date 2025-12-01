@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace HRMS.Infrastructure.Communication.Messaging
 {
-    public class ChatHubServices<THub> : IChatServices where THub : Hub
+    public class ChatHubServices<THub> : IChatNotificationServices where THub : Hub
     {
         private readonly IHubContext<THub> _hubContext;
         private readonly HubsConnectionManager _manager;
