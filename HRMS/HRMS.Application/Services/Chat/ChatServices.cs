@@ -257,13 +257,16 @@ namespace HRMS.Application.Services.Chat
 
             var message = await _unitOfWork.MessagesRepo.TableNoTracking.Include(m => m.MessageStatuses).FirstAsync(m => m.Id == messageId);
 
-            var messageStatus = message.MessageStatuses.FirstOrDefault(ms => ms.EmployeeId == employeeId);
+            var messageStatus = message.MessageStatuses.FirstOrDefault(ms => ms.EmployeeId != employeeId);
 
             if(messageStatus is not null)
             {
                 messageStatus.MarkDelivered(DateTime.Now);
                 _unitOfWork.MessageStatusRepo.Update(messageStatus);
-                await _unitOfWork.SaveAsync();
+                var saved = await _unitOfWork.SaveAsync();
+                var user = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId == messageStatus.EmployeeId);
+
+                if (saved && user is not null) await _chatNotificationServices.SendDeliveredStatusToUserAsync(user.Id.ToString(), messageId);
             }
             return ApiResponseDto.SuccessStatus("");
         }

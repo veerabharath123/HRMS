@@ -12,6 +12,7 @@ namespace HRMS.Application.Common.Interface
         Task SendMessageToGroup<TResponse>(string groupName, TResponse response);
         Task AddUserToGroupAsync(string userId, string groupName);
         Task RemoveUserFromGroupAsync(string userId, string groupName);
+        Task SendDeliveredStatusToUserAsync<TResponse>(string userId, TResponse response);
 
     }
 }

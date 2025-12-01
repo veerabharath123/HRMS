@@ -19,10 +19,7 @@ else
 
             <div class="text-end text-muted text-action-mine">
                 @Model.CreatedDate.ToString("hh:mm tt")
-                @if (Model.DeliveredAt is not null)
-                {
-                    <i class="bi bi-send-check-fill"></i>
-                }
+                <i class="bi bi-send-check-fill delivered-status @(Model.DeliveredAt is null ? "d-none" : "")" ></i>
                 @if (Model.ReadAt is not null)
                 {
                     <i class="bi bi-eye-fill"></i>

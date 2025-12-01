@@ -831,3 +831,10 @@ VALUES
 
 
 select * from employee
+select * from users
+
+select e.FirstName, e.LastName, u.Email from employee e
+join users u on e.Id = u.EmployeeId
+
+update Users set EmployeeId = 4
+where Id = 1

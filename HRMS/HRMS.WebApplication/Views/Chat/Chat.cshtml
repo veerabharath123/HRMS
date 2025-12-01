@@ -238,11 +238,11 @@
 </div>
 
 <script nonce="@Html.ScriptNonce()">
-    $('#open-menu').on('click',function(){
+    $(document).on('click','#open-menu',function(){
         $('.sliding-menu').addClass('show');
     });
 
-    $('#close-menu').on('click',function(){
+    $(document).on('click','#close-menu',function(){
         $('.sliding-menu').removeClass('show');
     });
 
@@ -330,13 +330,24 @@
                         .build();
 
     connection.on("ReceiveChatMessage", (response) => {
-        debugger
         if(response?.success && response?.result){
             const result = response.result;
             createMessage(result);
 
             if(!$('#chat-box').hasClass('open-chat')){
                 toastr.info(result.content, result.senderName);
+            }
+        } else {
+            console.error('Failed to fetch message:', result?.message);
+        }
+    });
+
+    connection.on("ReceiveDeliveredStatus", (response) => {
+        if(response?.success && response?.result){
+            const result = response.result;
+
+            if(!$('#chat-box').hasClass('open-chat') && result){
+                $(`#chat-messages .message-section#${result} .delivered-status`).removeClass("d-none")
             }
         } else {
             console.error('Failed to fetch message:', result?.message);
@@ -375,7 +386,7 @@
 
         ajaxLoadHtml(
             '@Url.Action("StartNewChatWith","Chat")',
-            JSON.stringify({ Id : id }),
+            JSON.stringify({ Id : this.id }),
             '.list-group-flush',
             {
                 afterLoad: function(){

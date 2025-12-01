@@ -16,6 +16,9 @@ namespace HRMS.Infrastructure.Communication.Messaging
         }
         public Task SendMessageToUserAsync<TResponse>(string userId, TResponse response)
             => _hubContext.Clients.User(userId).SendAsync("ReceiveChatMessage", ApiResponseDto.SuccessStatus(response));
+        public Task SendDeliveredStatusToUserAsync<TResponse>(string userId, TResponse response)
+            => _hubContext.Clients.User(userId).SendAsync("ReceiveDeliveredStatus", ApiResponseDto.SuccessStatus(response));
+
         public async Task SendMessageToGroup<TResponse>(string groupName, TResponse response)
         {
             await _hubContext.Clients.Group(groupName).SendAsync("ReceiveGroupMessage", response);
