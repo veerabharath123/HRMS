@@ -838,3 +838,14 @@ join users u on e.Id = u.EmployeeId
 
 update Users set EmployeeId = 4
 where Id = 1
+
+update MessageStatus set ReadAt = null
+
+select * from [Messages] m
+join MessageStatus ms on m.Id = ms.MessageId
+where 
+
+m.ConversationId = 1 and m.CreatedDate <= GETDATE()
+and ms.EmployeeId = 2 and m.SenderId <> 2 --and ms.ReadAt is null
+
+truncate table Messages

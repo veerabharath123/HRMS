@@ -47,5 +47,11 @@ namespace HRMS.Api.Controllers.V1
             var result = await _chatServices.MarkMessageAsDeliveredAsync(request.Id);
             return Ok(result);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> MarkMessageAsReadAsync([FromBody] UpdateSeenRequestDto request)
+        {
+            var result = await _chatServices.MarkMessageAsReadAsync(request);
+            return Ok(result);
+        }
     }
 }

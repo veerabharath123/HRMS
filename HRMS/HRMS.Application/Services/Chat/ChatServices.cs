@@ -157,11 +157,11 @@ namespace HRMS.Application.Services.Chat
                             CreatedDate = m.CreatedDate,
                             IsMine = m.SenderId == employeeId,
                             DeliveredAt = m.MessageStatuses
-                                .Where(ms => ms.EmployeeId == employeeId)
+                                .Where(ms => ms.EmployeeId != employeeId)
                                 .Select(ms => ms.DeliveredAt)
                                 .FirstOrDefault(),
                             ReadAt = m.MessageStatuses
-                                .Where(ms => ms.EmployeeId == employeeId)
+                                .Where(ms => ms.EmployeeId != employeeId)
                                 .Select(ms => ms.ReadAt)
                                 .FirstOrDefault()
                         })
@@ -257,7 +257,7 @@ namespace HRMS.Application.Services.Chat
 
             var message = await _unitOfWork.MessagesRepo.TableNoTracking.Include(m => m.MessageStatuses).FirstAsync(m => m.Id == messageId);
 
-            var messageStatus = message.MessageStatuses.FirstOrDefault(ms => ms.EmployeeId != employeeId);
+            var messageStatus = message.MessageStatuses.FirstOrDefault(ms => ms.EmployeeId == employeeId);
 
             if(messageStatus is not null)
             {
@@ -270,5 +270,64 @@ namespace HRMS.Application.Services.Chat
             }
             return ApiResponseDto.SuccessStatus("");
         }
+
+        public async Task<ApiResponseDto> MarkMessageAsReadAsync(UpdateSeenRequestDto request)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+            if (employeeId == 0)
+                return ApiResponseDto.FailureStatus("Failed to mark messages as read.");
+
+            // 1) Load message statuses that belong to this employee and are unread
+            var statusesToMark = await _unitOfWork.MessageStatusRepo.Table
+                .Where(ms => ms.EmployeeId == employeeId
+                             && ms.ReadAt == null
+                             && ms.Message != null
+                             && ms.Message.CreatedDate.Date <= request.TillRead.Value.Date
+                             && ms.Message.ConversationId == request.ConversationId
+                             && ms.Message.SenderId != employeeId)
+                .Include(ms => ms.Message)
+                .ToListAsync();
+
+            if (statusesToMark.Count == 0)
+                return ApiResponseDto.SuccessStatus("No unread messages.");
+
+            // 2) Mark all statuses as read
+            foreach (var ms in statusesToMark)
+            {
+                ms.MarkRead(DateTime.Now);
+                _unitOfWork.MessageStatusRepo.Update(ms);
+            }
+
+            var saved = await _unitOfWork.SaveAsync();
+
+            if (!saved)
+                return ApiResponseDto.FailureStatus("Failed to update read status.");
+
+            // 4) Batch notifications per sender
+            //    Group statuses by message sender
+            var groupedBySender = statusesToMark
+                .Where(ms => ms.Message != null)
+                .GroupBy(ms => ms.Message!.SenderId)
+                .ToList();
+
+            foreach (var group in groupedBySender)
+            {
+                int senderEmployeeId = group.Key;
+
+                var senderUser = await _unitOfWork.UserRepo.TableNoTracking
+                    .FirstOrDefaultAsync(u => u.EmployeeId == senderEmployeeId);
+
+                if (senderUser == null)
+                    continue;
+
+                await _chatNotificationServices.SendDeliveredStatusToUserAsync<List<int>>(
+                    senderUser.Id.ToString(),
+                    [.. group.Select(ms => ms.MessageId).Distinct()]
+                );
+            }
+
+            return ApiResponseDto.SuccessStatus("Messages marked as read.");
+        }
+
     }
 }

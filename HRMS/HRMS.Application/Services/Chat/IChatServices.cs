@@ -10,5 +10,6 @@ namespace HRMS.Application.Services.Chat
         Task<ApiResponseDto> GetChatConversationDetailsAsync(int conversationId);
         Task<ApiResponseDto> SendMessageAsync(ChatMessageRequestDto request);
         Task<ApiResponseDto> MarkMessageAsDeliveredAsync(int messageId);
+        Task<ApiResponseDto> MarkMessageAsReadAsync(UpdateSeenRequestDto request);
     }
 }

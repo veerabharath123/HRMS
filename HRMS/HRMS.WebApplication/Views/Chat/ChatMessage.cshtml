@@ -2,28 +2,25 @@
 
 @if (!Model.IsMine)
 {
-    <div class="d-flex flex-column align-items-start mb-3 message-section" id="m.Id">
+    <div class="d-flex flex-column align-items-start mb-3 message-section message-section-other" id="@Model.Id">
         <div class="message-box-other message-box">
             @Model.Content
             <div class="text-end text-action-others">
-                @Model.CreatedDate.ToString("hh:mm tt")
+                <span class="message-time" data-datetime="@DateTime.SpecifyKind(Model.CreatedDate, DateTimeKind.Local).ToUniversalTime().ToString("o")" data-read="@(Model.ReadAt is not null)">@Model.CreatedDate.ToString("hh:mm tt")</span>
             </div>
         </div>
     </div>
 }
 else
 {
-    <div class="d-flex flex-column align-items-end mb-3 message-section" id="m.Id">
+    <div class="d-flex flex-column align-items-end mb-3 message-section" id="@Model.Id">
         <div class="message-box-mine message-box">
             @Model.Content
 
             <div class="text-end text-muted text-action-mine">
-                @Model.CreatedDate.ToString("hh:mm tt")
+                <span class="message-time" data-datetime="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">@Model.CreatedDate.ToString("hh:mm tt")</span>
                 <i class="bi bi-send-check-fill delivered-status @(Model.DeliveredAt is null ? "d-none" : "")" ></i>
-                @if (Model.ReadAt is not null)
-                {
-                    <i class="bi bi-eye-fill"></i>
-                }
+                <i class="bi bi-eye-fill read-at @(Model.ReadAt is null ? "d-none" : "")"></i>
             </div>
         </div>
     </div>
