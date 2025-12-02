@@ -341,6 +341,21 @@
                     const container = $target[0];
                     const message = $target.find('.message-section:last-child')[0];
                     container.scrollTop = message.offsetTop;
+
+                    const lastMessageSection = $target.find('.message-section-other').last().find('.message-time');
+
+                    if(!$('#chat-box').hasClass('open-chat')) return;
+
+                    if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
+                        const tillReadText = lastMessageSection.data('datetime');
+                        const tillReadDateTime = new Date(tillReadText);
+                        if(isNaN(tillReadDateTime.getTime())) return;
+
+                        updateMessageAsSeen({
+                            ConversationId: data.conversationId,
+                            TillRead: tillReadDateTime
+                        });
+                    }
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'append'
@@ -372,6 +387,21 @@
 
             if($('#chat-box').hasClass('open-chat') && result){
                 $(`#chat-messages .message-section#${result} .delivered-status`).removeClass("d-none")
+            }
+        } else {
+            console.error('Failed to fetch message:', result?.message);
+        }
+    });
+
+    connection.on("ReceiveSeenStatus", (response) => {
+        debugger
+        if(response?.success && response?.result){
+            const result = response.result;
+
+            if($('#chat-box').hasClass('open-chat') && result?.length){
+                result.forEach(id => {
+                    $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")
+                });
             }
         } else {
             console.error('Failed to fetch message:', result?.message);

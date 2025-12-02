@@ -320,10 +320,13 @@ namespace HRMS.Application.Services.Chat
                 if (senderUser == null)
                     continue;
 
-                await _chatNotificationServices.SendDeliveredStatusToUserAsync<List<int>>(
-                    senderUser.Id.ToString(),
-                    [.. group.Select(ms => ms.MessageId).Distinct()]
-                );
+                var user = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId == senderUser.EmployeeId);
+
+                if (user is not null) 
+                    await _chatNotificationServices.SendSeenStatusToUserAsync<List<int>>(
+                        user.Id.ToString(),
+                        [.. group.Select(ms => ms.MessageId).Distinct()]
+                    );
             }
 
             return ApiResponseDto.SuccessStatus("Messages marked as read.");

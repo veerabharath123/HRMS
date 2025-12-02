@@ -18,6 +18,10 @@ namespace HRMS.Infrastructure.Communication.Messaging
             => _hubContext.Clients.User(userId).SendAsync("ReceiveChatMessage", ApiResponseDto.SuccessStatus(response));
         public Task SendDeliveredStatusToUserAsync<TResponse>(string userId, TResponse response)
             => _hubContext.Clients.User(userId).SendAsync("ReceiveDeliveredStatus", ApiResponseDto.SuccessStatus(response));
+        public Task SendSeenStatusToUserAsync<TResponse>(string userId, TResponse response)
+            => SendStatusToUserAsync("ReceiveSeenStatus", userId, response);
+        private Task SendStatusToUserAsync<TResponse>(string statusType,string userId, TResponse response)
+            => _hubContext.Clients.User(userId).SendAsync(statusType, ApiResponseDto.SuccessStatus(response));
 
         public async Task SendMessageToGroup<TResponse>(string groupName, TResponse response)
         {
