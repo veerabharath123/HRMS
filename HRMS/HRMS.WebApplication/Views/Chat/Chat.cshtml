@@ -238,6 +238,7 @@
 </div>
 
 <script nonce="@Html.ScriptNonce()">
+
     $(document).on('click','#open-menu',function(){
         $('.sliding-menu').addClass('show');
     });
@@ -260,7 +261,7 @@
                     const message = $('#chat-messages').find('.message-section:last-child')[0];
 
                     container.scrollTop = message.offsetTop;
-                    debugger
+                    $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
                     const lastMessageSection = $(container).find('.message-section-other').last().find('.message-time');
 
                     if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
@@ -284,7 +285,9 @@
             function(res){
                 if(!res?.success){
                     console.error('Failed to update messages as seen:', res?.message);
+                    return;
                 }
+                
             }
         )
     }
@@ -343,6 +346,7 @@
                     container.scrollTop = message.offsetTop;
 
                     const lastMessageSection = $target.find('.message-section-other').last().find('.message-time');
+                    $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
 
                     if(!$('#chat-box').hasClass('open-chat')) return;
 
@@ -363,63 +367,18 @@
         );
     }
 
-    const connection = new signalR.HubConnectionBuilder()
-                        .withUrl(resolveSafeUrl(`/hubs/chat`))
-                        .withAutomaticReconnect()
-                        .build();
-
-    connection.on("ReceiveChatMessage", (response) => {
-        if(response?.success && response?.result){
-            const result = response.result;
-            createMessage(result);
-
-            if(!$('#chat-box').hasClass('open-chat')){
-                toastr.info(result.content, result.senderName);
-            }
-        } else {
-            console.error('Failed to fetch message:', result?.message);
+    function updateReadCount(result){
+        const readCountElem = $(`.list-group-flush #${result.conversationId}-status .new-message-icon`);
+        const messageElem = $(`.list-group-flush #${result.conversationId} .last-message`);
+        readCountElem.removeClass('d-center d-none');
+        if(result.unreadCount == '0'){
+            readCountElem.removeClass('d-center').addClass('d-none')
+        } else{
+            readCountElem.removeClass('d-done').addClass('d-center')
+            readCountElem.text(result.unreadCount)
         }
-    });
-
-    connection.on("ReceiveDeliveredStatus", (response) => {
-        if(response?.success && response?.result){
-            const result = response.result;
-
-            if($('#chat-box').hasClass('open-chat') && result){
-                $(`#chat-messages .message-section#${result} .delivered-status`).removeClass("d-none")
-            }
-        } else {
-            console.error('Failed to fetch message:', result?.message);
-        }
-    });
-
-    connection.on("ReceiveSeenStatus", (response) => {
-        debugger
-        if(response?.success && response?.result){
-            const result = response.result;
-
-            if($('#chat-box').hasClass('open-chat') && result?.length){
-                result.forEach(id => {
-                    $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")
-                });
-            }
-        } else {
-            console.error('Failed to fetch message:', result?.message);
-        }
-    });
-
-    // Start connection
-    async function startConnection() {
-        try {
-            await connection.start();
-            console.log("SignalR connected.");
-        } catch (err) {
-            console.error("Connection failed: ", err);
-            setTimeout(startConnection, 5000); // retry
-        }
+        messageElem.text(result.content)
     }
-
-    startConnection();
 
     $('#search-emp input').on('input', function () {
         const val = this.value.trim();

@@ -413,6 +413,69 @@
 
         const logoutUrl = '/Account/Logout';        
         
+        const chatConnection= new signalR.HubConnectionBuilder()
+                        .withUrl(resolveSafeUrl(`/hubs/chat`))
+                        .withAutomaticReconnect()
+                        .build();
+
+            // Start connection
+        async function startConnection() {
+            try {
+                await chatConnection.start();
+                console.log("SignalR connected.");
+            } catch (err) {
+                console.error("Connection failed: ", err);
+                setTimeout(startConnection, 5000); // retry
+            }
+        }
+
+        startConnection();
+
+        chatConnection.on("ReceiveChatMessage", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if(!$('#chat-box').hasClass('open-chat')){
+                    toastr.info(result.content, result.senderName);
+                    ajaxPost('@Url.Action("MarkMessageAsDelivered", "Chat")',JSON.stringify(result), ()=>{})
+                    typeof updateReadCount === 'function' && updateReadCount(result)
+                } else{
+                    typeof createMessage === 'function' && createMessage(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
+        chatConnection.on("ReceiveDeliveredStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if($('#chat-box').hasClass('open-chat') && result?.length){
+                    result.forEach(id => {
+                        $(`#chat-messages .message-section#${id} .delivered-status`).removeClass("d-none")
+                    });
+
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
+        chatConnection.on("ReceiveSeenStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if($('#chat-box').hasClass('open-chat') && result?.length){
+                    result.forEach(id => {
+                        $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")
+                        $(`#chat-messages .message-section#${id} .delivered-status`).removeClass("d-none")
+                    });
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
 
     </script>
 </body>

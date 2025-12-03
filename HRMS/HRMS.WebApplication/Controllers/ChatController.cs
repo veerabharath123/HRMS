@@ -72,5 +72,12 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync("/Chats/MarkMessageAsRead", request, true);
             return JsonResponse(response);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkMessageAsDelivered([FromBody] ChatMessageResponseDto message)
+        {
+            var response = await _api.PostAsync("/Chats/MarkMessageAsDelivered", new { message.Id }, true);
+            return JsonResponse(response);
+        }
     }
 }
