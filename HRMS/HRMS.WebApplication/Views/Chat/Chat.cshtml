@@ -26,6 +26,7 @@
         max-width:85%;
         border-radius:.5rem;
         padding:.5rem;
+        font-size: .8rem;
     }
     .message-box-mine{
         background-color: lightgray;
@@ -91,17 +92,26 @@
     }
 
     .reply-box{
-        padding:.5rem;
+        padding: .5rem;
         border: 1px solid lightgrey;
         background: lightgrey;
         display: flex;
         border-radius: .5rem;
         color: black;
-        user-select:none;
+        user-select: none;
+        position: relative;
+        max-width: 500px;
+        width: 50%;
     }
 
     .reply-box span{
         cursor: pointer;
+        font-size: .8rem;
+    }
+    .reply-box button {
+        position: absolute;
+        right: .5rem;
+        font-size: .5rem;
     }
     .sliding-menu img{
         max-width: 150px;
@@ -278,6 +288,7 @@
     });
 
     $('.user').on('click',function(){
+        debugger
         const conversationId = this.id;
 
         ajaxLoadHtml(

@@ -54,16 +54,17 @@
         </div>
     </div>
 </div>
-<div class="card-footer p-2" id="@Model.Id">  
-    <div id="reply-container" class="mb-2 px-2 d-none">
+<div class="card-footer p-2">  
+    <div id="reply-container" class="mb-2">
         <div class="reply-box gap-3">
+            <span>My text</span>
             <button class="btn-close"></button>
-            <span >My text</span>
         </div>
     </div>
-    <div class="text-section d-flex">
-        <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+    <div class="text-section d-flex" id="@Model.Id">
+        
         <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
+        <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
         <button class="btn btn-primary me-2" type="button"><i class="bi bi-paperclip"></i></button>
         <button class="btn btn-success me-2" type="button" id="sendBtn">Send</button>
     </div>
