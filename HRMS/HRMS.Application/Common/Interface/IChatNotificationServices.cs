@@ -14,5 +14,6 @@ namespace HRMS.Application.Common.Interface
         Task RemoveUserFromGroupAsync(string userId, string groupName);
         Task SendDeliveredStatusToUserAsync<TResponse>(string userId, TResponse response);
         Task SendSeenStatusToUserAsync<TResponse>(string userId, TResponse response);
+        Task SendTypingToUserStatus<TResponse>(string userId, TResponse response);
     }
 }

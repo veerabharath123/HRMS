@@ -477,6 +477,18 @@
             }
         });
 
+        chatConnection.on("ReceiveTypingStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if(result){
+                    typeof updateTypingStatus === 'function' && updateTypingStatus(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
     </script>
 </body>
 </html>

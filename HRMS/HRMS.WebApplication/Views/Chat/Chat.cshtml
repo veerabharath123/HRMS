@@ -5,8 +5,24 @@
     ViewData["Title"] = "Chats";
 }
 <style nonce="@Html.ScriptNonce()">
+    #typing-status{
+        display: none ;
+    }
+    #typing-status.show {
+            display: flex !important;
+    }
+
+    .user-clickable.show-typing p.typing-message,
+    .user-clickable:not(.show-typing) p.last-message   {
+        display: block;
+    }
+
+    .user-clickable:not(.show-typing) p.typing-message,
+    .user-clickable.show-typing p.last-message {
+        display: none !important;
+    }
    
-    .message-box{
+    .message-box, .typing-box {
         max-width:85%;
         border-radius:.5rem;
         padding:.5rem;
@@ -15,7 +31,7 @@
         background-color: lightgray;
     }
 
-    .message-box-other{
+    .message-box-other, .typing-box{
         background-color: dodgerblue;
         color: white;
     }
@@ -72,6 +88,20 @@
         #chat-box:is(.open-chat) #back-btn {
             display: block;
         }
+    }
+
+    .reply-box{
+        padding:.5rem;
+        border: 1px solid lightgrey;
+        background: lightgrey;
+        display: flex;
+        border-radius: .5rem;
+        color: black;
+        user-select:none;
+    }
+
+    .reply-box span{
+        cursor: pointer;
     }
     .sliding-menu img{
         max-width: 150px;
@@ -257,10 +287,10 @@
             {
                 afterLoad: function(){
                     $('#chat-box').removeClass('open-chat').addClass('open-chat')
-                    const container = $('#chat-messages')[0]
-                    const message = $('#chat-messages').find('.message-section:last-child')[0];
+                    const container = $('#chat-messages')
+                    const message = container.find('.message-section').last()[0];
 
-                    container.scrollTop = message.offsetTop;
+                    container[0].scrollTop = message.offsetTop;
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
                     const lastMessageSection = $(container).find('.message-section-other').last().find('.message-time');
 
@@ -319,17 +349,17 @@
         ajaxLoadHtml(
             '@Url.Action("SendMessage", "Chat")',
             JSON.stringify(request),
-            '#chat-messages',
+            '#typing-status',
             { 
-                afterLoad: function($target){
-                    const container = $target[0];
-                    const message = $target.find('.message-section:last-child')[0];
+                afterLoad: function(){
+                    const container = $('#chat-messages')
+                    const message = container.find('.message-section').last()[0];
 
-                    container.scrollTop = message.offsetTop;
+                    container[0].scrollTop = message.offsetTop;
                     $('#messageInput').val('');
                 },
                 useDefaultSuccessCallBack : false,
-                htmlMethod: 'append'
+                htmlMethod: 'before'
             }
         );
     }
@@ -338,12 +368,13 @@
         ajaxLoadHtml(
             '@Url.Action("CreateMessageHtml","Chat")',
             JSON.stringify(data),
-            '#chat-messages',
+            '#typing-status',
             { 
                 afterLoad: function($target){
-                    const container = $target[0];
-                    const message = $target.find('.message-section:last-child')[0];
-                    container.scrollTop = message.offsetTop;
+                   const container = $('#chat-messages')
+                    const message = container.find('.message-section').last()[0];
+
+                    container[0].scrollTop = message.offsetTop;
 
                     const lastMessageSection = $target.find('.message-section-other').last().find('.message-time');
                     $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
@@ -362,7 +393,7 @@
                     }
                 },
                 useDefaultSuccessCallBack : false,
-                htmlMethod: 'append'
+                htmlMethod: 'before'
             }
         );
     }
@@ -431,6 +462,112 @@
                         empList.append(li);
                     })
                 }
+            }
+        )
+    }
+    function updateTypingStatus(result){
+        if(!$('#chat-box').hasClass('open-chat')){
+            updateTypingStatusInChatList(result)
+            return;
+        }
+
+        if(result.isTyping){
+            $('#typing-status').addClass('show')
+            $(`#${result.conversationId}.user-clickable`).addClass('show-typing')
+        } else{
+            $('#typing-status').removeClass('show')
+            $(`#${result.conversationId}.user-clickable`).removeClass('show-typing')
+        }
+        const container = $('#chat-messages')
+        const message = container.find('.message-section').last()[0];
+
+        container[0].scrollTop = message.offsetTop;
+    }
+    function updateTypingStatusInChatList(result){
+        if(result.isTyping){
+            $(`#${result.conversationId}.user-clickable`).addClass('show-typing')
+        } else{
+            $(`#${result.conversationId}.user-clickable`).removeClass('show-typing')
+        }
+    }
+
+    let typingTimeout;
+    let isTyping = false;
+    let debounceTimer;
+    const typingTimeoutMs = 3000
+
+    $(document).on("keydown", "#messageInput", function (e) {
+        if (e.key === "Enter") {
+
+            if (e.shiftKey) {
+                // SHIFT + ENTER = allow newline
+                return;
+            }
+
+            // ENTER (no shift) → send message
+            e.preventDefault();
+            $("#sendBtn").click();  // or call your send function
+        }
+    })
+
+    $(document).on("input", "#messageInput", function (e) {
+        const conversationId = $(this).parent().attr('id');
+
+        const request = {
+            ConversationId: conversationId,
+            IsTyping: true
+        };
+
+        // --- Debounce logic: prevents firing rapidly on every key stroke ---
+        clearTimeout(debounceTimer);
+        clearTimeout(typingTimeout);
+        debounceTimer = setTimeout(() => {
+
+            // If not already typing, send typing start
+            if (!isTyping) {
+                isTyping = true;
+                request.IsTyping = true;
+                SendTypingStatus(request);
+            }
+
+            // ---- Auto-stop after 3 seconds of no typing ----
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+
+                SendTypingStatus({
+                    ConversationId: conversationId,
+                    IsTyping: false
+                });
+            }, typingTimeoutMs);
+
+        }, 300); // debounce delay (300ms is ideal)
+    });
+
+    $(document).on("blur", "#messageInput", function () {
+        const conversationId = $(this).parent().attr('id');
+
+        // If user was typing, send stop event
+        if (isTyping) {
+            isTyping = false;
+            SendTypingStatus({
+                ConversationId: conversationId,
+                IsTyping: false
+            });
+        }
+
+        // Cleanup timers
+        clearTimeout(typingTimeout);
+        clearTimeout(debounceTimer);
+    });
+
+
+    function SendTypingStatus(request){
+        ajaxPost(
+            '@Url.Action("SendTypingStatus", "Chat")',
+            JSON.stringify(request),
+            function(res){
+                // Handle response if needed
             }
         )
     }

@@ -25,7 +25,7 @@
         </div>
     </div>
 </div>
-<div class="card-body scrollarea" id="chat-messages">
+<div class="card-body scrollarea position-relative d-flex flex-column" id="chat-messages">
     @if(Model.Messages.Count == 0)
     {
         <div class="d-col-center">
@@ -41,11 +41,31 @@
     {
         <partial name="ChatMessage" model="m" />
     }
+    
+    <div class="flex-column align-items-start mb-3" id="typing-status">
+        <div class="typing-box">
+            <div class="ticontainer">
+                <div class="tiblock">
+                    <div class="tidot"></div>
+                    <div class="tidot"></div>
+                    <div class="tidot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="card-footer d-flex p-2" id="@Model.Id">
-
-    <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
-    <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
-    <button class="btn btn-primary me-2" type="button"><i class="bi bi-paperclip"></i></button>
-    <button class="btn btn-success me-2" type="button" id="sendBtn">Send</button>
+<div class="card-footer p-2" id="@Model.Id">  
+    <div id="reply-container" class="mb-2 px-2 d-none">
+        <div class="reply-box gap-3">
+            <button class="btn-close"></button>
+            <span >My text</span>
+        </div>
+    </div>
+    <div class="text-section d-flex">
+        <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+        <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
+        <button class="btn btn-primary me-2" type="button"><i class="bi bi-paperclip"></i></button>
+        <button class="btn btn-success me-2" type="button" id="sendBtn">Send</button>
+    </div>
+    
 </div>

@@ -3,6 +3,8 @@ using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -373,5 +375,39 @@ namespace HRMS.Application.Services.Chat
 
             return ApiResponseDto.SuccessStatus("Messages marked as read.");
         }
+
+        public async Task<ApiResponseDto> SendTypingStatusAsync(TypingRequestDto request)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+            if (employeeId == 0)
+                return ApiResponseDto.FailureStatus("Failed to mark messages as read.");
+
+            // Validate conversation + participant
+            bool isMember = await _unitOfWork.ConversationParticipantsRepo.TableNoTracking
+                .AnyAsync(p => p.ConversationId == request.ConversationId && p.EmployeeId == employeeId);
+
+            if (!isMember)
+                return ApiResponseDto.FailureStatus("User not part of conversation.");
+
+            // OPTIONAL: log typing time, update DB etc.
+
+            // Fetch all participants except the one typing
+            var participantUserIds = await _unitOfWork.UserRepo.TableNoTracking
+                .Where(u => u.EmployeeId != employeeId
+                         && _unitOfWork.ConversationParticipantsRepo.TableNoTracking
+                             .Any(cp => cp.EmployeeId == u.EmployeeId &&
+                                        cp.ConversationId == request.ConversationId))
+                .Select(u => u.Id.ToString())
+                .ToListAsync();
+
+            // Broadcast typing status to Hub
+            foreach (var userId in participantUserIds)
+            {
+                await _chatNotificationServices.SendTypingToUserStatus(userId, request);
+            }
+
+            return ApiResponseDto.SuccessStatus("");
+        }
+
     }
 }

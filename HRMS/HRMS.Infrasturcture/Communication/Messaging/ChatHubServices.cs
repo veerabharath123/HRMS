@@ -1,4 +1,7 @@
-﻿using HRMS.Application.Common.Interface;
+﻿using Amazon.Runtime;
+using Azure;
+using HRMS.Application.Common.Interface;
+using HRMS.Domain.Entites;
 using HRMS.Infrastructure.Communication.Messaging.ConnectionManager;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.SignalR;
@@ -22,6 +25,9 @@ namespace HRMS.Infrastructure.Communication.Messaging
             => SendStatusToUserAsync("ReceiveSeenStatus", userId, response);
         private Task SendStatusToUserAsync<TResponse>(string statusType,string userId, TResponse response)
             => _hubContext.Clients.User(userId).SendAsync(statusType, ApiResponseDto.SuccessStatus(response));
+
+        public Task SendTypingToUserStatus<TResponse>(string userId, TResponse response)
+            => SendStatusToUserAsync("ReceiveTypingStatus", userId, response);
 
         public async Task SendMessageToGroup<TResponse>(string groupName, TResponse response)
         {

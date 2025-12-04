@@ -79,5 +79,12 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync("/Chats/MarkMessageAsDelivered", new { message.Id }, true);
             return JsonResponse(response);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendTypingStatus([FromBody] TypingRequestDto request)
+        {
+            var response = await _api.PostAsync("/Chats/SendTypingStatus", request, true);
+            return JsonResponse(response);
+        }
     }
 }

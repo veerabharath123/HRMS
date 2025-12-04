@@ -48,9 +48,15 @@ namespace HRMS.Api.Controllers.V1
             return Ok(result);
         }
         [HttpPost("[action]")]
-        public async Task<IActionResult> MarkMessageAsReadAsync([FromBody] UpdateSeenRequestDto request)
+        public async Task<IActionResult> MarkMessageAsRead([FromBody] UpdateSeenRequestDto request)
         {
             var result = await _chatServices.MarkMessageAsReadAsync(request);
+            return Ok(result);
+        }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendTypingStatus([FromBody] TypingRequestDto request)
+        {
+            var result = await _chatServices.SendTypingStatusAsync(request);
             return Ok(result);
         }
     }
