@@ -39,6 +39,8 @@ namespace HRMS.SharedKernel.Models.Response
 
         public string? Content { get; set; }
         public int? ParentMessageId { get; set; }
+        public string ParentMessage { get; set; } = string.Empty;
+        public string ParentMessageSenderName { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; }
 

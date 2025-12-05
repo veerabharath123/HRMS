@@ -37,6 +37,43 @@
         color: white;
     }
 
+    .message-section:has(.message-box:hover) .message-sender-name,
+    .message-section:hover .message-options-btn {
+        opacity: 1;
+    }
+
+    .message-sender-name{
+        flex-basis:100%;
+        font-size: .7rem;
+        opacity: 0;
+        transition: .2s opacity ease-in-out;
+    }
+    .message-options-btn{
+        border: none;
+        background: none;
+        color: grey;
+        margin: 0;
+        padding: 0;
+        opacity: 0;
+        transition: .2s opacity ease-in-out;
+    }
+    .message-reply-box{
+        padding: .5rem;
+        border-radius: .3rem;
+        margin-bottom: .5rem;
+    }
+    .message-section.message-section-other .message-reply-box{
+        background: #066287;
+    }
+
+    .message-section:not(.message-section-other) .message-reply-box {
+        background: grey;
+    }
+
+    .message-content, .message-reply-box > p {
+        margin: 0;
+    }
+
     .text-action-others{
         color: #ffffff96;
         font-size: .8rem;
@@ -288,7 +325,6 @@
     });
 
     $('.user').on('click',function(){
-        debugger
         const conversationId = this.id;
 
         ajaxLoadHtml(
@@ -303,7 +339,7 @@
 
                     container[0].scrollTop = message.offsetTop;
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
-                    const lastMessageSection = $(container).find('.message-section-other').last().find('.message-time');
+                    const lastMessageSection = container.find('.message-section-other').last().find('.message-time');
 
                     if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
                         const tillReadText = lastMessageSection.data('datetime');
@@ -338,16 +374,46 @@
     });
 
     $(document).on('click','#sendBtn', function(){
+        debugger
         const messageInput = $('#messageInput');
         const message = messageInput.val().trim();
         const conversationId = messageInput.parent().attr('id');
+        const parentMessageId = $('.reply-box').data('message-id') || null;
 
         sendMessage({
             ConversationId: conversationId,
             Content: message,
-            ParentMessageId: null
+            ParentMessageId: parentMessageId
         });
     });
+
+    $(document).on('click','#reply-container .btn-close',function(){
+        const replyContainer = $('#reply-container').addClass('d-none')
+        replyContainer.find('.reply-box').attr('data-message-id', null)
+        replyContainer.find('span').empty();
+    })
+
+    $(document).on('click','.message-options .reply-btn',function(){
+        const replyMessageId = $(this).data('message-id');
+        if(replyMessageId){
+            const replyContainer = $('#reply-container').removeClass('d-none');
+            replyContainer.find('.reply-box').attr('data-message-id', replyMessageId)
+            const message = $(`#${replyMessageId} .message-content`).text();
+            replyContainer.find('span').text(message);
+            $('#messageInput').trigger('focus')
+        }
+    })
+
+    $(document).on('click','.message-reply-box', function(){
+        const id = $(this).data('parent-id');
+        if(id){
+
+            const container = document.getElementById("chat-messages");
+            const target = $(`.message-section#${id}`)[0];
+
+            container.scrollTop = target.offsetTop - container.offsetTop;
+        }
+    })
 
     function sendMessage(request){
         if(!request.Content?.length){
@@ -367,7 +433,10 @@
                     const message = container.find('.message-section').last()[0];
 
                     container[0].scrollTop = message.offsetTop;
-                    $('#messageInput').val('');
+                    $('#messageInput').val('').trigger('blur');
+
+                    if(!$('#reply-container').hasClass('d-none')) 
+                        $('#reply-container .btn-close').trigger('click')
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -382,12 +451,13 @@
             '#typing-status',
             { 
                 afterLoad: function($target){
+                    debugger
                    const container = $('#chat-messages')
                     const message = container.find('.message-section').last()[0];
 
                     container[0].scrollTop = message.offsetTop;
 
-                    const lastMessageSection = $target.find('.message-section-other').last().find('.message-time');
+                    const lastMessageSection = container.find('.message-section-other').last().find('.message-time');
                     $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
 
                     if(!$('#chat-box').hasClass('open-chat')) return;
@@ -517,7 +587,7 @@
 
             // ENTER (no shift) → send message
             e.preventDefault();
-            $("#sendBtn").click();  // or call your send function
+            $("#sendBtn").trigger('click');  // or call your send function
         }
     })
 

@@ -2,20 +2,61 @@
 
 @if (!Model.IsMine)
 {
-    <div class="d-flex flex-column align-items-start mb-3 message-section message-section-other" id="@Model.Id">
+    <div class="d-flex flex-wrap justify-content-start message-section message-section-other" id="@Model.Id">
+        <div class="message-sender-name">
+            @Model.SenderName
+        </div>
         <div class="message-box-other message-box">
-            @Model.Content
+            <div class="message-reply-box @(Model.ParentMessageId == null ? "d-none" : "")" data-parent-id="@Model.ParentMessageId">
+                <b>@Model.ParentMessageSenderName</b>
+                <p>@Model.ParentMessage</p>
+            </div>
+            <p class="message-content">@Model.Content</p>
             <div class="text-end text-action-others">
                 <span class="message-time" data-datetime="@DateTime.SpecifyKind(Model.CreatedDate, DateTimeKind.Local).ToUniversalTime().ToString("o")" data-read="@(Model.ReadAt is not null)">@Model.CreatedDate.ToString("hh:mm tt")</span>
             </div>
+        </div>
+
+        <div class="dropdown message-options">
+           
+            <button type="button" class="message-options-btn" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu">
+                @* <li><h5 class="dropdown-header">Dropdown header 1</h5></li> *@
+                <li><a class="dropdown-item reply-btn" href="#" data-message-id="@Model.Id">Reply</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Edit</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Star</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Copy</a></li>
+            </ul>
         </div>
     </div>
 }
 else
 {
-    <div class="d-flex flex-column align-items-end mb-3 message-section" id="@Model.Id">
+    <div class="d-flex flex-wrap justify-content-end message-section" id="@Model.Id">
+        <div class="message-sender-name text-end">
+            @Model.SenderName
+        </div>
+        <div class="dropdown message-options">
+            <button type="button" class="message-options-btn" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu">
+                @* <li><h5 class="dropdown-header">Dropdown header 1</h5></li> *@
+                <li><a class="dropdown-item reply-btn" href="#" data-message-id="@Model.Id">Reply</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Edit</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Star</a></li>
+                <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Copy</a></li>
+            </ul>
+        </div>
+
         <div class="message-box-mine message-box">
-            @Model.Content
+            <div class="message-reply-box @(Model.ParentMessageId == null ? "d-none" : "")" data-parent-id="@Model.ParentMessageId">
+                <b>@Model.ParentMessageSenderName</b>
+                <p>@Model.ParentMessage</p>
+            </div>
+            <p class="message-content">@Model.Content</p>
 
             <div class="text-end text-muted text-action-mine">
                 <span class="message-time" data-datetime="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">@Model.CreatedDate.ToString("hh:mm tt")</span>

@@ -158,6 +158,9 @@ namespace HRMS.Application.Services.Chat
                             ParentMessageId = m.ParentMessageId,
                             CreatedDate = m.CreatedDate,
                             IsMine = m.SenderId == employeeId,
+                            SenderName = m.Sender != null ? m.Sender.FullName : string.Empty,
+                            ParentMessage = (m.ParentMessage != null && !string.IsNullOrEmpty(m.ParentMessage.Content)) ? m.ParentMessage.Content : string.Empty,
+                            ParentMessageSenderName = (m.ParentMessage != null && m.ParentMessage.Sender != null) ? m.ParentMessage.Sender.FullName : string.Empty,
                             DeliveredAt = m.MessageStatuses
                                 .Where(ms => ms.EmployeeId != employeeId)
                                 .Select(ms => ms.DeliveredAt)
@@ -186,7 +189,7 @@ namespace HRMS.Application.Services.Chat
                 SenderId = employeeId,
                 Content = request.Content,
                 MessageTypeId = messageTypeId == 0 ? 1 : messageTypeId, 
-                ParentMessageId = null,
+                ParentMessageId = request.ParentMessageId,
                 IsEdited = false
             };
             _unitOfWork.MessagesRepo.Add(message);
@@ -194,7 +197,13 @@ namespace HRMS.Application.Services.Chat
 
             message = await _unitOfWork.MessagesRepo.TableNoTracking
                         .Include(m => m.Sender)
+                        .Include(m => m.ParentMessage)
                         .FirstAsync(m => m.Id == message.Id);
+
+            if(message.ParentMessage != null)
+            {
+                message.ParentMessage.Sender = await _unitOfWork.EmployeeRepo.TableNoTracking.FirstOrDefaultAsync(x => x.Id == message.ParentMessage.SenderId);
+            }
 
             return message;
         }
@@ -247,6 +256,8 @@ namespace HRMS.Application.Services.Chat
                 CreatedDate = message.CreatedDate,
                 DeliveredAt = null,
                 ReadAt = null,
+                ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
+                ParentMessage = message.ParentMessage?.Sender?.FullName ?? string.Empty
             };
 
             foreach (var participant in participants)
