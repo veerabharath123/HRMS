@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Maintenance";
+    ViewData["Module"] = "Maintenance";
+    List<string> list = new List<string> { "Users", "UserRoles" };
+}
+<style nonce="@Html.ScriptNonce()">
+    .maintenance-card{
+        
+    }
+    .maintenance-card .card-body{
+        display:flex;
+        flex-direction: column;
+        justify-content:center;
+        align-items:center;
+        cursor: pointer;
+    }
+
+    .maintenance-card .card-body i{
+        font-size: 3rem;
+    }
+</style>
+
+<div class="container-fluid h-100">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h3 class="mt-1">@ViewData["Module"]</h3>
+
+    <div class="row maintenance-block">
+        @foreach (var item in list)
+        {
+            <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+                <div class="card shadow maintenance-card h-100">
+                    <div class="card-body">
+                        <a href="@Url.Action("GetUsersMaintenance","Maintenance")">
+                            <i class="bi bi-people-fill"></i>
+                            <span class="ms-2">@item</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

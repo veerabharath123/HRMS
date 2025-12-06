@@ -638,7 +638,7 @@ BEGIN
     ('Chats', 'Chats', 'bi bi-chat-dots','Chats','Chat', 'System',2),
 	('Employees', 'Employees', 'bi bi-person-fill','GetEmployees','Employee', 'System', 3),
 	('Leave Management', 'Leave Management', 'bi bi-calendar3','Index','Home', 'System', 4),
-	('Admin', 'Admin', 'bi bi-house-gear-fill','Index','Home', 'System', 6),
+	('Maintenance', 'Maintenance', 'bi bi-house-gear-fill','Index','Maintenance', 'System', 6),
 	('Payrolls', 'Payrolls', 'bi bi-cash-coin','Index','Home', 'System', 5);
 END
 ELSE

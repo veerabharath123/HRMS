@@ -3,15 +3,8 @@ using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HRMS.Application.Services.Chat
 {
@@ -54,7 +47,7 @@ namespace HRMS.Application.Services.Chat
                             Conversation = c,
                             LastMessage = c.Messages
                                 .OrderByDescending(m => m.CreatedDate)
-                                .Select(m => new { m.Content, m.CreatedDate, m.SenderId })
+                                .Select(m => new { m.Content, m.CreatedDate, m.SenderId, m.Id })
                                 .FirstOrDefault(),
 
                             UnreadCount = c.Messages
@@ -77,6 +70,7 @@ namespace HRMS.Application.Services.Chat
                             LastMessageDate = x.LastMessage != null ? x.LastMessage.CreatedDate : x.Conversation.CreatedDate,
                             UnreadCount = x.UnreadCount,
                             LastMessage = x.LastMessage != null ? x.LastMessage.Content : "start a new conversation",
+                            LastMessageId = x.LastMessage != null ? x.LastMessage.Id : null,
                             EmployeeId = x.LastMessage != null ? x.LastMessage.SenderId : 0
                         })
                         .ToListAsync();
@@ -87,7 +81,7 @@ namespace HRMS.Application.Services.Chat
         public async Task<ApiResponseDto> StartNewChatWithAsync(int chatWithEmployeeId)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0 || chatWithEmployeeId == 0) return ApiResponseDto.FailureStatus("");
+            if (employeeId == decimal.Zero || chatWithEmployeeId == decimal.Zero) return ApiResponseDto.FailureStatus("");
 
             var convo = await CreateOrGetDirectConversationAsync(employeeId, chatWithEmployeeId);
             if (convo != null) return await GetChatConversationListAsync();
@@ -413,9 +407,7 @@ namespace HRMS.Application.Services.Chat
 
             // Broadcast typing status to Hub
             foreach (var userId in participantUserIds)
-            {
                 await _chatNotificationServices.SendTypingToUserStatus(userId, request);
-            }
 
             return ApiResponseDto.SuccessStatus("");
         }

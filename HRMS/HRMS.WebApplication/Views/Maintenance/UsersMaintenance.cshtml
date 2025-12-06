@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Users Maintenance";
+    var table = ("Users", "user-table");
+}
+
+<div class="container-fluid">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h3 class="mt-1">@ViewData["Title"]</h3>
+
+    <div class="row">
+        <div class="col-12">
+            <a href="@Url.Action("CreateUser","Maintenance")" class="btn btn-success btn-sm">Add User</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <partial name="Utilities/_Datatables" model="table" />
+        </div>
+    </div>
+</div>

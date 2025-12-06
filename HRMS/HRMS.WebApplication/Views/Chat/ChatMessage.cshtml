@@ -1,5 +1,20 @@
 ﻿@model ChatMessageResponseDto
 
+@{
+    var now = DateTime.Now;
+    var date = Model.CreatedDate;
+    string formatted;
+
+    if (date.Date == now.Date)
+        formatted = date.ToString("hh:mm tt");                       // Today
+    else if (date.Date == now.AddDays(-1).Date)
+        formatted = "Yesterday";                                     // Yesterday
+    else if (date.Year == now.Year)
+        formatted = date.ToString("MMM d");                          // This year
+    else
+        formatted = date.ToString("MMM d, yyyy");                    // Previous years
+}
+
 @if (!Model.IsMine)
 {
     <div class="d-flex flex-wrap justify-content-start message-section message-section-other" id="@Model.Id">
@@ -12,23 +27,26 @@
                 <p>@Model.ParentMessage</p>
             </div>
             <p class="message-content">@Model.Content</p>
-            <div class="text-end text-action-others">
-                <span class="message-time" data-datetime="@DateTime.SpecifyKind(Model.CreatedDate, DateTimeKind.Local).ToUniversalTime().ToString("o")" data-read="@(Model.ReadAt is not null)">@Model.CreatedDate.ToString("hh:mm tt")</span>
-            </div>
+            
         </div>
 
-        <div class="dropdown message-options">
+        <div class="dropdown dropend message-options d-flex">
            
             <button type="button" class="message-options-btn" data-bs-toggle="dropdown">
                 <i class="bi bi-three-dots-vertical"></i>
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu shadow">
                 @* <li><h5 class="dropdown-header">Dropdown header 1</h5></li> *@
+                <li><a class="dropdown-item reply-btn" href="#" data-message-id="@Model.Id">Reply</a></li>
                 <li><a class="dropdown-item reply-btn" href="#" data-message-id="@Model.Id">Reply</a></li>
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Edit</a></li>
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Star</a></li>
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Copy</a></li>
             </ul>
+        </div>
+
+        <div class="text-end text-action-others">
+            <span class="message-time" data-datetime="@DateTime.SpecifyKind(Model.CreatedDate, DateTimeKind.Local).ToUniversalTime().ToString("o")" data-read="@(Model.ReadAt is not null)">@formatted</span>
         </div>
     </div>
 }
@@ -38,11 +56,11 @@ else
         <div class="message-sender-name text-end">
             @Model.SenderName
         </div>
-        <div class="dropdown message-options">
+        <div class="dropdown dropstart message-options d-flex">
             <button type="button" class="message-options-btn" data-bs-toggle="dropdown">
                 <i class="bi bi-three-dots-vertical"></i>
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu shadow">
                 @* <li><h5 class="dropdown-header">Dropdown header 1</h5></li> *@
                 <li><a class="dropdown-item reply-btn" href="#" data-message-id="@Model.Id">Reply</a></li>
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Edit</a></li>
@@ -58,11 +76,14 @@ else
             </div>
             <p class="message-content">@Model.Content</p>
 
-            <div class="text-end text-muted text-action-mine">
-                <span class="message-time" data-datetime="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">@Model.CreatedDate.ToString("hh:mm tt")</span>
-                <i class="bi bi-send-check-fill delivered-status @(Model.DeliveredAt is null ? "d-none" : "")" ></i>
-                <i class="bi bi-eye-fill read-at @(Model.ReadAt is null ? "d-none" : "")"></i>
-            </div>
+            
+        </div>
+        <div class="text-end text-muted text-action-mine">
+            <span class="message-time" data-datetime="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">
+                @formatted
+            </span>
+            <i class="bi bi-send-check-fill delivered-status @(Model.DeliveredAt is null ? "d-none" : "")"></i>
+            <i class="bi bi-eye-fill read-at @(Model.ReadAt is null ? "d-none" : "")"></i>
         </div>
     </div>
 }

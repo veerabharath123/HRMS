@@ -63,7 +63,7 @@
         margin-bottom: .5rem;
     }
     .message-section.message-section-other .message-reply-box{
-        background: #066287;
+        background: #1366b7;
     }
 
     .message-section:not(.message-section-other) .message-reply-box {
@@ -75,13 +75,17 @@
     }
 
     .text-action-others{
-        color: #ffffff96;
-        font-size: .8rem;
+        font-size: .7rem;
         user-select: none;
+        flex-basis: 100%;
+        margin-top: .3rem;
+        display: flex
     }
     .text-action-mine{
-        font-size: .8rem;
+        font-size: .7rem;
         user-select:none;
+        flex-basis: 100%;
+        margin-top: .3rem;
     }
     textarea.message-input{
         resize: none;
@@ -480,17 +484,26 @@
     }
 
     function updateReadCount(result){
-        const readCountElem = $(`.list-group-flush #${result.conversationId}-status .new-message-icon`);
-        const messageElem = $(`.list-group-flush #${result.conversationId} .last-message`);
-        readCountElem.removeClass('d-center d-none');
-        if(result.unreadCount == '0'){
-            readCountElem.removeClass('d-center').addClass('d-none')
-        } else{
-            readCountElem.removeClass('d-done').addClass('d-center')
-            readCountElem.text(result.unreadCount)
+        const convoElem = $(`.list-group-flush #${result.conversationId}`);
+        const readCountElem = convoElem.find(".new-message-icon");
+        const messageElem = convoElem.find(".last-message");
+
+        if (parseInt(result.unreadCount) === 0) {
+            readCountElem.addClass("d-none").removeClass("d-center");
+        } else {
+            readCountElem.removeClass("d-none").addClass("d-center");
+            readCountElem.text(result.unreadCount);
         }
-        messageElem.text(result.content)
+
+        const oldMessageId = parseInt(convoElem.data("last-message-id"));
+        const newMessageId = parseInt(result.messageId);
+
+        if (!oldMessageId || newMessageId > oldMessageId) {
+            messageElem.text(result.content);
+            convoElem.attr("data-last-message-id", newMessageId).prependTo('.list-group-flush');
+        }
     }
+
 
     $('#search-emp input').on('input', function () {
         const val = this.value.trim();
