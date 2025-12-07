@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Users Maintenance";
+    ViewData["Module"] = "Maintenance";
     var table = ("Users", "user-table");
 }
 
@@ -18,3 +19,26 @@
         </div>
     </div>
 </div>
+<script nonce="@Html.ScriptNonce()">
+    const columns = [
+        { property: 'email', displayName: 'Email' },
+        { property: 'userName', displayName: 'Username' },
+        { property: 'isActive', displayName: 'Active' },
+        { property: 'id', displayName: 'Id' },
+    ]
+
+    const headerRow = $('#user-table thead tr').empty()
+    columns.forEach(x => {
+        const elem = document.createElement('th');
+        elem.textContent = x.displayName || x.property;
+        headerRow.append(elem)
+    })
+
+    const adTable = new AdvanceSearchTable({
+        tableSelector: '#user-table',
+        filterSelector: '#accordion-user-table',
+        ajaxUrl: '@Url.Action("GetUsersMaintenance","Maintenance")',
+        columns: columns,
+        dataTableOptions: {}
+    })
+</script>

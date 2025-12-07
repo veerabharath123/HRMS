@@ -3,17 +3,19 @@
 <div>
     <div id="accordion-@Model.selector" class="bg-white rounded shadow p-4 w-100">
         <div class="d-flex align-items-center">
-            <div class="flex-grow-1"><h2 class="my-1 text-start">@Model.title</h2></div>
-            <div class="">
-                <a class="btn btn-sm bg-light text-secondary border border-secondary">
-                    <i class="fa-solid fa-rotate-right"></i>
+            <div class="flex-grow-1"><h5 class="my-1 text-start">@Model.title</h5></div>
+            <div class="gap-3">
+                <a class="btn btn-sm btn-primary">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
-                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapseOne-@Model.selector">
-                    <i class="fa-solid fa-magnifying-glass-plus"></i>
-                </a>
-                <a class="btn btn-sm bg-light text-secondary border border-secondary" data-bs-toggle="collapse" href="#collapse2-@Model.selector">
-                    <i class="fa-solid fa-magnifying-glass-plus"></i>
-                </a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="collapse" href="#collapse2-@Model.selector">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="collapse" href="#collapseOne-@Model.selector">
+                        <i class="bi bi-search"></i><i class="bi bi-plus"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -68,20 +70,20 @@
             </div>
             <hr class="mb-2 mt-2" />
         </div>
-        <div id="collapse2-@Model.selector" class="collapse" data-bs-parent="#accordion-@Model.selector">
-            <div class="row mt-3">
+        <div id="collapse2-@Model.selector" class="collapse px-3 mt-3" data-bs-parent="#accordion-@Model.selector">
+            <div class="row">
                 <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
                 <div class="col-3 text-start">
-                    <button class="btn btn-sm bg-light text-secondary border border-secondary text-dark">search</button>
+                    <button class="btn btn-sm btn-success">search</button>
                 </div>
             </div>
         </div>
 
 
-        <div class="w-100 mt-4">
+        <div class="w-100 mt-3">
             <div class="table-responsive">
                 <table id="@Model.selector" class="table w-100">
-                    <thead class="table-white table-bordered">
+                    <thead class="table-white">
                         <tr>
                             <th>name</th>
                             <th>age</th>
@@ -97,5 +99,4 @@
 
     </div>
 </div>
-
 

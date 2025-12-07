@@ -15,21 +15,21 @@
                 { text: 'Or', value: 'Or' }
             ],
             dateOrNumOrTimeOptions: options.dateOrNumOrTimeOptions || [
-                { text: '>=', value: '>=' },
-                { text: '<=', value: '<=' }
+                { text: 'GreaterThanOrEqual', value: 'GreaterThanOrEqual' },
+                { text: 'LessThanOrEqual', value: 'LessThanOrEqual' }
             ],
             textOptions: options.textOptions || [
-                { text: 'contains', value: 'contains' },
-                { text: 'ends', value: 'ends' },
-                { text: 'starts', value: 'starts' }
+                { text: 'Contains', value: 'Contains' },
+                { text: 'EndsWith', value: 'EndsWith' },
+                { text: 'StartsWith', value: 'StartsWith' }
             ],
             boolOptions: options.boolOptions || [
                 { text: 'Yes', value: 'Yes' },
                 { text: 'No', value: 'No' },
             ],
             baseOptions: options.baseOptions || [
-                { text: '=', value: '=' },
-                { text: '!=', value: '!=' }
+                { text: 'Equals', value: 'Equals' },
+                { text: 'NotEquals', value: 'NotEquals' }
             ]
         };
 
@@ -94,8 +94,7 @@
             if (input.closest('.fields').length) {
                 input.empty().append(`<option></option>`)
                 columns.forEach(x => {
-                    input.append(`<option value="${x.property}">${x.property}</option>`)
-
+                    input.append(`<option value="${x.property}">${(x.displayName || x.property)}</option>`)
                 })
             }
             if (input.hasClass('operator')) {
@@ -167,10 +166,11 @@
             // Only add valid filter rows
             if (field && comparator && value) {
                 filters.push({
-                    property: field,
-                    comparator: comparator,
-                    value: value,
-                    operator: index > 0 ? (operator || 'And') : '' // Operator is 'And' by default for subsequent rows
+                    PropertyName: field,
+                    Comparator: comparator,            // enum: FilterComparator.Equals
+                    Value: value,
+                    Operator: operator,                 // enum: FilterOperator.And
+                    PropertyType: "String"           // enum: FilterPropertyType.String
                 });
             }
         });
@@ -228,7 +228,11 @@ class AdvanceSearchTable {
         return {
             url: this.config.ajaxUrl,
             type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
             contentType: 'application/json',
+            processData: false,
             data: d => this.buildRequestPayload(d),
             dataSrc: data => this.mapResponse(data)
         };
@@ -236,11 +240,16 @@ class AdvanceSearchTable {
 
     buildRequestPayload(d) {
         return JSON.stringify({
-            currentPage: this.getCurrentPage(d),
-            maxPages: 0,
-            pageLength: d.length,
-            filter: this.buildFilters(d),
-            sort: this.buildSort(d)
+            Filter: {
+                Filters: []
+            },
+            FilterGroup: this.buildFilters(d),
+            Sort: { SortOptions: this.buildSort(d) },
+            Pagination: {
+                PageNumber: this.getCurrentPage(d),
+                PageSize: d.length || 24,
+                MaxPages: 10
+            }
         });
     }
 
@@ -249,25 +258,36 @@ class AdvanceSearchTable {
     }
 
     buildFilters(d) {
+        const root = {
+            Operator: "And",    // dep1 OR dep2 OR dep3
+            Filters: [],
+            Groups: []
+        };
+
         const filters = this.filter.getFilters();
         if (d.search && d.search.value) filters.push(this.buildGlobalFilter(d.search.value));
-        return filters;
+
+        root.Filters = filters
+        return root;
     }
 
     buildGlobalFilter(value) {
-        return { property: "Name", comparator: "like", operator: "AND", value };
+        return this.config.columns.map(x =>
+        {
+            return { PropertyName: x.property, Comparator: "Contains", Operator: "And", PropertyType: 'String', Value: value };
+        })
     }
 
     buildSort(d) {
         if (!(d.order && d.order.length)) return [];
         return d.order.map(ord => ({
-            property: d.columns[ord.column].data,
-            desc: ord.dir === "desc"
+            PropertyName: d.columns[ord.column].data,
+            Descending: ord.dir === "desc"
         }));
     }
 
     mapResponse(data) {
         console.log("Server response:", data);
-        return data;
+        return data.data.items;
     }
 }

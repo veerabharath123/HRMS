@@ -27,6 +27,13 @@ namespace HRMS.Api.Controllers.V1
         }
 
         [HttpPost("[action]")]
+        public async Task<IActionResult> GetPaginatedUsers([FromBody] AdvanceTableRequestDto request)
+        {
+            var response = await _userServices.GetPaginatedUsersAsync(request);
+            return Ok(response);
+        }
+
+        [HttpPost("[action]")]
         public async Task<IActionResult> InsertUser([FromBody] UserInsertRequestDto request)
         {
             var response = await _userServices.InsertUserAsync(request);

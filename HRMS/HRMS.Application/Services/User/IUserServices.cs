@@ -15,5 +15,6 @@ namespace HRMS.Application.Services
         Task<ApiResponseDto> SendMessageByUser(MessageRequestDto request);
 
         Task<ApiResponseDto> GetUsersAsync();
+        Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request);
     }
 }

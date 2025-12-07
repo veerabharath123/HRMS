@@ -63,6 +63,21 @@ namespace HRMS.Application.Services
 
             return ApiResponseDto.SuccessStatus(chatUsers);
         }
+        public async Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request)
+        {
+            var chatUsers = await _unitOfWork.UserRepo.TableNoTracking
+                .Where(x => !x.IsDeleted)
+                .Select(x => new UserListResponseDto
+                {
+                    Id = x.Id,
+                    UserName = x.UserName,
+                    IsActive = x.IsActive,
+                    Email = x.Email
+                }).SortBy(request?.Sort).FilterBy(request?.Filter)
+                .PaginateAsync(request?.Pagination);
+
+            return ApiResponseDto.SuccessStatus(chatUsers);
+        }
         private async Task<bool> CheckUserExistAsync(string username)
         {
             return await _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);
