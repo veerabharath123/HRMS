@@ -1,11 +1,23 @@
 ﻿@model (string title, string selector)
-
+<style nonce="@Html.ScriptNonce()">
+    .advance-search-container, .simple-search-container{
+        padding: 1rem;
+        background: rgba(211, 211, 211, 0.34);
+        max-height: 20rem;
+        overflow-y: auto;
+        overflow-x: clip;
+    }
+    .m-table{
+        /* margin-left:.7rem;
+        margin-right:.7rem; */
+    }
+</style>
 <div>
-    <div id="accordion-@Model.selector" class="bg-white rounded shadow p-4 w-100">
-        <div class="d-flex align-items-center">
+    <div id="accordion-@Model.selector" class="bg-white rounded shadow p-3 w-100">
+        <div class="d-flex align-items-center mb-3 m-table">
             <div class="flex-grow-1"><h5 class="my-1 text-start">@Model.title</h5></div>
             <div class="gap-3">
-                <a class="btn btn-sm btn-primary">
+                <a class="btn btn-sm btn-primary table-refresh-btn">
                     <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
                 <div class="btn-group">
@@ -19,21 +31,20 @@
             </div>
         </div>
 
-        <div id="collapseOne-@Model.selector" class="collapse" data-bs-parent="#accordion-@Model.selector">
-            <hr class="mb-1 mt-1" />
+        <div id="collapseOne-@Model.selector" class="collapse advance-search-container rounded m-table" data-bs-parent="#accordion-@Model.selector">
             <div id="search-box-@Model.selector">
                 <!-- Search row template, the library will manage its content -->
                 <div class="advance-search-row row g-3 align-items-center mb-3">
-                    <!-- Field Selection -->
-                    <div class="col-md">
-                        <label class="form-label">Field</label>
-                        <select class="fields form-select form-select-sm border rounded shadow-sm"></select>
-                    </div>
                     <!-- Operator Selection -->
                     <div class="col-md">
                         <label class="form-label">Operator</label>
                         <select class="operator form-select form-select-sm border rounded shadow-sm"></select>
                     </div>
+                    <!-- Field Selection -->
+                    <div class="col-md">
+                        <label class="form-label">Field</label>
+                        <select class="fields form-select form-select-sm border rounded shadow-sm"></select>
+                    </div>                   
                     <!-- Comparator Selection -->
                     <div class="col-md">
                         <label class="form-label">Comparator</label>
@@ -47,12 +58,19 @@
                     <!-- Action Buttons -->
                     <div class="col-md-auto">
                         <label class="form-label">Action</label>
-                        <div class="col-12 d-flex align-items-center flex-wrap">
-                            <button class="add-btn btn btn-primary btn-sm me-2 rounded-pill">
-                                Add
-                            </button>
-                            <button class="del-btn btn btn-danger btn-sm rounded-pill" disabled>
-                                Del
+                        <div class="col-12 d-flex align-items-center flex-wrap gap-2">
+                            <div class="btn-group">
+                                <button class="add-btn btn btn-primary btn-sm">
+                                    Add
+                                </button>
+                                
+                                <button class="del-btn btn btn-danger btn-sm" disabled>
+                                    Del
+                                </button>
+                                
+                            </div>
+                            <button class="clear-btn btn btn-info btn-sm">
+                                <i class="bi bi-arrow-counterclockwise"></i>
                             </button>
                         </div>
                     </div>
@@ -60,19 +78,18 @@
             </div>
             <div class="row justify-content-lg-end justify-content-md-center">
                 <div class="col-auto">
-                    <button id="searchButton-@Model.selector" class="mt-4 btn btn-primary rounded shadow-md fw-bold rounded-pill advance-serach-btn">
-                        Search
+                    <button id="clearSearchButton-@Model.selector" class="mt-4 btn btn-info rounded shadow-md fw-bold advance-serach-clear-btn">
+                        Clear All
                     </button>
-                    <button id="clearSearchButton-@Model.selector" class="mt-4 btn btn-warning rounded shadow-md fw-bold rounded-pill advance-serach-clear-btn">
-                        Clear
+                    <button id="searchButton-@Model.selector" class="mt-4 btn btn-success rounded shadow-md fw-bold advance-serach-btn">
+                        Search
                     </button>
                 </div>
             </div>
-            <hr class="mb-2 mt-2" />
         </div>
-        <div id="collapse2-@Model.selector" class="collapse px-3 mt-3" data-bs-parent="#accordion-@Model.selector">
+        <div id="collapse2-@Model.selector" class="collapse mt-3 simple-search-container rounded" data-bs-parent="#accordion-@Model.selector">
             <div class="row">
-                <div class="col-3"><input type="text" class="form-control form-control-sm" /></div>
+                <div class="col-3"><input type="text" class="form-control form-control-sm" placeholder="Search"/></div>
                 <div class="col-3 text-start">
                     <button class="btn btn-sm btn-success">search</button>
                 </div>
@@ -94,6 +111,11 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col" id="@(Model.selector)-pagination">
             </div>
         </div>
 

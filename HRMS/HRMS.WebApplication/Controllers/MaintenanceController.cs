@@ -16,11 +16,13 @@ namespace HRMS.WebApplication.Controllers
             _api = api;
             _breadcrumbManager = breadcrumbManager;
         }
+        [HttpGet]
         public IActionResult Index()
         {
             InitBreadcrumbs(_breadcrumbManager, "Maintenance", true);
             return View();
         }
+        [HttpGet]
         public IActionResult UsersMaintenance()
         {
             InitBreadcrumbs(_breadcrumbManager, "Users Maintenance");

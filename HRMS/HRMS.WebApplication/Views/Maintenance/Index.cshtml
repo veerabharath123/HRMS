@@ -7,6 +7,14 @@
     .maintenance-card{
         
     }
+    .maintenance-card-content{
+        text-decoration: none;
+        color: black;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
     .maintenance-card .card-body{
         display:flex;
         flex-direction: column;
@@ -30,7 +38,7 @@
             <div class="col-lg-2 col-md-3 col-sm-6 col-12">
                 <div class="card shadow maintenance-card h-100">
                     <div class="card-body">
-                        <a href="@Url.Action("UsersMaintenance", "Maintenance")">
+                        <a href="@Url.Action("UsersMaintenance", "Maintenance")" class="maintenance-card-content">
                             <i class="bi bi-people-fill"></i>
                             <span class="ms-2">@item</span>
                         </a>

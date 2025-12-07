@@ -68,15 +68,15 @@
         const input = $(event.target).closest('.advance-search-row')
         const compField = input.find('.comparator')
         const valField = input.find('.target')
-        const prop = this.config.columns.find(x => x.property == $(event.target).val())?.type || 'text'
+        const prop = this.config.columns.find(x => x.property == $(event.target).val())?.type || 'String'
 
         switch (prop) {
-            case 'date':
-            case 'time':
-            case 'number':
+            case 'Date':
+            case 'Time':
+            case 'Number':
                 this.loadNumOrDateOrTime(prop, compField, valField)
                 break;
-            case 'bool':
+            case 'Bool':
                 this.loadBoolean(compField, valField)
                 break;
             default:
@@ -94,6 +94,7 @@
             if (input.closest('.fields').length) {
                 input.empty().append(`<option></option>`)
                 columns.forEach(x => {
+                    if (x.visible === false) return;
                     input.append(`<option value="${x.property}">${(x.displayName || x.property)}</option>`)
                 })
             }
@@ -123,7 +124,7 @@
             compField.append(`<option value="${x.value}">${x.text}</option>`)
         })
 
-        valField.html('<input type="text" class="form-control form-control-sm border border-secondary" />')
+        valField.html('<input type="text" class="form-control form-control-sm" />')
     }
     loadNumOrDateOrTime(type, compField, valField) {
         compField.empty().append(`<option></option>`)
@@ -132,7 +133,7 @@
             compField.append(`<option value="${x.value}">${x.text}</option>`)
         })
 
-        valField.html(`<input type="${type}" class="form-control form-control-sm border border-secondary" />`)
+        valField.html(`<input type="${type}" class="form-control form-control-sm " />`)
     }
     loadBoolean(compField, valField) {
         compField.empty().append(`<option></option>`)
@@ -142,7 +143,7 @@
             compField.append(`<option value="${x.value}">${x.text}</option>`)
         })
 
-        const select = $('<select class="form-select form-select-sm border border-secondary"></select>')
+        const select = $('<select class="form-select form-select-sm "></select>')
             .append(`<option></option>`);
 
         this.config.boolOptions.forEach(x => {
@@ -189,6 +190,22 @@ class AdvanceSearchTable {
             dataTableOptions: {}
         };
 
+        this.columnProps = [
+            "name",
+            "className",
+            "width",
+            "visible",
+            "orderable",
+            "searchable",
+            "type",
+            "render",
+            "defaultContent",
+            "createdCell",
+            "orderData",
+            "orderDataType",
+            "orderSequence"
+        ];
+
         this.config = $.extend(true, {}, defaults, options);
 
         if (!this.isValidConfig()) {
@@ -202,14 +219,33 @@ class AdvanceSearchTable {
 
         this.initTable();
         this.filter.setSearchCallBack(() => this.table.draw());
+
+        
     }
 
     isValidConfig() {
         return this.config.tableSelector && this.config.ajaxUrl && this.config.columns.length;
     }
 
+    buildColumns(cols) {
+        return cols.map(c => {
+            const col = {
+                data: c.property,
+                title: c.displayName
+            };
+
+            for (const key of this.columnProps) {
+                if (c[key] !== undefined) {
+                    col[key] = c[key];
+                }
+            }
+
+            return col;
+        });
+    }
+
     initTable() {
-        const tblCols = this.config.columns.map(c => ({ data: c.property }));
+        const tblCols = this.buildColumns(this.config.columns)//.map(c => ({ data: c.property, render: c.render, visible: c.visible }));
         const finalConfig = this.getFinalConfig(tblCols);
         this.table = $(this.config.tableSelector).DataTable(finalConfig);
     }
@@ -219,7 +255,11 @@ class AdvanceSearchTable {
             processing: true,
             serverSide: true,
             ajax: this.buildAjaxConfig(),
-            columns: tblCols
+            //drawCallback: () => { },
+            //recordsTotal: () => this.lastRecordsTotal,
+            //recordsFiltered: () => this.lastRecordsFiltered,
+            columns: tblCols,
+            lengthMenu: [20, 30, 40, 50]
         };
         return $.extend(true, {}, defaults, this.config.dataTableOptions);
     }
@@ -234,7 +274,12 @@ class AdvanceSearchTable {
             contentType: 'application/json',
             processData: false,
             data: d => this.buildRequestPayload(d),
-            dataSrc: data => this.mapResponse(data)
+            dataSrc: (response) => {
+                const dt = this.mapResponse(response);
+                
+                return dt.data; // DataTables receives rows, but has access to root obj
+            }
+            
         };
     }
 
@@ -254,12 +299,12 @@ class AdvanceSearchTable {
     }
 
     getCurrentPage(d) {
-        return Math.floor(d.start / d.length) + 1;
+        return parseInt($(`${this.config.tableSelector}-pagination page-item.active page-nums`).text()) || Math.floor(d.start / d.length) + 1;
     }
 
     buildFilters(d) {
         const root = {
-            Operator: "And",    // dep1 OR dep2 OR dep3
+            Operator: "And",    
             Filters: [],
             Groups: []
         };
@@ -286,8 +331,59 @@ class AdvanceSearchTable {
         }));
     }
 
-    mapResponse(data) {
-        console.log("Server response:", data);
-        return data.data.items;
+    mapResponse(apiResponse) {
+
+        this.loadPagination({
+            TotalItems: apiResponse.data.totalItems,
+            PageNumber: apiResponse.data.pageNumber,
+            TotalPages: apiResponse.data.totalPages,
+            FirstPageToShow: apiResponse.data.firstPageToShow,
+            LastPageToShow: apiResponse.data.lastPageToShow
+        })
+
+        // apiResponse = { success, data: { totalItems, items }, message }
+        const dt = this.formatDataTablesResponse(apiResponse.data);
+
+        // Attach totals to the root object so DataTables can read them
+        apiResponse.recordsTotal = dt.recordsTotal;
+        apiResponse.recordsFiltered = dt.recordsFiltered;
+        apiResponse.data = dt.data;
+
+        return apiResponse;
+    }
+
+    formatDataTablesResponse(raw) {
+        const r = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+        return {
+            draw: r.draw ?? 1,
+            recordsTotal: r.totalItems,
+            recordsFiltered: r.totalItems,
+            data: r.items
+        };
+    }
+
+    refresh() {
+        this.table.ajax.reload();
+    }
+
+    loadPagination(pRequest) {
+        ajaxLoadHtml(
+            resolveSafeUrl('/Home/GetPaginationHtml'),
+            JSON.stringify(pRequest),
+            `${this.config.tableSelector}-pagination`,
+            {
+                afterLoad: function () {
+                    
+                },
+                contentType: "application/json",
+                processData: false
+            }
+        )
+
+        if (!this.paginationEvent) {
+            $(document).on('click', `${this.config.tableSelector}-pagination .page-item:not(.active) .page-link`, () => this.refresh())
+            this.paginationEvent = true;
+        }
     }
 }

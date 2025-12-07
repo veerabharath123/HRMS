@@ -1,3 +1,4 @@
+using HRMS.SharedKernel.Models.Common.Interface;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
@@ -92,6 +93,11 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync<List<ModulesResponseDto>>("/References/GetAllActiveModules", null, true);
 
             return PartialView("_SideBarMenu",response?.Result ?? []);
+        }
+        [HttpPost]
+        public IActionResult GetPaginationHtml([FromBody] PaginationResponseDto<object> pagination)
+        {
+            return PartialView("Utilities/_Pagination", pagination);
         }
     }
 }

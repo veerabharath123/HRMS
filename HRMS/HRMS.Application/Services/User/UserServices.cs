@@ -73,14 +73,14 @@ namespace HRMS.Application.Services
                     UserName = x.UserName,
                     IsActive = x.IsActive,
                     Email = x.Email
-                }).SortBy(request?.Sort).FilterBy(request?.Filter)
+                }).SortBy(request?.Sort).FilterBy(request?.FilterGroup)
                 .PaginateAsync(request?.Pagination);
 
             return ApiResponseDto.SuccessStatus(chatUsers);
         }
-        private async Task<bool> CheckUserExistAsync(string username)
+        private Task<bool> CheckUserExistAsync(string username)
         {
-            return await _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);
+            return _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);
         }
         public async Task<ApiResponseDto> InsertUserAsync(UserInsertRequestDto request)
         {
