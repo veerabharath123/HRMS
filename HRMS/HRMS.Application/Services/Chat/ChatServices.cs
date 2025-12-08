@@ -1,5 +1,7 @@
-﻿using HRMS.Application.Common.Interface;
+﻿using HRMS.Application.Common.Class.LinqExtensions;
+using HRMS.Application.Common.Interface;
 using HRMS.Domain.Entites;
+using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Http;
@@ -32,14 +34,9 @@ namespace HRMS.Application.Services.Chat
             }
             return 0;
         }
-        public async Task<ApiResponseDto> GetChatConversationListAsync()
+        private IQueryable<ChatConversationListResponseDto> GetChatConversationListQuery(int employeeId, AdvanceTableRequestDto? search = null)
         {
-            int employeeId = await GetCurrentEmployeeIdAsync();
-
-            if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Enable to fetch chat conversations, please try again later");
-
-            var convos = await _unitOfWork.ConversationsRepo.TableNoTracking
+            return _unitOfWork.ConversationsRepo.TableNoTracking
                         .Where(c => !c.IsDeleted && c.Participants.Any(p => p.EmployeeId == employeeId))
 
                         .Select(c => new
@@ -73,8 +70,21 @@ namespace HRMS.Application.Services.Chat
                             LastMessageId = x.LastMessage != null ? x.LastMessage.Id : null,
                             EmployeeId = x.LastMessage != null ? x.LastMessage.SenderId : 0
                         })
-                        .ToListAsync();
+                        .SortBy(search?.Sort)
+                        .FilterBy(search?.FilterGroup);
+        }
+        public Task<ApiResponseDto> GetChatConversationListAsync()
+        {
+            return GetChatConversationSearchedListAsync();
+        }
+        public async Task<ApiResponseDto> GetChatConversationSearchedListAsync(AdvanceTableRequestDto? request = null)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
 
+            if (employeeId == 0)
+                return ApiResponseDto.FailureStatus("Enable to fetch chat conversations, please try again later");
+
+            var convos = await GetChatConversationListQuery(employeeId, request).ToListAsync();
 
             return ApiResponseDto.SuccessStatus(convos);
         }
@@ -251,7 +261,7 @@ namespace HRMS.Application.Services.Chat
                 DeliveredAt = null,
                 ReadAt = null,
                 ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
-                ParentMessage = message.ParentMessage?.Sender?.FullName ?? string.Empty
+                ParentMessage = message.ParentMessage?.Content ?? string.Empty
             };
 
             foreach (var participant in participants)

@@ -6,6 +6,7 @@ namespace HRMS.Application.Services.Chat
     public interface IChatServices
     {
         Task<ApiResponseDto> GetChatConversationListAsync();
+        Task<ApiResponseDto> GetChatConversationSearchedListAsync(AdvanceTableRequestDto? request = null);
         Task<ApiResponseDto> StartNewChatWithAsync(int chatWithEmployeeId);
         Task<ApiResponseDto> GetChatConversationDetailsAsync(int conversationId);
         Task<ApiResponseDto> SendMessageAsync(ChatMessageRequestDto request);
