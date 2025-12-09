@@ -59,5 +59,11 @@ namespace HRMS.Api.Controllers.V1
             var result = await _chatServices.SendTypingStatusAsync(request);
             return Ok(result);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetNextMessages([FromBody] NextMessagesRequestDto request)
+        {
+            var result = await _chatServices.GetNextMessagesAsync(request);
+            return Ok(result);
+        }
     }
 }

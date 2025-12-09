@@ -181,6 +181,24 @@
         transform: translateX(0) translateY(0) !important;
     }
 
+    .drop-area{
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 18px;
+    }
+
+    #chat-file-screen{
+        display:none;
+    }
+    #chat-file-screen.dragover {
+        display: flex !important;
+    }
+
     #seach-emp-chat > span{
         cursor: pointer;
         transition: .2s transform ease-in;
@@ -279,6 +297,11 @@
                     </div>
                  </div>
             </div>
+            <div class="card shadow h-100" id="chat-file-screen">
+                <div class="card-body h-100">
+                    <div class="drop-area"><i class="bi bi-file-earmark-arrow-up"></i>Drop files here</div>
+                </div>
+            </div>
             <div class="card shadow h-100" id="chat-screen">
                
             </div>
@@ -314,6 +337,24 @@
 </div>
 
 <script nonce="@Html.ScriptNonce()">
+
+    $('#chat-box').on({
+        'drop': function (e) {
+            e.preventDefault()
+            $('#chat-file-screen').removeClass('dragover')
+            //fileControl.trigger('file:upload',{ files: e.originalEvent.dataTransfer.files });
+        },
+        'dragover': function (e) {
+            console.log('move')
+            e.preventDefault()
+            $('#chat-file-screen').addClass('dragover')
+        },
+        'dragleave':function(e){
+            e.preventDefault()
+            e?.stopPropagation()
+            $('#chat-file-screen').removeClass('dragover')
+        }
+    })
 
     $(document).on('click','#open-menu',function(){
         $('.sliding-menu').addClass('show');

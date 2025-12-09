@@ -134,6 +134,47 @@ namespace HRMS.Application.Services.Chat
 
             return newConv;
         }
+        public async Task<ApiResponseDto> GetNextMessagesAsync(NextMessagesRequestDto request)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+            if (employeeId == 0 || request.ConversationId == 0)
+                return ApiResponseDto.FailureStatus("Failed to fetch chat messages.");
+
+            // Fetch next (older) 20 messages older than LastMessageTime
+            var messages = await _unitOfWork.MessagesRepo.Table
+                .Where(m => !m.IsDeleted
+                            && m.ConversationId == request.ConversationId
+                            && m.CreatedDate < request.LastMessageTime)
+                .OrderByDescending(m => m.CreatedDate)   // newest of the older messages first
+                .Take(20)
+                .Select(m => new ChatMessageResponseDto
+                {
+                    Id = m.Id,
+                    ConversationId = m.ConversationId,
+                    SenderId = m.SenderId,
+                    Content = m.Content,
+                    ParentMessageId = m.ParentMessageId,
+                    CreatedDate = m.CreatedDate,
+                    IsMine = m.SenderId == employeeId,
+                    SenderName = m.Sender != null ? m.Sender.FullName : string.Empty,
+                    ParentMessage = m.ParentMessage != null ? (m.ParentMessage.Content ?? string.Empty) : string.Empty,
+                    ParentMessageSenderName = m.ParentMessage != null && m.ParentMessage.Sender != null ? m.ParentMessage.Sender.FullName : string.Empty,
+                    DeliveredAt = m.MessageStatuses
+                                    .Where(ms => ms.EmployeeId != employeeId)
+                                    .Select(ms => ms.DeliveredAt)
+                                    .FirstOrDefault(),
+                    ReadAt = m.MessageStatuses
+                                    .Where(ms => ms.EmployeeId != employeeId)
+                                    .Select(ms => ms.ReadAt)
+                                    .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var ordered = messages.OrderBy(m => m.CreatedDate);
+
+            return ApiResponseDto.SuccessStatus(ordered);
+        }
+
         public async Task<ApiResponseDto> GetChatConversationDetailsAsync(int conversationId)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
