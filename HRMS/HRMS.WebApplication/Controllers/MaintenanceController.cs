@@ -34,5 +34,12 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync<PaginationResponseDto<UserListResponseDto>>("/User/GetPaginatedUsers", request, true);
             return JsonResponse(response);
         }
+        [HttpGet]
+        public IActionResult CreateUser()
+        {
+            ViewBag.ModuleTitle = "Add User";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            return View("UserForm");
+        }
     }
 }

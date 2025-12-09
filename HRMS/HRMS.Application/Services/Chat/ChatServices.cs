@@ -38,7 +38,6 @@ namespace HRMS.Application.Services.Chat
         {
             return _unitOfWork.ConversationsRepo.TableNoTracking
                         .Where(c => !c.IsDeleted && c.Participants.Any(p => p.EmployeeId == employeeId))
-
                         .Select(c => new
                         {
                             Conversation = c,
@@ -73,10 +72,7 @@ namespace HRMS.Application.Services.Chat
                         .SortBy(search?.Sort)
                         .FilterBy(search?.FilterGroup);
         }
-        public Task<ApiResponseDto> GetChatConversationListAsync()
-        {
-            return GetChatConversationSearchedListAsync();
-        }
+        public Task<ApiResponseDto> GetChatConversationListAsync() => GetChatConversationSearchedListAsync();
         public async Task<ApiResponseDto> GetChatConversationSearchedListAsync(AdvanceTableRequestDto? request = null)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();

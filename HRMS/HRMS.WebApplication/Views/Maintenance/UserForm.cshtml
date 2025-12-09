@@ -1,0 +1,41 @@
+﻿@{
+    var title = ViewBag.ModuleTitle;
+    ViewData["Module"] = "Maintenance";
+}
+
+<div class="container-fluid">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h2 class="mt-1">@title</h2>
+
+    <form id="user-form"> 
+        <div class="row">
+            <div class="col-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>User Info</h5>
+                        <hr />
+
+                        <div class="mb-3 mt-3">
+                            <label for="username" class="form-label">Username:</label>
+                            <input type="text" class="form-control form-control-sm" id="username" placeholder="Enter Username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" class="form-control form-control-sm" id="email" placeholder="Enter Email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <input type="password" class="form-control form-control-sm" id="password" placeholder="Enter Password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confim-password" class="form-label">Confirm Password:</label>
+                            <input type="password" class="form-control form-control-sm" id="confim-password" placeholder="Enter Confirm Password">
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

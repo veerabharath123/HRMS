@@ -24,8 +24,8 @@
                 { text: 'StartsWith', value: 'StartsWith' }
             ],
             boolOptions: options.boolOptions || [
-                { text: 'Yes', value: 'Yes' },
-                { text: 'No', value: 'No' },
+                { text: 'Yes', value: true },
+                { text: 'No', value: false },
             ],
             baseOptions: options.baseOptions || [
                 { text: 'Equals', value: 'Equals' },
@@ -45,6 +45,8 @@
         this.$container.on('click', '.add-btn', (e) => this.handleAddRow(e));
         this.$container.on('click', '.del-btn', (e) => this.handleDeleteRow(e));
         this.$container.on('change', '.fields', (e) => this.handleFieldChange(e));
+        this.$container.on('click', '.clear-btn', (e) => this.handleClearRow(e));
+        this.setClearAllSearchFields();
     }
     setSearchCallBack(callback) {
         const $searchButton = this.$container.closest('.collapse').find('.advance-serach-btn')
@@ -63,6 +65,13 @@
     handleDeleteRow(event) {
         $(event.target).closest('.advance-search-row').remove();
         this.checkDeleteButtons();
+    }
+    handleClearRow(event) {
+        const row = $(event.target).closest('.advance-search-row');
+        row.find('input, select').each((i, elem) => {
+            const input = $(elem)
+            input.val('');
+        })
     }
     handleFieldChange(event) {
         const input = $(event.target).closest('.advance-search-row')
@@ -178,6 +187,20 @@
 
         return filters;
     }
+
+    setClearAllSearchFields() {
+        const $clearAllButton = this.$container.closest('.collapse').find('.advance-serach-clear-btn')
+        $clearAllButton.on('click', () => {
+            this.clearAllSearchFields();
+        })
+    }
+    clearAllSearchFields() {
+        const rows = this.$container.find('.advance-search-row');
+        rows.find('input, select').each((i, elem) => {
+            const input = $(elem)
+            input.val('');
+        })
+    }
 }
 
 class AdvanceSearchTable {
@@ -259,7 +282,10 @@ class AdvanceSearchTable {
             //recordsTotal: () => this.lastRecordsTotal,
             //recordsFiltered: () => this.lastRecordsFiltered,
             columns: tblCols,
-            lengthMenu: [20, 30, 40, 50]
+            lengthMenu: [20, 30, 40, 50],
+            language: {
+                emptyTable: this.config.emptyTableMessage || "No data found.",
+            }
         };
         return $.extend(true, {}, defaults, this.config.dataTableOptions);
     }
@@ -276,7 +302,6 @@ class AdvanceSearchTable {
             data: d => this.buildRequestPayload(d),
             dataSrc: (response) => {
                 const dt = this.mapResponse(response);
-                
                 return dt.data; // DataTables receives rows, but has access to root obj
             }
             
@@ -284,11 +309,12 @@ class AdvanceSearchTable {
     }
 
     buildRequestPayload(d) {
+        this.previousFilters = this.buildFilters(d);
         return JSON.stringify({
             Filter: {
                 Filters: []
             },
-            FilterGroup: this.buildFilters(d),
+            FilterGroup: this.previousFilters,
             Sort: { SortOptions: this.buildSort(d) },
             Pagination: {
                 PageNumber: this.getCurrentPage(d),
@@ -364,6 +390,7 @@ class AdvanceSearchTable {
     }
 
     refresh() {
+        this.filter.clearAllSearchFields();
         this.table.ajax.reload();
     }
 
