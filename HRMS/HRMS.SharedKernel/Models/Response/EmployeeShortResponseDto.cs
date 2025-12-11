@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HRMS.SharedKernel.Models.Request;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,5 +17,9 @@ namespace HRMS.SharedKernel.Models.Response
         public string LastName { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+    }
+    public class EmployeeDetaisResponseDto: InsertEmployeeRequestDto
+    {
+
     }
 }

@@ -33,14 +33,6 @@ namespace HRMS.WebApplication.Controllers
             var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", request, true);
             return PartialView("EmployeeCards", result.Result);
         }
-        public IActionResult GetEmployeeDetails(Guid employeeId)
-        {
-            ViewBag.EmpId = employeeId;
-
-            InitBreadcrumbs(_breadcrumbManager, "Employee Details", routeValues: new { employeeId });
-            // Logic to get employee details by id
-            return View("EmployeeDetails");
-        }
         [HttpGet]
         public async Task<IActionResult> AddEmployee()
         {
@@ -109,6 +101,17 @@ namespace HRMS.WebApplication.Controllers
 
             var response = await _api.PostAsync<List<EmployeeShortResponseDto>>("/Employees/GetEmployeeSearchListByNameOrEmail", request, true);
             return JsonResponse(response);
+        }
+        public async Task<IActionResult> GetEmployeeDetails(int employeeId)
+        {
+            if (employeeId == 0)
+            {
+                return View("Error");
+            }
+
+            var response = await _api.PostAsync<EmployeeDetaisResponseDto>("/Employees/GetEmployeeDetails", new { Id = employeeId }, true);
+            await LoadEmployeeDropdownsAsync();
+            return View("EmployeeDetails",response.Result);
         }
     }
 }

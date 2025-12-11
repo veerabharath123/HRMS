@@ -520,7 +520,7 @@
     }
 
     function updateReadCount(result){
-        const convoElem = $(`.list-group-flush #${result.conversationId}`);
+        const convoElem = $(`.list-group-flush #chat-convo-card-${result.conversationId}`);
         const readCountElem = convoElem.find(".new-message-icon");
         const messageElem = convoElem.find(".last-message");
 
@@ -531,12 +531,13 @@
             readCountElem.text(result.unreadCount);
         }
 
-        const oldMessageId = parseInt(convoElem.data("last-message-id"));
-        const newMessageId = parseInt(result.messageId);
+        const oldMessageId = parseInt(messageElem.data("last-message-id"));
+        const newMessageId = parseInt(result.id);
 
         if (!oldMessageId || newMessageId > oldMessageId) {
             messageElem.text(result.content);
-            convoElem.attr("data-last-message-id", newMessageId).prependTo('.list-group-flush');
+            messageElem.attr("data-last-message-id", newMessageId)
+            convoElem.prependTo('.list-group-flush');
         }
     }
 

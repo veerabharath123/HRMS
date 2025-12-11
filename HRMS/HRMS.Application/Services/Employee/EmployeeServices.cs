@@ -54,6 +54,32 @@ namespace HRMS.Application.Services.Employee
 
             return ApiResponseDto.SuccessStatus(result);
         }
+        public async Task<ApiResponseDto> GetEmployeeDetailsAsync(int employeeId)
+        {
+            var result = await (from emp in _unitOfWork.EmployeeRepo.TableNoTracking
+                                where !emp.IsDeleted
+
+                                select new EmployeeDto
+                                {
+                                    Bio = emp.Bio,
+                                    RelievingDate = emp.RelievingDate,
+                                    DesignationId = emp.DesignationId,
+                                    DepartmentId = emp.DepartmentId,
+                                    FirstName = emp.FirstName,
+                                    LastName = emp.LastName,
+                                    MiddleName = emp.MiddleName,
+                                    BirthDate = emp.BirthDate,
+                                    GenderId = emp.GenderId,
+                                    MaritalStatusId = emp.MaritalStatusId ?? 0,
+
+                                }
+                              )
+                              .FirstOrDefaultAsync();
+            if(result == null) return ApiResponseDto.FailureStatus("Employee not found.");
+
+            var empDetails = new EmployeeDetaisResponseDto { Employee = result };
+            return ApiResponseDto.SuccessStatus(empDetails);
+        }
         public async Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request)
         {
             try

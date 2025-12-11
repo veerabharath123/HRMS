@@ -9,5 +9,6 @@ namespace HRMS.Application.Services.Employee
         Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request);
         Task<ApiResponseDto> GetEmployeeImagesAsync(ListIdRequestDto request);
         Task<ApiResponseDto> GetEmployeeSearchListByNameOrEmailAsync(string name);
+        Task<ApiResponseDto> GetEmployeeDetailsAsync(int employeeId);
     }
 }

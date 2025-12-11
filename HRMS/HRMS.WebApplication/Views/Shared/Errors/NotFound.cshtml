@@ -1,23 +1,17 @@
-﻿@model ErrorViewModel
-@{
-    ViewData["Title"] = "Error";
-    Layout = null;
-}
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMS - Error</title>
-    <style nonce="@Html.ScriptNonce()">
+    <title>HRMS - 404 Not Found</title>
+    <style>
         /* --- CSS Variables & Theming --- */
         :root {
-            /* Light Mode (Default) */
-            --bg-color: #f4f7fa; /* Soft HR-style blue-gray */
+            --bg-color: #f4f7fa;
             --card-bg: #ffffff;
             --text-main: #1f2937;
             --text-sub: #6b7280;
-            --accent-color: #3b82f6; /* Professional Blue */
+            --accent-color: #3b82f6;
             --accent-hover: #2563eb;
             --border-radius: 12px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -25,7 +19,6 @@
 
         @@media (prefers-color-scheme: dark) {
             :root {
-                /* Dark Mode */
                 --bg-color: #111827;
                 --card-bg: #1f2937;
                 --text-main: #f3f4f6;
@@ -104,13 +97,14 @@
             margin-top: 1rem;
             display: inline-block;
             background-color: var(--accent-color);
-            color: #ffffff; /* Always white text on button */
+            color: #ffffff;
             text-decoration: none;
             padding: 0.75rem 1.5rem;
             border-radius: 6px;
             font-weight: 500;
             font-size: 0.95rem;
             transition: background-color 0.2s ease, transform 0.1s ease;
+            cursor: pointer;
         }
 
             .btn-dashboard:hover {
@@ -120,31 +114,28 @@
             .btn-dashboard:active {
                 transform: scale(0.98);
             }
-
     </style>
 </head>
 <body>
 
     <main class="error-container">
         <div class="illustration-wrapper">
-            <img src="~/images/hrms-error-img.png" alt="HR Support Character">
+            <img src="path_to_404_image.png" alt="HR Page Not Found Illustration">
         </div>
 
-        <h1>Something went wrong</h1>
+        <h1>Page not found</h1>
 
-        <p>We encountered an unexpected error while processing your request. Please try again later.</p>
+        <p>We couldn't find the page you were looking for. It may have been moved, renamed, or deleted.</p>
 
-        <a href="@Url.Action("Index","Home")" class="btn-dashboard" id="return-btn">Go back</a>
+        <a href="/dashboard" id="return-btn" class="btn-dashboard">Go back</a>
     </main>
 
-    <script nonce="@Html.ScriptNonce()">
+    <script >
         document.getElementById('return-btn').addEventListener('click', function(event) {
-            // Check if there is history to go back to
             if (window.history.length > 1) {
-                event.preventDefault(); // Stop the link from loading /dashboard
-                window.history.back();  // Go to previous page
+                event.preventDefault();
+                window.history.back();
             }
-            // If no history exists, the link will function normally and go to /dashboard
         });
     </script>
 </body>

@@ -2,7 +2,7 @@
 
 @foreach (var user in Model)
 {
-    <div class="p-2 border-bottom bg-body-tertiary">
+    <div class="p-2 border-bottom bg-body-tertiary" id="chat-convo-card-@user.Id">
         <div class="d-flex justify-content-between">
             <div class="d-flex flex-row flex-grow-1 user-info">
                 <img src="~/images/user-no-img.png" alt="avatar"
