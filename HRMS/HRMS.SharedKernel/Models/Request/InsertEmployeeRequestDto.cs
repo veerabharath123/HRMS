@@ -11,4 +11,8 @@ namespace HRMS.SharedKernel.Models.Request
     {
         public EmployeeDto Employee { get; set; } = new();
     }
+    public class UpdateEmployeeRequestDto: InsertEmployeeRequestDto
+    {
+
+    }
 }

@@ -45,7 +45,7 @@ namespace HRMS.Application.Services.Employee
                                     Department = dept.Name,
                                     Designation = des.Name,
                                     LastName = emp.LastName,
-                                    FirstName = emp.FirstName
+                                    FirstName = emp.FirstName,
                                 }
                               )
                               .FilterBy(request.FilterGroup)
@@ -54,30 +54,70 @@ namespace HRMS.Application.Services.Employee
 
             return ApiResponseDto.SuccessStatus(result);
         }
+        public async Task<ApiResponseDto> GetEmployeeByIdAsync(int employeeId)
+        {
+            var emp = await _unitOfWork.EmployeeRepo.TableNoTracking
+                        .Where(e => !e.IsDeleted && e.Id == employeeId)
+                        .Select(emp => new EmployeeDto
+                        {
+                            Bio = emp.Bio,
+                            RelievingDate = emp.RelievingDate,
+                            JoiningDate = emp.JoiningDate,
+                            ResignationDate = emp.ResignationDate,
+                            FirstName = emp.FirstName,
+                            LastName = emp.LastName,
+                            MiddleName = emp.MiddleName,
+                            BirthDate = emp.BirthDate,
+                            ReportingManagerId = emp.ReportingManagerId,
+                            DepartmentId = emp.DepartmentId,
+                            DesignationId = emp.DesignationId,
+                            MaritalStatusId = emp.MaritalStatusId ?? 0,
+                            GenderId = emp.GenderId
+                        }).FirstOrDefaultAsync();
+
+            if (emp == null) return ApiResponseDto.FailureStatus("Employee not found.");
+            return ApiResponseDto.SuccessStatus(new UpdateEmployeeRequestDto { Employee = emp });
+        }
+
         public async Task<ApiResponseDto> GetEmployeeDetailsAsync(int employeeId)
         {
             var result = await (from emp in _unitOfWork.EmployeeRepo.TableNoTracking
-                                where !emp.IsDeleted
+                                join dept in _unitOfWork.DepartmentRepo.TableNoTracking on emp.DepartmentId equals dept.Id
+                                into deptJoin from dept in deptJoin.DefaultIfEmpty()
+                                join des in _unitOfWork.DesignationRepo.TableNoTracking on emp.DesignationId equals des.Id
+                                into desJoin from des in desJoin.DefaultIfEmpty()
+                                join ms in _unitOfWork.GeneralReferenceRepo.TableNoTracking.Where(ms => ms.Category == "MartialStatus") on emp.MaritalStatusId equals ms.Id
+                                into msJoin from ms in msJoin.DefaultIfEmpty()
+                                join g in _unitOfWork.GeneralReferenceRepo.TableNoTracking.Where(g => g.Category == "Gender") on emp.GenderId equals g.Id
+                                into gJoin from g in gJoin.DefaultIfEmpty()
+                                join rm in _unitOfWork.EmployeeRepo.TableNoTracking on emp.ReportingManagerId equals rm.Id
+                                into rmJoin from rm in rmJoin.DefaultIfEmpty()
 
-                                select new EmployeeDto
+                                where emp.Id == employeeId && !emp.IsDeleted
+
+                                select new EmployeeDetailsDto
                                 {
+                                    EmployeeId = emp.Id,
                                     Bio = emp.Bio,
                                     RelievingDate = emp.RelievingDate,
-                                    DesignationId = emp.DesignationId,
-                                    DepartmentId = emp.DepartmentId,
+                                    JoiningDate = emp.JoiningDate,
+                                    ResignationDate = emp.ResignationDate,
                                     FirstName = emp.FirstName,
                                     LastName = emp.LastName,
                                     MiddleName = emp.MiddleName,
                                     BirthDate = emp.BirthDate,
-                                    GenderId = emp.GenderId,
-                                    MaritalStatusId = emp.MaritalStatusId ?? 0,
-
+                                    Department = dept != null ? dept.Name : string.Empty,
+                                    Designation = des != null ? des.Name : string.Empty,
+                                    ReportingManager = rm != null ? rm.FullName : string.Empty,
+                                    MartialStatus = ms != null ? ms.Value : string.Empty,
+                                    Gender = g != null ? g.Value : string.Empty
                                 }
                               )
                               .FirstOrDefaultAsync();
+
             if(result == null) return ApiResponseDto.FailureStatus("Employee not found.");
 
-            var empDetails = new EmployeeDetaisResponseDto { Employee = result };
+            var empDetails = new EmployeeDetaisResponseDto { EmployeeDetails = result };
             return ApiResponseDto.SuccessStatus(empDetails);
         }
         public async Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request)

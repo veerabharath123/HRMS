@@ -50,9 +50,9 @@ namespace HRMS.WebApplication.Controllers
             return JsonResponse(response, Url.Action(nameof(GetEmployees)));
         }
         [HttpGet]
-        public async Task<IActionResult> EditEmployee(int id)
+        public async Task<IActionResult> EditEmployee(int employeeId)
         {
-            var response = await _api.PostAsync("/Employees/GetEmployeeById", new { Id = id });
+            var response = await _api.PostAsync<UpdateEmployeeRequestDto>("/Employees/GetEmployeeById", new { Id = employeeId }, true);
 
             if(!response.Success)
             {
@@ -62,8 +62,9 @@ namespace HRMS.WebApplication.Controllers
             ViewBag.ModuleTitle = "Edit Employee";
 
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            await LoadEmployeeDropdownsAsync();
 
-            return View(response.Result);
+            return View("AddEmployee",response.Result);
         }
         private async Task LoadEmployeeDropdownsAsync()
         {
@@ -108,6 +109,10 @@ namespace HRMS.WebApplication.Controllers
             {
                 return View("Error");
             }
+
+            ViewBag.ModuleTitle = "Employee Details";
+
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle, routeValues: new { employeeId } );
 
             var response = await _api.PostAsync<EmployeeDetaisResponseDto>("/Employees/GetEmployeeDetails", new { Id = employeeId }, true);
             await LoadEmployeeDropdownsAsync();

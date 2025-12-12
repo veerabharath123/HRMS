@@ -27,6 +27,13 @@ namespace HRMS.Api.Controllers.V1
         }
         [Authorize]
         [HttpPost("[action]")]
+        public async Task<IActionResult> GetEmployeeById([FromBody] IdRequestDto request)
+        {
+            var result = await _employeeServices.GetEmployeeByIdAsync(request.Id);
+            return Ok(result);
+        }
+        [Authorize]
+        [HttpPost("[action]")]
         public async Task<IActionResult> AddEmployee([FromBody] InsertEmployeeRequestDto request)
         {
             var result = await _employeeServices.AddEmployeeAsync(request);

@@ -29,4 +29,13 @@ namespace HRMS.SharedKernel.Models.Common.Class
         public DateTime? ResignationDate { get; set; }
         public int? ReportingManagerId { get; set; }
     }
+    public class EmployeeDetailsDto: EmployeeDto
+    {
+        public int EmployeeId { get; set; } 
+        public string MartialStatus { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string Designation { get; set; } = string.Empty;
+        public string ReportingManager { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+    }
 }
