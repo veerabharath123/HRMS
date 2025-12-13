@@ -1,7 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Maintenance";
-    ViewData["Module"] = "Maintenance";
-    List<string> list = new List<string> { "Users", "UserRoles" };
+﻿@model List<ModulesResponseDto>
+@{
+    ViewData["Title"] = ViewBag.ModuleTitle;
+    ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
     .maintenance-card{
@@ -30,17 +30,17 @@
 
 <div class="container-fluid h-100">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
-    <h3 class="mt-1">@ViewData["Module"]</h3>
+    <h3 class="mt-1">@ViewBag.ModuleTitle</h3>
 
-    <div class="row maintenance-block">
-        @foreach (var item in list)
+    <div class="row maintenance-block mt-3">
+        @foreach (var item in Model)
         {
-            <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+            <div class="col-lg-2 col-md-3 col-6 mb-2">
                 <div class="card shadow maintenance-card h-100">
                     <div class="card-body">
-                        <a href="@Url.Action("UsersMaintenance", "Maintenance")" class="maintenance-card-content">
-                            <i class="bi bi-people-fill"></i>
-                            <span class="ms-2">@item</span>
+                        <a href="@Url.Action(item.Action, item.Controller)" class="maintenance-card-content">
+                            <i class="@item.IconName"></i>
+                            <span class="ms-2">@item.Name</span>
                         </a>
                     </div>
                 </div>

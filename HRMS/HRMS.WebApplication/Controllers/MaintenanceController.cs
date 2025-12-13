@@ -11,16 +11,19 @@ namespace HRMS.WebApplication.Controllers
     {
         private readonly ApiRequest _api;
         private readonly BreadcrumbManager _breadcrumbManager;
+        private const string ModuleName = "Maintenance";
         public MaintenanceController(ApiRequest api, BreadcrumbManager breadcrumbManager)
         {
             _api = api;
             _breadcrumbManager = breadcrumbManager;
         }
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int module)
         {
-            InitBreadcrumbs(_breadcrumbManager, "Maintenance", true);
-            return View();
+            var response = await _api.PostAsync<List<ModulesResponseDto>>("/References/GetAllActiveModulesByParentId", new { Id = module }, true);
+            ViewBag.ModuleTitle = ModuleName;
+            InitBreadcrumbs(_breadcrumbManager, ModuleName, true, routeValues: new { module });
+            return ReturnView("Index", response);
         }
         [HttpGet]
         public IActionResult UsersMaintenance()

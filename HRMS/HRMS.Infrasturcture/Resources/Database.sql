@@ -322,8 +322,10 @@ BEGIN
 		MaritalStatusId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
 		PhotoPictureId INT NULL FOREIGN KEY REFERENCES StoredFiles(Id),
 		Bio VARCHAR(1000) NULL,
+		Email varchar(100) not null default '',
 
 		--organizational details
+		
 		DepartmentId    int FOREIGN KEY REFERENCES Department(Id),
 		DesignationId   int FOREIGN KEY REFERENCES Designation(Id),
 		JoiningDate datetime not null,
@@ -339,7 +341,7 @@ BEGIN
 	);
 
 END
-
+select * from users
 
 GO
 
@@ -609,16 +611,20 @@ END;
 
 ALTER TABLE dbo.Designation WITH CHECK CHECK CONSTRAINT ALL;
 
+DROP TABLE ModuleType;
+
 CREATE TABLE ModuleType (
 	Id Int IDENTITY(1,1) PRIMARY KEY,
 	GuidId  uniqueidentifier default newid() not null,
 
 	[Name] NVARCHAR(50) NOT NULL UNIQUE ,
-	Title NVARCHAR(50) NOT NULL,
+	Module NVARCHAR(50) NOT NULL,
 	IconName NVARCHAR(100) NOT NULL,
 	[Action] NVARCHAR(100),
 	Controller NVARCHAR(100),
 	[Description] NVARCHAR(255),
+	ParentModuleId INT NULL FOREIGN KEY REFERENCES ModuleType(Id),
+	HasChildren bit default 0,
 	ListOrder INT NOT NULL,
 
 	CreatedDate datetime  not null  default getdate(),
@@ -632,19 +638,26 @@ IF OBJECT_ID('dbo.ModuleType', 'U') IS NOT NULL
 BEGIN
     DELETE FROM dbo.ModuleType;
 
-    INSERT INTO dbo.ModuleType (Name, Title, IconName, [Action], Controller,CreatedUser ,ListOrder)
+    INSERT INTO dbo.ModuleType (Name, Module, IconName, [Action], Controller,CreatedUser ,ListOrder, ParentModuleId, HasChildren)
     VALUES
-    ('Dashboard', 'Dashboard', 'bi bi-speedometer2','Index','Home', 'System',1),
-    ('Chats', 'Chats', 'bi bi-chat-dots','Chats','Chat', 'System',2),
-	('Employees', 'Employees', 'bi bi-person-fill','GetEmployees','Employee', 'System', 3),
-	('Leave Management', 'Leave Management', 'bi bi-calendar3','Index','Home', 'System', 4),
-	('Maintenance', 'Maintenance', 'bi bi-house-gear-fill','Index','Maintenance', 'System', 6),
-	('Payrolls', 'Payrolls', 'bi bi-cash-coin','Index','Home', 'System', 5);
+    ('Dashboard', 'Dashboard', 'bi bi-speedometer2','Index','Home', 'System',1, null, 0),
+    ('Chats', 'Chats', 'bi bi-chat-dots','Chats','Chat', 'System',2, null, 0),
+	('Employees', 'Employees', 'bi bi-person-fill','GetEmployees','Employee', 'System', 3, null, 0),
+	('Leave Management', 'Leave Management', 'bi bi-calendar3','Index','Home', 'System', 4, null, 0),
+	('Maintenance', 'Maintenance', 'bi bi-house-gear-fill','Index','Maintenance', 'System', 6, null,1),
+	('Payrolls', 'Payrolls', 'bi bi-cash-coin','Index','Home', 'System', 5, null, 0);
+
+	INSERT INTO dbo.ModuleType (Name, Module, IconName, [Action], Controller,CreatedUser ,ListOrder, ParentModuleId)
+    VALUES
+	('Users', 'Maintenance', 'bi bi-people-fill','UsersMaintenance','Maintenance', 'System', 1, (select top 1 Id from ModuleType where [Name] = 'Maintenance')),
+	('User Roles', 'Maintenance', 'bi bi-person-fill-lock','UserRolesMaintenance','Maintenance', 'System', 2, (select top 1 Id from ModuleType where [Name] = 'Maintenance'));
 END
 ELSE
 BEGIN
     PRINT 'Table [dbo].[ModuleType] does not exist.';
 END;
+
+select * from ModuleType
 
 
 

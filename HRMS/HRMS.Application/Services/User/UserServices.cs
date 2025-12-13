@@ -65,15 +65,20 @@ namespace HRMS.Application.Services
         }
         public async Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request)
         {
-            var chatUsers = await _unitOfWork.UserRepo.TableNoTracking
-                .Where(x => !x.IsDeleted)
-                .Select(x => new UserListResponseDto
-                {
-                    Id = x.Id,
-                    UserName = x.UserName,
-                    IsActive = x.IsActive,
-                    Email = x.Email
-                }).SortBy(request?.Sort).FilterBy(request?.FilterGroup)
+            var chatUsers = await(from u in _unitOfWork.UserRepo.TableNoTracking
+                                  join emp in _unitOfWork.EmployeeRepo.TableNoTracking on u.EmployeeId equals emp.Id
+                                  into empJoin from emp in empJoin.DefaultIfEmpty()
+                                  where !u.IsDeleted
+                                  select new UserListResponseDto
+                                  {
+                                      Id = u.Id,
+                                      UserName = u.UserName,
+                                      IsActive = u.IsActive,
+                                      Email = u.Email,
+                                      EmployeeId = u.EmployeeId,
+                                      EmpFullName = string.IsNullOrEmpty(emp.FirstName) || string.IsNullOrEmpty(emp.LastName) ? string.Empty : $"{emp.FirstName} {emp.LastName}"
+                                  })
+                .SortBy(request?.Sort).FilterBy(request?.FilterGroup)
                 .PaginateAsync(request?.Pagination);
 
             return ApiResponseDto.SuccessStatus(chatUsers);

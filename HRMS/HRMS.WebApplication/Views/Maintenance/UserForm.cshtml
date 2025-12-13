@@ -2,6 +2,14 @@
     var title = ViewBag.ModuleTitle;
     ViewData["Module"] = "Maintenance";
 }
+<style nonce="@Html.ScriptNonce()">
+    .password-toggle > span {
+        cursor:pointer;
+    }
+    .password-toggle > span:active > i {
+        transform: scale(.9)
+    }
+</style>
 
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
@@ -9,7 +17,7 @@
 
     <form id="user-form"> 
         <div class="row">
-            <div class="col-4">
+            <div class="col-sm-12 col-md-6 col-lg-4">
                 <div class="card shadow">
                     <div class="card-body">
                         <h5>User Info</h5>
@@ -25,11 +33,24 @@
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password:</label>
-                            <input type="password" class="form-control form-control-sm" id="password" placeholder="Enter Password">
+                            <div class="input-group password-toggle">
+                                <input type="password" class="form-control form-control-sm" id="password" placeholder="Enter Password">
+
+                                <span class="input-group-text toggle-password" style="cursor:pointer;">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="confim-password" class="form-label">Confirm Password:</label>
-                            <input type="password" class="form-control form-control-sm" id="confim-password" placeholder="Enter Confirm Password">
+                            
+                            <div class="input-group password-toggle">
+                                <input type="password" class="form-control form-control-sm" id="confim-password" placeholder="Enter Confirm Password">
+
+                                <span class="input-group-text toggle-password cursor-pointer">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-sm btn-primary">Submit</button>
@@ -38,4 +59,19 @@
             </div>
         </div>
     </form>
+    <script nonce="@Html.ScriptNonce()">
+        $(document).on('click', '.toggle-password', function () {
+            const $wrapper = $(this).closest('.password-toggle');
+            const $input = $wrapper.find('input');
+
+            const isPassword = $input.attr('type') === 'password';
+
+            // Toggle input type
+            $input.attr('type', isPassword ? 'text' : 'password');
+
+            // Toggle icon
+            const $icon = $(this).find('i');
+            $icon.toggleClass('bi-eye bi-eye-slash');
+        });
+    </script>
 </div>

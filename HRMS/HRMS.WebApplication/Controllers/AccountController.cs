@@ -29,7 +29,8 @@ namespace HRMS.WebApplication.Controllers
             {
                 return View(nameof(SignUp), request);
             }
-            var res = _api.PostAsync<LoginResponseDto>("/User/Login", request).Result;
+
+            var res = await _api.PostAsync<LoginResponseDto>("/User/Login", request);
 
             if (res.Success && res.Result is not null)
             {
@@ -38,9 +39,9 @@ namespace HRMS.WebApplication.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewBag.Message = res.Message;
+            TempData["message"] = res.Message;
 
-            return RedirectToAction("Error");
+            return RedirectToAction("Login");
         }
         [HttpGet]
         public IActionResult SignUp()
@@ -65,7 +66,7 @@ namespace HRMS.WebApplication.Controllers
 
             ViewBag.Message = res.Message;
 
-            return RedirectToAction("Error");
+            return RedirectToAction("Login");
         }
         private async Task LoadAuthSession(LoginResponseDto auth)
         {

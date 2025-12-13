@@ -3,6 +3,15 @@
     ViewData["Module"] = "Maintenance";
     var table = ("Users", "user-table");
 }
+<style nonce="@Html.ScriptNonce()">
+    .name-link{
+        text-decoration: none;
+        color: grey;
+    }
+    .name-link:hover{
+        text-decoration:underline;
+    }
+</style>
 
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
@@ -25,6 +34,12 @@
         { property: 'userName', displayName: 'Username' },
         { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {
             return `<i class="${data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'}"></i>`;
+        }},
+        { property: 'empFullName', displayName: 'Employee Name' , render: function(data, type, row) {
+            const icon = 'No employee mapped<i class="bi bi-x-circle-fill text-danger ms-2"></i>'
+            if(!data || !row.employeeId) return icon;
+            const view = `<a href="@Url.Action("GetEmployeeDetails", "Employee")?employeeId=${row.employeeId}" class="name-link">${data}</a>`
+            return view;
         }},
         { property: 'id', displayName: 'Id', type: 'Number' , visible : false },
     ]

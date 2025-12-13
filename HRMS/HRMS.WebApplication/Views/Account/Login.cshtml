@@ -1,14 +1,22 @@
 ﻿@model LoginRequestDto
 @{
 	Layout = "_Layout";
+	var message = TempData["message"]?.ToString();
+	var showMessage = !string.IsNullOrEmpty(message) ? string.Empty : "d-none";
 }
+<style nonce="@Html.ScriptNonce()">
+	.error-message{
+		color: red;
+	}
+</style>
 
 @* Test *@
 <div class="bg-image">
-    
+	
 	<div class="glass-card">
         <div class="logo-block"><img src="~/images/hrms-app-logo.png" class="logo" alt="app-logo" /></div>
 		<h3 class="mb-4 text-center">Welcome Back</h3>
+		<span class="error-message @showMessage">@message</span>
 		<form asp-action="Login" asp-controller="Account" method="post">
 			<div class="mb-3">
 				<label class="form-label">Username</label>

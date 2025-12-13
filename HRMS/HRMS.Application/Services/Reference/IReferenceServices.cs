@@ -10,5 +10,6 @@ namespace HRMS.Application.Services
         Task<List<BaseRefDto>> GetAllActiveGendersAsync();
         Task<List<BaseRefDto>> GetAllActiveMaritalStatusAsync();
         Task<List<ModulesResponseDto>> GetAllActiveModulesAsync();
+        Task<List<ModulesResponseDto>> GetAllActiveModulesByParentIdAsync(int parentId);
     }
 }

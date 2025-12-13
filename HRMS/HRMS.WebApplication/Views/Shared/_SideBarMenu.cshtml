@@ -9,7 +9,7 @@
     @foreach(var module in Model)
     {
         <li class="nav-item" data-bs-toggle="tooltip" title="@module.Name" data-bs-placement="right">
-            <a href="@Url.Action(module.Action, module.Controller)" class="nav-link">
+            <a href="@Url.Action(module.Action, module.Controller, module.RouteValues)" class="nav-link">
                 <i class="@module.IconName"></i> <span>@module.Name</span>
             </a>
         </li>

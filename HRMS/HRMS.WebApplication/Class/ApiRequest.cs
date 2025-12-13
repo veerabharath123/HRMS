@@ -117,6 +117,21 @@ namespace HRMS.WebApplication.Class
         {
             var content = await response.Content.ReadAsStringAsync();
 
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return ApiResponseModel<TResponse>.UnauthorizedStatus(
+                    "Your session has expired. Please log in again."
+                );
+            }
+
+            // 🚫 Forbidden → no access
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                return ApiResponseModel<TResponse>.ForbiddenStatus(
+                    "You do not have permission to access this resource."
+                );
+            }
+
             // Try to deserialize as ApiResponseModel<TResponse>
             try
             {

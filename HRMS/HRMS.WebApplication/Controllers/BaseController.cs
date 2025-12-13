@@ -6,6 +6,7 @@ using HRMS.WebApplication.Extensions;
 using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace HRMS.WebApplication.Controllers
 {
@@ -29,6 +30,50 @@ namespace HRMS.WebApplication.Controllers
         protected IActionResult JsonBadResponse(string message = "")
         {
             return Json(new { success = false, message });
+        }
+
+        protected IActionResult ReturnView<TResult>(string viewName = "", ApiResponseModel<TResult>? result = null)
+        {
+            if (result is not null && result.Logout)
+            {
+                TempData["message"] = "Session expired, Login again.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (result is null || !result.Success || !result.HasResult)
+            {
+                return View("Error");
+            }
+
+            return View(viewName, result.Result);
+        }
+        protected IActionResult ReturnPartial<TResult>(string viewName = "", ApiResponseModel<TResult>? result = null)
+        {
+            if (result?.Logout == true)
+            {
+                return StatusCode(
+                    StatusCodes.Status401Unauthorized,
+                    new
+                    {
+                        logout = true,
+                        message = "Your session has expired. Please log in again."
+                    }
+                );
+            }
+
+            if (result is null || !result.Success || !result.HasResult)
+            {
+                return StatusCode(
+                    StatusCodes.Status403Forbidden,
+                    new
+                    {
+                        message = "You do not have permission to access this resource."
+                    }
+                );
+            }
+
+
+            return PartialView(viewName, result.Result);
         }
 
         protected void InitBreadcrumbs(BreadcrumbManager breadcrumbManager, string name, bool isRootModule = false, object? routeValues = null)
@@ -62,5 +107,6 @@ namespace HRMS.WebApplication.Controllers
 
             return new SelectList(departments, "Id", "Name");
         }
+        
     }
 }

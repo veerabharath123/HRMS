@@ -13,7 +13,9 @@ namespace HRMS.SharedKernel.Models.Response
         public string IconName { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
+        public Dictionary<string,object>? RouteValues { get; set; }
         public string Description { get; set; } = string.Empty;
         public int ListOrder { get; set; }
+        public int? ParentModuleId { get; set; }
     }
 }

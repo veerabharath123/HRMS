@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using HRMS.Application.Services;
+using HRMS.SharedKernel.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -45,6 +46,12 @@ namespace HRMS.Api.Controllers.V1
         public async Task<IActionResult> GetAllActiveModules()
         {
             var response = await _referenceServices.GetAllActiveModulesAsync();
+            return Ok(response);
+        }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetAllActiveModulesByParentId([FromBody] IdRequestDto request)
+        {
+            var response = await _referenceServices.GetAllActiveModulesByParentIdAsync(request.Id);
             return Ok(response);
         }
 

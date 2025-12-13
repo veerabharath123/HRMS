@@ -414,7 +414,6 @@
     });
 
     $(document).on('click','#sendBtn', function(){
-        debugger
         const messageInput = $('#messageInput');
         const message = messageInput.val().trim();
         const conversationId = messageInput.parent().attr('id');
@@ -491,7 +490,6 @@
             '#typing-status',
             { 
                 afterLoad: function($target){
-                    debugger
                    const container = $('#chat-messages')
                     const message = container.find('.message-section').last()[0];
 

@@ -31,7 +31,7 @@ namespace HRMS.WebApplication.Controllers
         {
             request ??= new();
             var result = await _api.PostAsync<PaginationResponseDto<EmployeeShortResponseDto>>("/Employees/GetPaginatedEmployeesShort", request, true);
-            return PartialView("EmployeeCards", result.Result);
+            return ReturnPartial("EmployeeCards", result);
         }
         [HttpGet]
         public async Task<IActionResult> AddEmployee()
@@ -70,7 +70,7 @@ namespace HRMS.WebApplication.Controllers
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
             await LoadEmployeeDropdownsAsync();
 
-            return View("AddEmployee",response.Result);
+            return ReturnView("AddEmployee",response);
         }
         private async Task LoadEmployeeDropdownsAsync()
         {
@@ -122,7 +122,8 @@ namespace HRMS.WebApplication.Controllers
 
             var response = await _api.PostAsync<EmployeeDetaisResponseDto>("/Employees/GetEmployeeDetails", new { Id = employeeId }, true);
             await LoadEmployeeDropdownsAsync();
-            return View("EmployeeDetails",response.Result);
+
+            return ReturnView("EmployeeDetails",response);
         }
     }
 }

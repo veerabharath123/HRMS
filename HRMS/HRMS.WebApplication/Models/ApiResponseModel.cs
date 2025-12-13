@@ -34,5 +34,13 @@ namespace HRMS.WebApplication.Models
         {
             return new ApiResponseModel<T>(200, default, message, false);
         }
+        public static ApiResponseModel<T> UnauthorizedStatus(string message = "")
+        {
+            return new ApiResponseModel<T> { Success = false, StatusCode = 401, Message = message, Logout = true };
+        }
+        public static ApiResponseModel<T> ForbiddenStatus(string message = "")
+        {
+            return new ApiResponseModel<T> { Success = false, StatusCode = 403, Message = message };
+        }
     }
 }
