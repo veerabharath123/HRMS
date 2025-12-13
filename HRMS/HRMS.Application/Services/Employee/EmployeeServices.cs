@@ -76,6 +76,7 @@ namespace HRMS.Application.Services.Employee
                         }).FirstOrDefaultAsync();
 
             if (emp == null) return ApiResponseDto.FailureStatus("Employee not found.");
+            
             return ApiResponseDto.SuccessStatus(new UpdateEmployeeRequestDto { Employee = emp });
         }
 
@@ -92,6 +93,8 @@ namespace HRMS.Application.Services.Employee
                                 into gJoin from g in gJoin.DefaultIfEmpty()
                                 join rm in _unitOfWork.EmployeeRepo.TableNoTracking on emp.ReportingManagerId equals rm.Id
                                 into rmJoin from rm in rmJoin.DefaultIfEmpty()
+                                join usr in _unitOfWork.UserRepo.TableNoTracking on emp.Id equals usr.EmployeeId
+                                into usrJoin from usr in usrJoin.DefaultIfEmpty()
 
                                 where emp.Id == employeeId && !emp.IsDeleted
 
@@ -110,7 +113,9 @@ namespace HRMS.Application.Services.Employee
                                     Designation = des != null ? des.Name : string.Empty,
                                     ReportingManager = rm != null ? rm.FullName : string.Empty,
                                     MartialStatus = ms != null ? ms.Value : string.Empty,
-                                    Gender = g != null ? g.Value : string.Empty
+                                    Gender = g != null ? g.Value : string.Empty,
+                                    Email = usr.Email,
+                                    UserExists = usr != null
                                 }
                               )
                               .FirstOrDefaultAsync();

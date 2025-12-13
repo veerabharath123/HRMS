@@ -49,6 +49,12 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync("/Employees/AddEmployee", request, true);
             return JsonResponse(response, Url.Action(nameof(GetEmployees)));
         }
+        [HttpPost]
+        public async Task<IActionResult> UpdateEmployee(UpdateEmployeeRequestDto request)
+        {
+            var response = await _api.PostAsync("/Employees/UpdateEmployee", request, true);
+            return JsonResponse(response, Url.Action(nameof(GetEmployees)));
+        }
         [HttpGet]
         public async Task<IActionResult> EditEmployee(int employeeId)
         {
