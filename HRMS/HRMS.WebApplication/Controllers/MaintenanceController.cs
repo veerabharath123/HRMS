@@ -25,11 +25,13 @@ namespace HRMS.WebApplication.Controllers
             InitBreadcrumbs(_breadcrumbManager, ModuleName, true, routeValues: new { module });
             return ReturnView("Index", response);
         }
+        #region User Maintenance
         [HttpGet]
         public IActionResult UsersMaintenance()
         {
-            InitBreadcrumbs(_breadcrumbManager, "Users Maintenance");
-            return View("UsersMaintenance");
+            ViewBag.ModuleTitle = "Users Maintenance";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            return View();
         }
         [HttpPost]
         public async Task<IActionResult> GetUsersMaintenance([FromBody] AdvanceTableRequestDto request)
@@ -44,5 +46,24 @@ namespace HRMS.WebApplication.Controllers
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
             return View("UserForm");
         }
+        [HttpPost]
+        public async Task<IActionResult> SaveUser([FromBody] UserInsertRequestDto request)
+        {
+            var response = await _api.PostAsync<ApiResponseDto>("/User/InsertUser", request, true); 
+            return JsonResponse(response,Url.Action(nameof(UsersMaintenance)));
+        }
+        #endregion User Maintenance
+
+        #region Authorization Maintenance
+
+        [HttpGet]
+        public IActionResult AuthorizationsMaintenance()
+        {
+            ViewBag.ModuleTitle = "Authorizations Maintenance";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            return View();
+        }
+
+        #endregion Authorization Maintenance
     }
 }

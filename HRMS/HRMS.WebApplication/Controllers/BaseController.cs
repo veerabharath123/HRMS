@@ -90,12 +90,13 @@ namespace HRMS.WebApplication.Controllers
                 Url = Url.Action(actionName, controllerName, routeValues) ?? string.Empty,
                 IsActive = true,
                 Action = actionName,
-                Controller = controllerName
+                Controller = controllerName,
+                IsRoot = isRootModule
             };
 
             defaultCrumb.Url = Url.Action(defaultCrumb.Action, defaultCrumb.Controller) ?? "/";
 
-            ViewBag.Breadcrumbs = breadcrumbManager.UpdateTrail(newCrumb, defaultCrumb, isRootModule);
+            ViewBag.Breadcrumbs = breadcrumbManager.UpdateTrail(newCrumb, defaultCrumb);
         }
         protected async Task<SelectList> GetDropdownListAsync(string action, object? data = null, bool isAuthRequired = false)
         {

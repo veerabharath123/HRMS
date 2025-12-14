@@ -1,13 +1,13 @@
 ﻿@model InsertEmployeeRequestDto
 @{
     var genders = ViewBag.GenderList;
-    var title = ViewBag.ModuleTitle;
+    ViewData["Title"] = ViewBag.ModuleTitle;
     ViewData["Module"] = "Employees";
     
 }
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
-    <h2 class="mt-1">@title</h2>
+    <h2 class="mt-1">@ViewBag.ModuleTitle</h2>
 
     <form id="emp-form">
         <div class="row">
@@ -353,7 +353,6 @@
 
     $('#emp-form').on('submit', function(){
         const formData = $(this).serialize()
-        console.log(formData)
         ajaxPost(
             '@Url.Action("SaveEmployee", "Employee")',
             formData,

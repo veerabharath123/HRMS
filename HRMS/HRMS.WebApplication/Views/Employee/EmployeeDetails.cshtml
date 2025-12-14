@@ -1,6 +1,6 @@
 ﻿@model EmployeeDetaisResponseDto
 @{
-    var title = ViewBag.ModuleTitle;
+    ViewData["Title"] = ViewBag.ModuleTitle;
     ViewData["Module"] = "Employees";
 }
 <style nonce="@Html.ScriptNonce()">
@@ -22,7 +22,7 @@
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
     <h2 class="mt-1 clearfix">
-        @title
+        @ViewBag.ModuleTitle
         <a class="btn btn-sm btn-primary float-end" href="@Url.Action("EditEmployee", "Employee", new { Model.EmployeeDetails.EmployeeId })"><i class="bi bi-pencil-square me-2"></i>Edit</a>
         <button class="btn btn-sm btn-success float-end me-2"><i class="bi bi-download me-1"></i> Resume</button>
     </h2>

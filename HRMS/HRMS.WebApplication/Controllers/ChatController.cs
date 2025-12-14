@@ -15,6 +15,7 @@ namespace HRMS.WebApplication.Controllers
         }
         public async Task<IActionResult> Chats()
         {
+            ViewBag.ModuleTitle = "Chats";
             var response = await _api.PostAsync<List<ChatConversationListResponseDto>>("/Chats/GetChatConversationList", true);
             var chats = new List<ChatConversationListResponseDto>();
 

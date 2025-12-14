@@ -494,3 +494,14 @@ body {
     -webkit-animation-delay: 400ms;
 }
 
+/*.form-control-section {
+    position: relative;
+}
+
+    .form-control-section .invalid-feedback {
+        margin-top: 0.25rem;*/ /* controlled spacing */
+    /*}
+
+    .form-control-section.has-error {
+        margin-bottom: 0 !important;*/ /* prevent double spacing */
+    /*}*/

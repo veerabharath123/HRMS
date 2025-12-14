@@ -1,8 +1,8 @@
 ﻿@model List<ChatConversationListResponseDto>
 
 @{
-    ViewData["Module"] = "Chats";
-    ViewData["Title"] = "Chats";
+    ViewData["Title"] = ViewBag.ModuleTitle;
+    ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
     #typing-status{
@@ -247,7 +247,7 @@
                 <div class="card-title p-3 border-bottom">
                     <div class="row">
                         <div class="col">
-                            <h1 class="mb-4 mt-2">Chats</h1>
+                            <h1 class="mb-4 mt-2">@ViewBag.ModuleTitle</h1>
                             <div class="input-group" id="seach-emp-chat">
                                 <input type="text" class="form-control" placeholder="Search user">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>

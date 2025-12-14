@@ -1,12 +1,13 @@
 ﻿@{
-    ViewData["Title"] = "Users Maintenance";
+    ViewData["Title"] = ViewBag.ModuleTitle;
     ViewData["Module"] = "Maintenance";
     var table = ("Users", "user-table");
 }
 <style nonce="@Html.ScriptNonce()">
     .name-link{
         text-decoration: none;
-        color: grey;
+        color: black;
+        cursor:pointer;
     }
     .name-link:hover{
         text-decoration:underline;
@@ -15,7 +16,7 @@
 
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
-    <h3 class="mt-1">@ViewData["Title"]</h3>
+    <h3 class="mt-1">@ViewBag.ModuleTitle</h3>
 
     <div class="row mb-2">
         <div class="col-12">
@@ -32,38 +33,36 @@
     const columns = [
         { property: 'email', displayName: 'Email' },
         { property: 'userName', displayName: 'Username' },
-        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {
-            return `<i class="${data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'}"></i>`;
+        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {            
+            return getIconElement(data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger');
         }},
-        { property: 'empFullName', displayName: 'Employee Name' , render: function(data, type, row) {
-            const icon = 'No employee mapped<i class="bi bi-x-circle-fill text-danger ms-2"></i>'
-            if(!data || !row.employeeId) return icon;
-            const view = `<a href="@Url.Action("GetEmployeeDetails", "Employee")?employeeId=${row.employeeId}" class="name-link">${data}</a>`
-            return view;
+        { property: 'empFullName', displayName: 'Employee Name' ,search: false, render: function(data, type, row) {
+            const notMapped =  document.createElement('span');
+            notMapped.className = 'text-secondary';
+            notMapped.textContent = 'Not added';
+
+            if(!data || !row.employeeId || isNaN(parseInt(row.employeeId))) return notMapped;
+
+            const anchor = document.createElement('a')
+            anchor.href = `@Url.Action("GetEmployeeDetails", "Employee")?employeeId=${row.employeeId}`;
+            anchor.className = 'name-link';
+            anchor.textContent = data;
+
+            return anchor;
         }},
         { property: 'id', displayName: 'Id', type: 'Number' , visible : false },
     ]
 
-    const headerRow = $('#user-table thead tr').empty();
-    columns.forEach(x => {
-        const elem = document.createElement('th');
-        if(x.visible === false)
-            elem.textContent =  (x.displayName || x.property);
-        headerRow.append(elem)
-    })
-
-    const adTable = new AdvanceSearchTable({
+    const adTable = AdvanceSearchTable.create({
         tableSelector: '#user-table',
-        filterSelector: '#search-box-user-table',
-        ajaxUrl: '@Url.Action("GetUsersMaintenance","Maintenance")',
+        ajaxUrl: '@Url.Action("GetUsersMaintenance", "Maintenance")',
         columns: columns,
         dataTableOptions: {
             dom: 'lt'
         }
     })
 
-    $(document).on('click','#accordion-user-table .table-refresh-btn',function(){
-
-        adTable.refresh();
+    $(document).on('click','#user-table-accordion .table-refresh-btn',function(){
+        adTable.clearAndReload();
     })
 </script>

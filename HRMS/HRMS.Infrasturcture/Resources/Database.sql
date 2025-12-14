@@ -650,7 +650,7 @@ BEGIN
 	INSERT INTO dbo.ModuleType (Name, Module, IconName, [Action], Controller,CreatedUser ,ListOrder, ParentModuleId)
     VALUES
 	('Users', 'Maintenance', 'bi bi-people-fill','UsersMaintenance','Maintenance', 'System', 1, (select top 1 Id from ModuleType where [Name] = 'Maintenance')),
-	('User Roles', 'Maintenance', 'bi bi-person-fill-lock','UserRolesMaintenance','Maintenance', 'System', 2, (select top 1 Id from ModuleType where [Name] = 'Maintenance'));
+	('Authorizations', 'Maintenance', 'bi bi-person-fill-lock','AuthorizationsMaintenance','Maintenance', 'System', 2, (select top 1 Id from ModuleType where [Name] = 'Maintenance'));
 END
 ELSE
 BEGIN

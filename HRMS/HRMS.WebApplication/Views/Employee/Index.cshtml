@@ -1,11 +1,12 @@
 ﻿
 @{
+    ViewData["Title"] = ViewBag.ModuleTitle;
     ViewData["Module"] = "Employees";
 }
 
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
-    <h3 class="mt-1">@ViewData["Module"]</h3>
+    <h3 class="mt-1">@ViewBag.ModuleTitle</h3>
     
     <div class="row mt-3">
         <div class="col-12 clearfix">

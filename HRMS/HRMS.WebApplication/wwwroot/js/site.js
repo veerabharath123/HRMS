@@ -150,7 +150,6 @@ function prepareRequestData(config) {
 }
 
 function handleAjaxSuccess(res, config) {
-
     const useDefaultSuccessCallBack = typeof config?.useDefaultSuccessCallBack === 'boolean'
         ? config?.useDefaultSuccessCallBack 
         : true;
@@ -400,3 +399,14 @@ function debounce(fn, delay = 300) {
         timeout = setTimeout(() => fn.apply(this, args), delay);
     };
 }
+
+function getIconElement(iconName) {
+    const icon = document.createElement('i');
+    icon.className = iconName;
+    return icon;
+}
+
+
+
+
+

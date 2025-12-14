@@ -13,10 +13,10 @@ namespace HRMS.WebApplication.Class.BreadCrumbs
             _cache = cache;
         }
 
-        public IEnumerable<BreadCrumbModel> UpdateTrail(BreadCrumbModel newCrumb, BreadCrumbModel defaultCrumb, bool isRootModule = false)
+        public IEnumerable<BreadCrumbModel> UpdateTrail(BreadCrumbModel newCrumb, BreadCrumbModel defaultCrumb)
         {
 
-            var trail = isRootModule ? [defaultCrumb, newCrumb] : GetCachedTrails(newCrumb);
+            var trail = newCrumb.IsRoot ? [defaultCrumb, newCrumb] : GetCachedTrails(newCrumb);
 
             if (trail.Count > 0) 
                 trail.Last().IsActive = true;

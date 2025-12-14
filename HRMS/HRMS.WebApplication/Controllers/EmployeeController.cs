@@ -22,7 +22,8 @@ namespace HRMS.WebApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEmployees()
         {
-            InitBreadcrumbs(_breadcrumbManager, "Employess", true);
+            ViewBag.ModuleTitle = "Employees";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle, true);
             await LoadEmployeeDropdownsAsync();
             return View("Index");
         }
