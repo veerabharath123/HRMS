@@ -488,7 +488,7 @@
         chatConnection.on("ReceiveSeenStatus", (response) => {
             if(response?.success && response?.result){
                 const result = response.result;
-
+                debugger
                 if($('#chat-box').hasClass('open-chat') && result?.length){
                     result.forEach(id => {
                         $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")

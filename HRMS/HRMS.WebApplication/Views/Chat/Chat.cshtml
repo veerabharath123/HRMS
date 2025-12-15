@@ -378,6 +378,7 @@
                     const message = container.find('.message-section').last()[0];
 
                     container[0].scrollTop = message.offsetTop;
+                    initLazyLoading();
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
                     const lastMessageSection = container.find('.message-section-other').last().find('.message-time');
 
@@ -388,7 +389,7 @@
 
                         updateMessageAsSeen({
                             ConversationId: conversationId,
-                            TillRead: tillReadDateTime
+                            TillRead: tillReadDateTime.toISOString()
                         });
                     }
                 }
@@ -499,7 +500,7 @@
                     $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
 
                     if(!$('#chat-box').hasClass('open-chat')) return;
-
+                    debugger
                     if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
                         const tillReadText = lastMessageSection.data('datetime');
                         const tillReadDateTime = new Date(tillReadText);
@@ -507,7 +508,7 @@
 
                         updateMessageAsSeen({
                             ConversationId: data.conversationId,
-                            TillRead: tillReadDateTime
+                            TillRead: tillReadDateTime.toISOString()
                         });
                     }
                 },
@@ -699,5 +700,45 @@
                 // Handle response if needed
             }
         )
+    }
+    let loading = false;
+
+    function initLazyLoading(){
+        const chatscreen = $('#chat-messages');
+        chatscreen.off('scroll.lazy').on('scroll.lazy',function(){
+            if (this.scrollTop === 0) {
+
+                debugger
+                getPreviousMessages(chatscreen.data('conversation'))
+            }
+        })
+    }
+    function getPreviousMessages(conversationId){
+        debugger
+        if(loading) return;
+        const lastMessageSection = $('#chat-messages').find('.message-section').first().find('.message-time');
+
+        if(lastMessageSection.length){
+            const tillReadText = lastMessageSection.data('datetime');
+            const tillReadDateTime = new Date(tillReadText);
+            if(isNaN(tillReadDateTime.getTime())) return;
+            loading= true
+            ajaxLoadHtml(
+                '@Url.Action("GetNextMessages", "Chat")',
+                JSON.stringify({ ConversationId : conversationId, LastMessageTime: tillReadDateTime.toISOString() }),
+                '#chat-messages',
+                {
+                    afterLoad: function(){
+                        console.log('Previous messages loaded');
+                        loading= false
+
+                        $('#chat-messages')[0].scrollTop = lastMessageSection[0].offsetTop;
+                    },
+                    useDefaultSuccessCallBack : false,
+                    htmlMethod: 'prepend'
+                }
+            );
+        }
+        
     }
 </script>

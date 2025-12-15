@@ -44,6 +44,7 @@ namespace HRMS.SharedKernel.Models.Response
         public string ParentMessageSenderName { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; }
+        public string CreatedDateUtc { get; set; } = string.Empty;
 
         public bool IsMine { get; set; }   // For UI: left or right alignment
 

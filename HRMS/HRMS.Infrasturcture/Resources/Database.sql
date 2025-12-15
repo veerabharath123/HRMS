@@ -741,6 +741,8 @@ CREATE TABLE Messages (
     MessageTypeId INT NOT NULL,
 
     IsEdited BIT NOT NULL DEFAULT 0,
+	CreatedUtcAt DATETIME2 NOT NULL,
+	UpdatedUtcAt DATETIME2,
 
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
@@ -766,7 +768,7 @@ CREATE TABLE Messages (
 );
 
 CREATE INDEX IX_Messages_ConversationId_CreatedDate
-ON Messages (ConversationId, CreatedDate);
+ON Messages (ConversationId, CreatedUtcAt);
 
 
 CREATE TABLE MessageStatus (
@@ -776,8 +778,10 @@ CREATE TABLE MessageStatus (
     MessageId INT NOT NULL,
     EmployeeId INT NOT NULL,
 
-    DeliveredAt DATETIME NULL,
-    ReadAt DATETIME NULL,
+    DeliveredAt DATETIME2 NULL,
+    ReadAt DATETIME2 NULL,
+	CreatedUtcAt DATETIME2 NOT NULL,
+	UpdatedUtcAt DATETIME2,
 
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
@@ -862,3 +866,5 @@ m.ConversationId = 1 and m.CreatedDate <= GETDATE()
 and ms.EmployeeId = 2 and m.SenderId <> 2 --and ms.ReadAt is null
 
 truncate table  Messages
+
+sel

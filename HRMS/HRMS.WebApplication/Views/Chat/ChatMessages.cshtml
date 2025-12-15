@@ -1,0 +1,6 @@
+﻿@model List<ChatMessageResponseDto>
+
+@foreach(var m in Model)
+{
+    <partial name="ChatMessage" model="m" />
+}

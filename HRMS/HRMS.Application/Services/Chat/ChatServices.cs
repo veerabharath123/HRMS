@@ -6,6 +6,8 @@ using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace HRMS.Application.Services.Chat
@@ -42,8 +44,8 @@ namespace HRMS.Application.Services.Chat
                         {
                             Conversation = c,
                             LastMessage = c.Messages
-                                .OrderByDescending(m => m.CreatedDate)
-                                .Select(m => new { m.Content, m.CreatedDate, m.SenderId, m.Id })
+                                .OrderByDescending(m => m.CreatedUtcAt)
+                                .Select(m => new { m.Content, m.CreatedUtcAt, m.SenderId, m.Id })
                                 .FirstOrDefault(),
 
                             UnreadCount = c.Messages
@@ -51,7 +53,7 @@ namespace HRMS.Application.Services.Chat
                                             m.MessageStatuses.Any(ms => ms.EmployeeId == employeeId && ms.ReadAt == null))
                                 .Count()
                         })
-                        .OrderByDescending(x => x.LastMessage != null ? x.LastMessage.CreatedDate : x.Conversation.CreatedDate)
+                        .OrderByDescending(x => x.LastMessage != null ? x.LastMessage.CreatedUtcAt : x.Conversation.CreatedDate)
                         .Select(x => new ChatConversationListResponseDto
                         {
                             Id = x.Conversation.Id,
@@ -63,7 +65,7 @@ namespace HRMS.Application.Services.Chat
                                 .Select(p => p.Employee!.FullName)
                                 .ToList(),
 
-                            LastMessageDate = x.LastMessage != null ? x.LastMessage.CreatedDate : x.Conversation.CreatedDate,
+                            LastMessageDate = x.LastMessage != null ? x.LastMessage.CreatedUtcAt : x.Conversation.CreatedDate,
                             UnreadCount = x.UnreadCount,
                             LastMessage = x.LastMessage != null ? x.LastMessage.Content : "start a new conversation",
                             LastMessageId = x.LastMessage != null ? x.LastMessage.Id : null,
@@ -134,19 +136,12 @@ namespace HRMS.Application.Services.Chat
 
             return newConv;
         }
-        public async Task<ApiResponseDto> GetNextMessagesAsync(NextMessagesRequestDto request)
+        private IQueryable<ChatMessageResponseDto> GetBaseMessageQuery(Expression<Func<Message, bool>> predicate, int employeeId, int take = 20)
         {
-            int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0 || request.ConversationId == 0)
-                return ApiResponseDto.FailureStatus("Failed to fetch chat messages.");
-
-            // Fetch next (older) 20 messages older than LastMessageTime
-            var messages = await _unitOfWork.MessagesRepo.Table
-                .Where(m => !m.IsDeleted
-                            && m.ConversationId == request.ConversationId
-                            && m.CreatedDate < request.LastMessageTime)
-                .OrderByDescending(m => m.CreatedDate)   // newest of the older messages first
-                .Take(20)
+            return _unitOfWork.MessagesRepo.Table
+                .Where(predicate)
+                .OrderByDescending(m => m.CreatedUtcAt)   // newest of the older messages first
+                .Take(take)
                 .Select(m => new ChatMessageResponseDto
                 {
                     Id = m.Id,
@@ -154,7 +149,8 @@ namespace HRMS.Application.Services.Chat
                     SenderId = m.SenderId,
                     Content = m.Content,
                     ParentMessageId = m.ParentMessageId,
-                    CreatedDate = m.CreatedDate,
+                    CreatedDate = DateTime.SpecifyKind(m.CreatedUtcAt, DateTimeKind.Utc),
+                    CreatedDateUtc = DateTime.SpecifyKind(m.CreatedUtcAt, DateTimeKind.Utc).ToString("o"),
                     IsMine = m.SenderId == employeeId,
                     SenderName = m.Sender != null ? m.Sender.FullName : string.Empty,
                     ParentMessage = m.ParentMessage != null ? (m.ParentMessage.Content ?? string.Empty) : string.Empty,
@@ -167,8 +163,22 @@ namespace HRMS.Application.Services.Chat
                                     .Where(ms => ms.EmployeeId != employeeId)
                                     .Select(ms => ms.ReadAt)
                                     .FirstOrDefault()
-                })
-                .ToListAsync();
+                });
+        }
+        public async Task<ApiResponseDto> GetNextMessagesAsync(NextMessagesRequestDto request)
+        {
+            int employeeId = await GetCurrentEmployeeIdAsync();
+            if (employeeId == 0 || request.ConversationId == 0)
+                return ApiResponseDto.FailureStatus("Failed to fetch chat messages.");
+
+            var lastMessageUtc = request.LastMessageTime!.Value;
+            // Fetch next (older) 20 messages older than LastMessageTime
+            var messages = await GetBaseMessageQuery(
+                                m => !m.IsDeleted
+                                && m.ConversationId == request.ConversationId
+                                && m.CreatedUtcAt < lastMessageUtc,
+                            employeeId, 20)
+                            .ToListAsync();
 
             var ordered = messages.OrderBy(m => m.CreatedDate);
 
@@ -188,32 +198,14 @@ namespace HRMS.Application.Services.Chat
                     Id = c.Id,
                     Type = c.TypeNavigation != null ? c.TypeNavigation.Name : string.Empty,
                     Name = c.Name ?? c.Participants.Where(cp => cp.ConversationId == c.Id && cp.EmployeeId != employeeId).First().Employee.FullName,
-                    Messages = c.Messages.Where(m => !m.IsDeleted)
-                        .OrderBy(m => m.CreatedDate)
-                        .Select(m => new ChatMessageResponseDto
-                        {
-                            Id = m.Id,
-                            ConversationId = m.ConversationId,
-                            SenderId = m.SenderId,
-                            Content = m.Content,
-                            ParentMessageId = m.ParentMessageId,
-                            CreatedDate = m.CreatedDate,
-                            IsMine = m.SenderId == employeeId,
-                            SenderName = m.Sender != null ? m.Sender.FullName : string.Empty,
-                            ParentMessage = (m.ParentMessage != null && !string.IsNullOrEmpty(m.ParentMessage.Content)) ? m.ParentMessage.Content : string.Empty,
-                            ParentMessageSenderName = (m.ParentMessage != null && m.ParentMessage.Sender != null) ? m.ParentMessage.Sender.FullName : string.Empty,
-                            DeliveredAt = m.MessageStatuses
-                                .Where(ms => ms.EmployeeId != employeeId)
-                                .Select(ms => ms.DeliveredAt)
-                                .FirstOrDefault(),
-                            ReadAt = m.MessageStatuses
-                                .Where(ms => ms.EmployeeId != employeeId)
-                                .Select(ms => ms.ReadAt)
-                                .FirstOrDefault()
-                        })
-                        .ToList()
                 })
                 .FirstOrDefaultAsync();
+
+            if(convo is not null)
+            {
+                var messages = await GetBaseMessageQuery(m => !m.IsDeleted && m.ConversationId == conversationId, employeeId, 20).ToListAsync();
+                convo.Messages = [.. messages.OrderBy(m => m.CreatedDate)];
+            }
 
             return ApiResponseDto.SuccessStatus(convo);
         }
@@ -231,7 +223,9 @@ namespace HRMS.Application.Services.Chat
                 Content = request.Content,
                 MessageTypeId = messageTypeId == 0 ? 1 : messageTypeId, 
                 ParentMessageId = request.ParentMessageId,
-                IsEdited = false
+                IsEdited = false,
+                CreatedUtcAt = DateTime.UtcNow,
+                UpdatedUtcAt = DateTime.UtcNow
             };
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
@@ -269,8 +263,6 @@ namespace HRMS.Application.Services.Chat
                              && ms.Message.SenderId != employeeId)          // messages SENT BY OTHERS
                 .CountAsync();
         }
-
-
         public async Task<ApiResponseDto> SendMessageAsync(ChatMessageRequestDto request)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
@@ -294,7 +286,8 @@ namespace HRMS.Application.Services.Chat
                 SenderName = message.Sender?.FullName ?? "Unknown",
                 Content = message.Content,
                 ParentMessageId = message.ParentMessageId,
-                CreatedDate = message.CreatedDate,
+                CreatedDate = DateTime.SpecifyKind(message.CreatedUtcAt, DateTimeKind.Utc),
+                CreatedDateUtc = DateTime.SpecifyKind(message.CreatedUtcAt, DateTimeKind.Utc).ToString("o"),
                 DeliveredAt = null,
                 ReadAt = null,
                 ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
@@ -336,7 +329,7 @@ namespace HRMS.Application.Services.Chat
 
             foreach(var messageStatus in statusesToMark)
             {
-                messageStatus.MarkDelivered(DateTime.Now);
+                messageStatus.MarkDelivered(DateTime.UtcNow);
                 _unitOfWork.MessageStatusRepo.Update(messageStatus);
             }
 
@@ -372,12 +365,14 @@ namespace HRMS.Application.Services.Chat
             if (employeeId == 0)
                 return ApiResponseDto.FailureStatus("Failed to mark messages as read.");
 
+            var tillReadUtc = request.TillRead!.Value.AddMilliseconds(1);
+
             // 1) Load message statuses that belong to this employee and are unread
             var statusesToMark = await _unitOfWork.MessageStatusRepo.Table
                 .Where(ms => ms.EmployeeId == employeeId
                              && ms.ReadAt == null
                              && ms.Message != null
-                             && ms.Message.CreatedDate.Date <= request.TillRead!.Value.Date
+                             && ms.Message.CreatedUtcAt <= tillReadUtc
                              && ms.Message.ConversationId == request.ConversationId
                              && ms.Message.SenderId != employeeId)
                 .Include(ms => ms.Message)
@@ -389,10 +384,10 @@ namespace HRMS.Application.Services.Chat
             // 2) Mark all statuses as read
             foreach (var ms in statusesToMark)
             {
-                ms.MarkRead(DateTime.Now);
+                ms.MarkRead(DateTime.UtcNow);
 
                 if (ms.DeliveredAt is null) 
-                    ms.MarkDelivered(DateTime.Now);
+                    ms.MarkDelivered(DateTime.UtcNow);
 
                 _unitOfWork.MessageStatusRepo.Update(ms);
             }

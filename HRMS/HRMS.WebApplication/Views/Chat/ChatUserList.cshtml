@@ -20,8 +20,8 @@
                         if (user.LastMessageDate.HasValue)
                         {
                             dt = user.LastMessageDate.Value.Date == DateTime.Now.Date
-                            ? user.LastMessageDate?.ToString("hh:mm tt")
-                            : user.LastMessageDate?.ToString("yyyy-MM-dd");
+                            ? user.LastMessageDate?.ToLocalTime().ToString("hh:mm tt")
+                            : user.LastMessageDate?.ToLocalTime().ToString("yyyy-MM-dd");
                         }
                     }
                     @dt

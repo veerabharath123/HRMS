@@ -25,6 +25,17 @@ namespace HRMS.WebApplication.Controllers
 
             return View("Chat",chats);
         }
+        public async Task<IActionResult> GetNextMessages([FromBody] NextMessagesRequestDto request)
+        {
+            var response = await _api.PostAsync<List<ChatMessageResponseDto>>("/Chats/GetNextMessages", request, true);
+            var chats = new List<ChatMessageResponseDto>();
+
+            if (response.Success && response.Result is not null)
+                chats = response.Result;
+
+
+            return ReturnPartial("ChatMessages", response);
+        }
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] ChatMessageRequestDto request)
         {

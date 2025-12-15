@@ -25,7 +25,7 @@
         </div>
     </div>
 </div>
-<div class="card-body scrollarea position-relative d-flex flex-column" id="chat-messages">
+<div class="card-body scrollarea position-relative d-flex flex-column" id="chat-messages" data-conversation="@Model.Id">
     @if(Model.Messages.Count == 0)
     {
         <div class="d-col-center">

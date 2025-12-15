@@ -19,7 +19,8 @@ namespace HRMS.Domain.Entites
         public int MessageTypeId { get; set; }     // FK to GeneralReference
 
         public bool IsEdited { get; set; }
-
+        public DateTime CreatedUtcAt { get; set; }
+        public DateTime? UpdatedUtcAt { get; set; }
         // Navigation
         public Conversation? Conversation { get; set; }
         public Employee? Sender { get; set; }
