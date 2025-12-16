@@ -60,9 +60,9 @@ namespace HRMS.Api.Controllers.V1
             return Ok(result);
         }
         [HttpPost("[action]")]
-        public async Task<IActionResult> GetNextMessages([FromBody] NextMessagesRequestDto request)
+        public async Task<IActionResult> GetPreviousMessages([FromBody] NextMessagesRequestDto request)
         {
-            var result = await _chatServices.GetNextMessagesAsync(request);
+            var result = await _chatServices.GetPreviousMessagesAsync(request);
             return Ok(result);
         }
     }

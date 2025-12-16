@@ -37,6 +37,11 @@
         </div>
     }
 
+    <div id="new-message-indicator"
+         class="new-message-indicator d-none">
+        New messages ↓
+    </div>
+
     @foreach (var m in Model.Messages)
     {
         <partial name="ChatMessage" model="m" />

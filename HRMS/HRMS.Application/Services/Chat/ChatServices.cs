@@ -165,7 +165,7 @@ namespace HRMS.Application.Services.Chat
                                     .FirstOrDefault()
                 });
         }
-        public async Task<ApiResponseDto> GetNextMessagesAsync(NextMessagesRequestDto request)
+        public async Task<ApiResponseDto> GetPreviousMessagesAsync(NextMessagesRequestDto request)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
             if (employeeId == 0 || request.ConversationId == 0)

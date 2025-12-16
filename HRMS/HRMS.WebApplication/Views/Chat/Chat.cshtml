@@ -5,6 +5,19 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
+    .new-message-indicator {
+        position: sticky;
+        bottom: 10px;
+        margin: auto;
+        width: fit-content;
+        background: #0d6efd;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        z-index: 10;
+    }
+
     #typing-status{
         display: none ;
     }
@@ -337,6 +350,9 @@
 </div>
 
 <script nonce="@Html.ScriptNonce()">
+    let loading = false;
+    let hasMore = true;
+    let userIsNearBottom = true;
 
     $('#chat-box').on({
         'drop': function (e) {
@@ -370,32 +386,36 @@
         ajaxLoadHtml(
             '@Url.Action("GetChatConversationDetails", "Chat")',
             JSON.stringify({ Id : conversationId } ),
-            '#chat-screen',
+            '#chat-screen', 
             {
-                afterLoad: function(){
-                    $('#chat-box').removeClass('open-chat').addClass('open-chat')
-                    const container = $('#chat-messages')
-                    const message = container.find('.message-section').last()[0];
-
-                    container[0].scrollTop = message.offsetTop;
+                afterLoad: function(container){
+                    hasMore = true;
+                    $('#chat-box').removeClass('open-chat').addClass('open-chat');
+                    scrollToBottom(false);
                     initLazyLoading();
+                    initScrollStateTracking();
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
-                    const lastMessageSection = container.find('.message-section-other').last().find('.message-time');
+                    const lastMessageSection = container.find('.message-section-other').last();
 
-                    if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
-                        const tillReadText = lastMessageSection.data('datetime');
-                        const tillReadDateTime = new Date(tillReadText);
-                        if(isNaN(tillReadDateTime.getTime())) return;
-
-                        updateMessageAsSeen({
-                            ConversationId: conversationId,
-                            TillRead: tillReadDateTime.toISOString()
-                        });
-                    }
+                    checkLastMessageForSeen(lastMessageSection, conversationId);
                 }
             }
         )
     });
+    function checkLastMessageForSeen(lastMessageSection, conversationId){
+        const lastMessageTime = lastMessageSection.find('.message-time');
+
+        if(lastMessageTime.length && lastMessageTime.data('read')?.toLowerCase() === 'false'){
+            const tillReadText = lastMessageTime.data('datetime');
+            const tillReadDateTime = new Date(tillReadText);
+            if(isNaN(tillReadDateTime.getTime())) return;
+
+            updateMessageAsSeen({
+                ConversationId: conversationId,
+                TillRead: tillReadDateTime.toISOString()
+            });
+        }
+    }
     function updateMessageAsSeen(request){
         ajaxPost(
             '@Url.Action("MarkMessageAsRead", "Chat")',
@@ -472,7 +492,7 @@
                     const container = $('#chat-messages')
                     const message = container.find('.message-section').last()[0];
 
-                    container[0].scrollTop = message.offsetTop;
+                    if(userIsNearBottom) scrollToBottom();
                     $('#messageInput').val('').trigger('blur');
 
                     if(!$('#reply-container').hasClass('d-none')) 
@@ -490,27 +510,19 @@
             JSON.stringify(data),
             '#typing-status',
             { 
+                beforeLoad: function(){
+                    $('#new-message-indicator').insertBefore('#typing-status')
+                },
                 afterLoad: function($target){
-                   const container = $('#chat-messages')
-                    const message = container.find('.message-section').last()[0];
+                   const container = $('#chat-messages');
+                    userIsNearBottom ? scrollToBottom() : showNewMessageIndicator();
 
-                    container[0].scrollTop = message.offsetTop;
-
-                    const lastMessageSection = container.find('.message-section-other').last().find('.message-time');
                     $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
 
                     if(!$('#chat-box').hasClass('open-chat')) return;
-                    debugger
-                    if(lastMessageSection.data('read')?.toLowerCase() === 'false'){
-                        const tillReadText = lastMessageSection.data('datetime');
-                        const tillReadDateTime = new Date(tillReadText);
-                        if(isNaN(tillReadDateTime.getTime())) return;
 
-                        updateMessageAsSeen({
-                            ConversationId: data.conversationId,
-                            TillRead: tillReadDateTime.toISOString()
-                        });
-                    }
+                    const lastMessageSection = container.find('.message-section-other').last();
+                    checkLastMessageForSeen(lastMessageSection,data.conversationId )
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -611,7 +623,7 @@
         const container = $('#chat-messages')
         const message = container.find('.message-section').last()[0];
 
-        container[0].scrollTop = message.offsetTop;
+        if(userIsNearBottom) scrollToBottom();
     }
     function updateTypingStatusInChatList(result){
         if(result.isTyping){
@@ -628,15 +640,9 @@
 
     $(document).on("keydown", "#messageInput", function (e) {
         if (e.key === "Enter") {
-
-            if (e.shiftKey) {
-                // SHIFT + ENTER = allow newline
-                return;
-            }
-
-            // ENTER (no shift) → send message
+            if (e.shiftKey) return;
             e.preventDefault();
-            $("#sendBtn").trigger('click');  // or call your send function
+            $("#sendBtn").trigger('click');
         }
     })
 
@@ -648,19 +654,16 @@
             IsTyping: true
         };
 
-        // --- Debounce logic: prevents firing rapidly on every key stroke ---
         clearTimeout(debounceTimer);
         clearTimeout(typingTimeout);
         debounceTimer = setTimeout(() => {
 
-            // If not already typing, send typing start
             if (!isTyping) {
                 isTyping = true;
                 request.IsTyping = true;
                 SendTypingStatus(request);
             }
 
-            // ---- Auto-stop after 3 seconds of no typing ----
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 isTyping = false;
@@ -671,13 +674,12 @@
                 });
             }, typingTimeoutMs);
 
-        }, 300); // debounce delay (300ms is ideal)
+        }, 300);
     });
 
     $(document).on("blur", "#messageInput", function () {
         const conversationId = $(this).parent().attr('id');
 
-        // If user was typing, send stop event
         if (isTyping) {
             isTyping = false;
             SendTypingStatus({
@@ -686,7 +688,6 @@
             });
         }
 
-        // Cleanup timers
         clearTimeout(typingTimeout);
         clearTimeout(debounceTimer);
     });
@@ -697,48 +698,101 @@
             '@Url.Action("SendTypingStatus", "Chat")',
             JSON.stringify(request),
             function(res){
-                // Handle response if needed
+               
             }
         )
     }
-    let loading = false;
+    
 
-    function initLazyLoading(){
+    function initLazyLoading() {
         const chatscreen = $('#chat-messages');
-        chatscreen.off('scroll.lazy').on('scroll.lazy',function(){
-            if (this.scrollTop === 0) {
 
-                debugger
-                getPreviousMessages(chatscreen.data('conversation'))
+        chatscreen.off('scroll.lazy').on('scroll.lazy', function () {
+            if (this.scrollTop <= 5) {
+                getPreviousMessages(chatscreen.data('conversation'));
             }
-        })
+        });
     }
-    function getPreviousMessages(conversationId){
-        debugger
-        if(loading) return;
-        const lastMessageSection = $('#chat-messages').find('.message-section').first().find('.message-time');
+    function getPreviousMessages(conversationId) {
+        if (loading || !hasMore) return;
 
-        if(lastMessageSection.length){
-            const tillReadText = lastMessageSection.data('datetime');
-            const tillReadDateTime = new Date(tillReadText);
-            if(isNaN(tillReadDateTime.getTime())) return;
-            loading= true
-            ajaxLoadHtml(
-                '@Url.Action("GetNextMessages", "Chat")',
-                JSON.stringify({ ConversationId : conversationId, LastMessageTime: tillReadDateTime.toISOString() }),
-                '#chat-messages',
-                {
-                    afterLoad: function(){
-                        console.log('Previous messages loaded');
-                        loading= false
+        const $chat = $('#chat-messages');
+        const firstMessage = $chat.find('.message-section').first();
 
-                        $('#chat-messages')[0].scrollTop = lastMessageSection[0].offsetTop;
-                    },
-                    useDefaultSuccessCallBack : false,
-                    htmlMethod: 'prepend'
+        if (!firstMessage.length) return;
+
+        const timeElem = firstMessage.find('.message-time');
+        const tillReadText = timeElem.data('datetime');
+
+        const tillReadDateTime = new Date(tillReadText);
+        if (isNaN(tillReadDateTime.getTime())) return;
+
+        loading = true;
+
+        const previousScrollHeight = $chat[0].scrollHeight;
+
+        ajaxLoadHtml(
+            '@Url.Action("GetPreviousMessages", "Chat")',
+            JSON.stringify({
+                ConversationId: conversationId,
+                LastMessageTime: tillReadDateTime.toISOString()
+            }),
+            '#chat-messages',
+            {
+                htmlMethod: 'prepend',
+                useDefaultSuccessCallBack: false,
+                afterLoad: function () {
+
+                    const newScrollHeight = $chat[0].scrollHeight;
+                    $chat.scrollTop(newScrollHeight - previousScrollHeight);
+
+                    if ($chat.find('.message-section').first()[0] === firstMessage[0]) {
+                        hasMore = false;
+                    }
+
+                    loading = false;
                 }
-            );
-        }
-        
+            }
+        );
     }
+    
+    const BOTTOM_TOLERANCE = 50; // px
+
+    function initScrollStateTracking() {
+        const chatscreen = $('#chat-messages');
+
+        chatscreen.off('scroll').on('scroll', function() {
+            const distanceFromBottom =
+                chatscreen[0].scrollHeight - chatscreen[0].scrollTop - chatscreen[0].clientHeight;
+
+            userIsNearBottom = distanceFromBottom <= BOTTOM_TOLERANCE;
+
+            // Hide indicator when user scrolls back down
+            if (userIsNearBottom) {
+                hideNewMessageIndicator();
+            }
+        });
+    }
+
+    function scrollToBottom(smooth = true) {
+        const chat = document.getElementById('chat-messages');
+
+        chat.scrollTo({
+            top: chat.scrollHeight,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
+    }
+
+    function showNewMessageIndicator() {
+        const chat = $('#chat-messages');
+        $('#new-message-indicator').removeClass('d-none');
+    }
+
+    function hideNewMessageIndicator() {
+        $('#new-message-indicator').addClass('d-none');
+    }
+    $(document).on('click','#new-message-indicator',function(){
+        scrollToBottom()
+        hideNewMessageIndicator()
+    })
 </script>

@@ -269,6 +269,9 @@ function ajaxLoadHtml(url, data = {}, targetSelector, options = {}) {
         data: data,
         useDefaultSuccessCallBack: false,
         successCallback: function (html) {
+            if (typeof options.beforeLoad === 'function') {
+                options.beforeLoad();
+            }
             // Inject HTML into target container
             if (targetSelector) {
                 const $target = $(targetSelector);
