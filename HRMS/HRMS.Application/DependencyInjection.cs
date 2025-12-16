@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using HRMS.Application.Common.Class;
+using HRMS.Application.Common.Class.Mappings;
 using HRMS.Domain.Constants;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +10,10 @@ namespace HRMS.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            //_ = services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
+            _ = services.AddAutoMapper(cfg =>
+            {
+                cfg.AllowNullCollections = true;
+            }, Assembly.GetExecutingAssembly()); 
 
             DependencyInjectionTypeAttribute? dependencyInjectionTypeAttribute = new(GeneralConstants.DependencyInjectionTypes.Scoped);
             var assembly = Assembly.GetExecutingAssembly();

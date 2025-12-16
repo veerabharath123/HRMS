@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using HRMS.Application.Common.Interface;
-using HRMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
@@ -19,6 +12,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         public EFRepository(ApplicationDbContext context)
         {
             _context = context;
+            _entities ??= _context.Set<TEntity>();
         }
 
         protected string GetFullErrorTextAndRollBackEntityChanges(DbUpdateException exception)
@@ -69,10 +63,9 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             try
             {
-                if (entity == null)
-                    throw new ArgumentNullException(nameof(entity));
+                ArgumentNullException.ThrowIfNull(entity);
 
-                Entities.AddAsync(entity);
+                Entities.Add(entity);
             }
             catch (Exception)
             {
@@ -104,7 +97,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
         }
 
-        public virtual async Task<bool> Delete(TEntity entity)
+        public virtual async Task<bool> Delete(TEntity? entity)
         {
             try
             {
@@ -140,19 +133,19 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
         }
 
-        public virtual async Task<TEntity> Get(object id)
+        public virtual async Task<TEntity?> Get(object id)
         {
             try
             {
                 return await Entities.FindAsync(id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
         }
 
-        public virtual async Task<TEntity> Get(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<TEntity?> GetFirst(Expression<Func<TEntity, bool>> predicate)
         {
             try
             {
@@ -163,10 +156,12 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                 throw;
             }
         }
-        public virtual async Task<int?> GetIdByGuid(Guid guid)
+        public virtual async Task<int?> GetIdByGuid(Guid? guid)
         {
             try
             {
+                if(!guid.HasValue) return null;
+
                 int? id = await Entities
                     .Where(e => EF.Property<Guid>(e, "GuidId") == guid)
                     .Select(e => EF.Property<int>(e, "Id"))
@@ -208,8 +203,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             try
             {
-                if (entity == null)
-                    throw new ArgumentNullException(nameof(entity));
+                ArgumentNullException.ThrowIfNull(entity);
 
                 Entities.Update(entity);
             }
@@ -246,6 +240,5 @@ namespace HRMS.Infrastructure.Persistence.Configuration
         {
             _context.SaveChangesAsync();
         }
-
     }
 }

@@ -1,0 +1,54 @@
+﻿@model IPaginationResponseDto
+@{
+    var page = Model.PageNumber;
+    var totalPages = Model.TotalPages;
+    var showStart = Model.TotalPages > 10 && Model.PageNumber > 10 ? "" : "d-none";
+    var showPrev = Model.PageNumber > 1 ? "" : "d-none";
+    var showNext = Model.PageNumber != Model.TotalPages ? "" : "d-none";
+    var showEnd = (Model.TotalPages - 10) > Model.PageNumber ? "" : "d-none";
+    var hidePagination = Model.TotalPages == 0 ? "d-none" : "";
+}
+<nav aria-label="Page navigation" class="d-flex mb-3">
+    <ul class="pagination justify-content-start shadow w-fit mb-0 @hidePagination">
+
+        <!-- Start -->
+        <li class="page-item @showStart">
+            <a class="page-link page-nav" data-page="1"><i class="bi bi-chevron-double-left"></i></a>
+        </li>
+
+        <!-- Previous -->
+        <li class="page-item @showPrev">
+            <a class="page-link page-nav" data-page="@(page - 1)"><i class="bi bi-chevron-left"></i></a>
+        </li>
+
+        <!-- Page Numbers -->
+        @for (int i = Model.FirstPageToShow; i <= Model.LastPageToShow; i++)
+        {
+            <li class="page-item @(i == page ? "active" : "")">
+                <a class="page-link page-nav page-nums" data-page="@i">@i</a>
+            </li>
+        }
+
+        <!-- Next -->
+        <li class="page-item @showNext">
+            <a class="page-link page-nav" data-page="@(page + 1)"><i class="bi bi-chevron-right"></i></a>
+        </li>
+
+        <!-- End -->
+        <li class="page-item @showEnd">
+            <a class="page-link page-nav" data-page="@totalPages" href="#"><i class="bi bi-chevron-double-right"></i></a>
+        </li>
+    </ul>
+    <span class="d-flex align-items-center ms-2">
+        @if (Model.TotalPages > 0)
+        {
+            @:Page @Model.PageNumber of @Model.TotalPages &nbsp;|&nbsp;
+        }
+
+        @{
+            var resultsText = Model.TotalItems == 1 ? "1 result" : $"{Model.TotalItems} results";
+        }
+
+        Found @resultsText
+    </span>
+</nav>

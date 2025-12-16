@@ -9,7 +9,7 @@ namespace HRMS.SharedKernel.Models.Common.Class
     public class JwtUserDto
     {
         public string UserName { get; set; } = string.Empty;
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public List<string> Roles { get; set; } = [];
     }
 }

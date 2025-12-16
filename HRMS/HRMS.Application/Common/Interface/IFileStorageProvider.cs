@@ -6,6 +6,6 @@ namespace HRMS.Application.Common.Interface
     {
         Task<bool> UploadAsync(string filename, Stream fileStream, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(string filename, CancellationToken cancellationToken = default);
-        Task<Stream?> FetchAsync(string filename, CancellationToken cancellationToken = default);
+        Task<byte[]?> FetchAsync(string filename, CancellationToken cancellationToken = default);
     }
 }

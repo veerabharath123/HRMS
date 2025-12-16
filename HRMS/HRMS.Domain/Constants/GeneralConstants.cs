@@ -28,5 +28,18 @@ namespace HRMS.Domain.Constants
             Word,
             Pdf
         }
+        public enum CachedModules
+        {
+            DepartmentManagement,
+            DesignationManagement,
+            GenderManagement,
+            MaritalStatusManagement,
+        }
+        public enum GeneralReferenceCategories
+        {
+            Gender,
+            MaritalStatus,
+            Relationship,
+        }
     }
 }

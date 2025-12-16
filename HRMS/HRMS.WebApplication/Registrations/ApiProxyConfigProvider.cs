@@ -10,13 +10,10 @@ public class ApiProxyConfigProvider : IProxyConfigProvider
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private volatile IProxyConfig _config;
-    private readonly TimeSpan _refreshInterval;
-    private readonly Timer _timer;
 
     public ApiProxyConfigProvider(IServiceScopeFactory scopeFactory, TimeSpan? refreshInterval = null)
     {
         _scopeFactory = scopeFactory;
-        _refreshInterval = refreshInterval ?? TimeSpan.FromMinutes(1);
 
         // Initialize empty config
         _config = new InMemoryConfig(Array.Empty<RouteConfig>(), Array.Empty<ClusterConfig>());

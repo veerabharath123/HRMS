@@ -15,39 +15,67 @@ namespace HRMS.Infrastructure.Storage.Providers
         }
         public Task<bool> DeleteAsync(string filename, CancellationToken cancellationToken = default)
         {
-            if(File.Exists(filename))
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
             {
-                File.Delete(filename);
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
                 return Task.FromResult(true);
             }
-
-            return Task.FromResult(true);
+            catch
+            {
+                return Task.FromResult(false);
+            }
         }
 
-        public Task<Stream?> FetchAsync(string filename, CancellationToken cancellationToken = default)
+        public async Task<byte[]?> FetchAsync(string filename, CancellationToken cancellationToken = default)
         {
-            if(File.Exists(filename)) {
-                using Stream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-                return Task.FromResult<Stream?>(fileStream);
+            try
+            {
+                if (File.Exists(filename))
+                {
+                    return await File.ReadAllBytesAsync(filename, cancellationToken);
+                }
+
+                return null;
             }
-            return Task.FromResult<Stream?>(null);
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public bool FileExists(string path) => File.Exists(path);
         public void CreateDirectory(string path) => Directory.CreateDirectory(path);
         public bool DirectoryExists(string path) => Directory.Exists(path);
 
-        public Task<bool> UploadAsync(string filename, Stream fileStream, CancellationToken cancellationToken = default)
+        public async Task<bool> UploadAsync(string filename, Stream fileStream, CancellationToken cancellationToken = default)
         {
             try
             {
-                using var localFileStream = new FileStream(filename, FileMode.Create, FileAccess.Write);
-                fileStream.CopyTo(localFileStream);
-                return Task.FromResult(true);
+                await using var localFileStream = new FileStream(
+                    filename,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    options: FileOptions.Asynchronous);
+
+                await fileStream.CopyToAsync(localFileStream, cancellationToken);
+
+                return true;
             }
-            catch(Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            catch (OperationCanceledException)
             {
-                return Task.FromResult(false);
+                throw;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                return false;
             }
         }
     }

@@ -1,6 +1,8 @@
 ﻿using HRMS.WebApplication.Class;
+using HRMS.WebApplication.Class.BreadCrumbs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
@@ -16,15 +18,18 @@ namespace HRMS.WebApplication.Registrations
                 serverOptions.AddServerHeader = false;
             });
             
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+            });
             builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
             builder.Services.AddAuthentication("AuthCookie")
             .AddCookie("AuthCookie", options =>
             {
                 options.Cookie.Name = "AuthCookie";
-                options.LoginPath = "/Login/Login";
-                options.AccessDeniedPath = "/Login/AccessDenied";
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
             builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -44,6 +49,8 @@ namespace HRMS.WebApplication.Registrations
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+            builder.Services.AddScoped<IBreadcrumbCache, SessionBreadcrumbCache>();
+            builder.Services.AddScoped<BreadcrumbManager>();
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
                 options.MinimumSameSitePolicy = SameSiteMode.Strict;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HRMS.SharedKernel.Models.Common.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HRMS.SharedKernel.Models.Response
 {
-    public class PaginationResponseDto<T>
+    public class PaginationResponseDto<T> : IPaginationResponseDto
     {
         public int TotalItems { get; set; }         
         public int PageNumber { get; set; }         

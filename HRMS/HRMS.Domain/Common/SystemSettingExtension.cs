@@ -12,7 +12,7 @@ namespace HRMS.Domain.Common
     {
         public static T? GetSystemSetting<T>(this IEnumerable<SystemSettings> systemSettings, string settingName, T? defaultValue = default)
         {
-            var setting = systemSettings.FirstOrDefault(s => s.SettingName  == settingName);
+            var setting = systemSettings.FirstOrDefault(s => s.SettingKey == settingName);
 
             if (setting == null || string.IsNullOrWhiteSpace(setting.SettingValue))
                 return defaultValue;

@@ -13,6 +13,19 @@ namespace HRMS.Application.Common.Interface
         DbSet<StoredFiles> StoredFiles { get; set; }
         DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
         DbSet<SystemSettings> SystemSettings { get; set; }
-
+        DbSet<EmployeeGuardian> EmployeeGuardian { get; set; }
+        DbSet<EmployeeContact> EmployeeContact { get; set; }
+        DbSet<Employee> Employee { get; set; }
+        DbSet<Designation> Designation { get; set; }
+        DbSet<Department> Department { get; set; }
+        DbSet<GeneralReference> GeneralReference { get; set; }
+        DbSet<ModuleType> ModuleType { get; set; }
+        DbSet<ConversationType> ConversationTypes { get; set; }
+        DbSet<Conversation> Conversations { get; set; }
+        DbSet<ConversationParticipants> ConversationParticipants { get; set; }
+        DbSet<Message> Messages { get; set; }
+        DbSet<MessageStatus> MessageStatus { get; set; }
+        DbSet<Attachment> Attachments { get; set; }
+        DbSet<ConversationMember> ConversationMembers { get; set; }
     }
 }

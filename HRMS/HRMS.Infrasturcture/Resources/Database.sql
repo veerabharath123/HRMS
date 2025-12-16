@@ -1,5 +1,6 @@
 --#region SP : CheckIfTableExists
 
+
 IF OBJECT_ID('dbo.CheckIfTableExists', 'P') IS NOT NULL
     DROP PROCEDURE dbo.CheckIfTableExists;
 GO
@@ -172,6 +173,7 @@ create table FileLocationConfigurations
 	GuidId  uniqueidentifier default newid() not null,
 	ConfigName varchar(100) not null,
 	ConfigJson varchar(max) not null,
+	ProviderType varchar(50) not null,
 	IsActive    bit default 1,
 
 	CreatedDate datetime  not null  default getdate(),
@@ -180,6 +182,10 @@ create table FileLocationConfigurations
 	UpdatedUser varchar(50)   default '',
 	IsDeleted bit default 0
 );
+
+drop table FileLocationConfigurations
+
+select * from SystemSettings
 
 create table SystemSettings
 (
@@ -197,7 +203,295 @@ create table SystemSettings
 	IsDeleted bit default 0
 );
 
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'GeneralReference';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE GeneralReference (
+		Id INT IDENTITY(1,1) PRIMARY KEY,         -- internal key for joins
+		GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(), -- external reference
+
+		Category VARCHAR(50) NOT NULL,            -- e.g., 'Gender', 'MaritalStatus'
+		Code VARCHAR(20) NOT NULL DEFAULT '',                -- e.g., 'M', 'SINGLE'
+		[Value] VARCHAR(20) NOT NULL,
+		Description VARCHAR(100) DEFAULT '',        -- e.g., 'Male', 'Single'
+		IsActive BIT NOT NULL DEFAULT 1,
+		SortOrder INT DEFAULT 0,
+		
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'Department';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE Department (
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+		Name VARCHAR(100) NOT NULL,
+		Code VARCHAR(20),
+		Description VARCHAR(200),
+		IsActive BIT DEFAULT 1,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'Designation';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE Designation (
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+		Name VARCHAR(100) NOT NULL,
+		DepartmentId INT NULL FOREIGN KEY REFERENCES Department(Id),
+		Description VARCHAR(200),
+		IsActive BIT DEFAULT 1,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+
+END
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'Employee';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	create table Employee
+	(
+		Id      int primary key identity(1,1),
+		GuidId  uniqueidentifier default newid() not null,
+
+		--personal details
+		LastName    varchar(50) not null,
+		MiddleName    varchar(50) not null,
+		FirstName    varchar(50) not null,
+		BirthDate   datetime not null,
+		GenderId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
+		MaritalStatusId INT NULL FOREIGN KEY REFERENCES GeneralReference(Id),
+		PhotoPictureId INT NULL FOREIGN KEY REFERENCES StoredFiles(Id),
+		Bio VARCHAR(1000) NULL,
+		Email varchar(100) not null default '',
+
+		--organizational details
+		
+		DepartmentId    int FOREIGN KEY REFERENCES Department(Id),
+		DesignationId   int FOREIGN KEY REFERENCES Designation(Id),
+		JoiningDate datetime not null,
+		RelievingDate datetime null,
+		ResignationDate datetime null,
+		ReportingManagerId INT NULL FOREIGN KEY REFERENCES Employee(Id),
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+select * from users
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'EmployeeContact';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE EmployeeContact (
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		GuidId  uniqueidentifier default newid() not null,
+
+		EmployeeId INT NOT NULL FOREIGN KEY REFERENCES Employee(Id),
+		ContactTypeId INT NOT NULL FOREIGN KEY REFERENCES GeneralReference(Id), -- e.g., Mobile, Email
+		ContactValue VARCHAR(100) NOT NULL,
+		[Description] VARCHAR(255),
+		IsPrimary BIT DEFAULT 0,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'EmployeeAddress';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE EmployeeAddress (
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		GuidId  uniqueidentifier default newid() not null,
+
+		EmployeeId INT NOT NULL FOREIGN KEY REFERENCES Employee(Id),
+		AddressTypeId INT NOT NULL FOREIGN KEY REFERENCES GeneralReference(Id), -- e.g., Permanent, Present
+		AddressLine1 VARCHAR(100) NOT NULL,
+		AddressLine2 VARCHAR(100),
+		City VARCHAR(50),
+		State VARCHAR(50),
+		Country VARCHAR(50),
+		PostalCode VARCHAR(10),
+    
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
+GO
+
+DECLARE @Exists BIT;
+DECLARE @Table NVARCHAR(128) = 'EmployeeGuardian';
+
+EXEC dbo.CheckIfTableExists
+@TableName = @Table,
+@IsExists = @Exists OUTPUT
+
+IF(@Exists = 0)
+BEGIN 
+
+	CREATE TABLE EmployeeGuardian
+	(
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		GuidId  uniqueidentifier default newid() not null,
+
+		EmployeeId INT NOT NULL FOREIGN KEY REFERENCES Employee(Id),
+		[Name] VARCHAR(100) NOT NULL,
+		RelationshipId INT NOT NULL FOREIGN KEY REFERENCES GeneralReference(Id), -- Father, Mother, Guardian, etc.
+		Phone VARCHAR(20) NULL,
+		Email VARCHAR(100) NULL,
+
+		CreatedDate datetime  not null  default getdate(),
+		CreatedUser varchar(50) not null  default '',
+		UpdatedDate datetime     default getdate(),
+		UpdatedUser varchar(50)   default '',
+		IsDeleted bit default 0
+	);
+
+END
+
 --#endregion
+
+--# region Insert/Update SP
+
+IF OBJECT_ID('dbo.InsertSystemSettingIfNotExists', 'P') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.InsertSystemSettingIfNotExists;
+END
+GO
+
+CREATE PROCEDURE dbo.InsertSystemSettingIfNotExists
+    @SettingKey VARCHAR(100),
+    @SettingValue VARCHAR(MAX),
+    @SettingDescription VARCHAR(500) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM SystemSettings
+        WHERE SettingKey = @SettingKey
+          AND IsDeleted = 0
+    )
+    BEGIN
+        INSERT INTO SystemSettings 
+            (GuidId, SettingKey, SettingValue, [Description], IsActive, CreatedUser, IsDeleted)
+        VALUES
+            (
+                NEWID(), 
+                @SettingKey, 
+                @SettingValue, 
+                ISNULL(@SettingDescription, ''), 
+                1, 
+                'System', 
+                0
+            );
+    END
+   ELSE PRINT 'Setting: ''' + @SettingKey + ''' already exists.'
+END
+GO
+
+--#endregion Insert/Update SP
+
+EXEC InsertSystemSettingIfNotExists 
+'FileStorageLocation', 
+'1', 
+'File storage location id';
+	
+	truncate table FileLocationConfigurations;
+	select * from FileLocationConfigurations;
 
 IF NOT EXISTS (
     SELECT 1
@@ -207,7 +501,370 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO FileLocationConfigurations 
+        (GuidId, ConfigName, ConfigJson,ProviderType, IsActive, CreatedUser, IsDeleted)
+    VALUES
+        (NEWID(), 'S3BucketConfig', '{"BucketName":"HRMSAPP","AccessKeyId":"005cb40cb0898000000000002","SecretKey":"K005v5PTs8iqSgO1kne3ngkpVBPwCS4","ServiceUrl":"https://s3.us-east-005.backblazeb2.com","Region":"us-east-005" }','S3', 1, 'System', 0);
+END
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM FileLocationConfigurations
+    WHERE ConfigName = 'FtpLocalConfig'
+      AND IsDeleted = 0
+)
+BEGIN
+    INSERT INTO FileLocationConfigurations 
         (GuidId, ConfigName, ConfigJson, IsActive, CreatedUser, IsDeleted)
     VALUES
-        (NEWID(), 'S3BucketConfig', '{\n  bucket: \"HRMSAPP\",\n  key: \"HRMSAPPKEY\",\n  secret: \"K005v5PTs8iqSgO1kne3ngkpVBPwCS4\",\n  serviceurl: \"s3.us-east-005.backblazeb2.com\"\n}', 1, 'System', 0);
+        (NEWID(), 'FtpLocalConfig', '{"FtpBaseUrl":"hrmsftp.local","FtpUsername":"VeeraBharath","FtpPassword":"ftppswd001", "ProviderType":"Ftp"}', 1, 'System', 0);
 END
+
+IF OBJECT_ID('dbo.GeneralReference', 'U') IS NOT NULL
+BEGIN
+    TRUNCATE TABLE dbo.GeneralReference;
+
+    -- GENDER
+    INSERT INTO dbo.GeneralReference (Category, Code, [Value], Description, SortOrder, CreatedUser)
+    VALUES
+    ('Gender', 'M', 'Male', 'Male gender', 1, 'System'),
+    ('Gender', 'F', 'Female', 'Female gender', 2, 'System'),
+    ('Gender', 'O', 'Other', 'Other / Non-binary', 3, 'System');
+
+    -- MARITAL STATUS
+    INSERT INTO dbo.GeneralReference (Category, Code, [Value], Description, SortOrder, CreatedUser)
+    VALUES
+    ('MaritalStatus', 'S', 'Single', 'Unmarried', 1, 'System'),
+    ('MaritalStatus', 'M', 'Married', 'Married', 2, 'System'),
+    ('MaritalStatus', 'D', 'Divorced', 'Legally divorced', 3, 'System'),
+    ('MaritalStatus', 'W', 'Widowed', 'Widowed', 4, 'System');
+
+	-- RELATIONSHIP STATUS
+	INSERT INTO dbo.GeneralReference (Category, Code, [Value], Description, IsActive, SortOrder, CreatedUser)
+    VALUES
+    ('Relationship', 'FATHER', 'Father', 'Biological or adoptive father', 1, 1, 'System'),
+    ('Relationship', 'MOTHER', 'Mother', 'Biological or adoptive mother', 1, 2, 'System'),
+    ('Relationship', 'GUARDIAN', 'Guardian', 'Legal guardian or caretaker', 1, 3, 'System'),
+    ('Relationship', 'SPOUSE', 'Spouse', 'Husband or wife', 1, 4, 'System'),
+    ('Relationship', 'CHILD', 'Child', 'Son or daughter', 1, 5, 'System'),
+    ('Relationship', 'OTHER', 'Other', 'Any other relationship', 1, 6, 'System');
+END
+
+GO
+
+ALTER TABLE dbo.Designation NOCHECK CONSTRAINT ALL;
+
+IF OBJECT_ID('dbo.Department', 'U') IS NOT NULL
+BEGIN
+    DELETE FROM dbo.Department;
+
+    INSERT INTO dbo.Department (Name, Code, Description, IsActive, CreatedUser)
+    VALUES
+    ('Human Resources', 'HR', 'Handles recruitment, payroll, and employee relations', 1, 'System'),
+    ('Finance', 'FIN', 'Manages company finances, budgets, and accounts', 1, 'System'),
+    ('Information Technology', 'IT', 'Develops and maintains software and infrastructure', 1, 'System'),
+    ('Quality Assurance', 'QA', 'Ensures product quality through testing', 1, 'System'),
+    ('Operations', 'OPS', 'Oversees daily operational activities', 1, 'System'),
+    ('Management', 'MGMT', 'Project ownership and leadership', 1, 'System');
+END
+ELSE
+BEGIN
+    PRINT 'Table [dbo].[Department] does not exist.';
+END;
+
+IF OBJECT_ID('dbo.Designation', 'U') IS NOT NULL
+BEGIN
+    DELETE FROM dbo.Designation;
+
+    INSERT INTO dbo.Designation (Name, DepartmentId, Description, IsActive, CreatedUser)
+    SELECT 'HR Manager', Id, 'Leads HR Department', 1, 'System' FROM dbo.Department WHERE Code = 'HR'
+    UNION ALL
+    SELECT 'Recruiter', Id, 'Handles candidate recruitment and onboarding', 1, 'System' FROM dbo.Department WHERE Code = 'HR'
+    UNION ALL
+    SELECT 'Finance Manager', Id, 'Manages accounting and budgets', 1, 'System' FROM dbo.Department WHERE Code = 'FIN'
+    UNION ALL
+    SELECT 'Accountant', Id, 'Maintains financial records', 1, 'System' FROM dbo.Department WHERE Code = 'FIN'
+    UNION ALL
+    SELECT 'Software Developer', Id, 'Develops and maintains applications and systems', 1, 'System' FROM dbo.Department WHERE Code = 'IT'
+    UNION ALL
+    SELECT 'Team Lead', Id, 'Leads the development team', 1, 'System' FROM dbo.Department WHERE Code = 'IT'
+    UNION ALL
+    SELECT 'System Administrator', Id, 'Maintains IT infrastructure and networks', 1, 'System' FROM dbo.Department WHERE Code = 'IT'
+    UNION ALL
+    SELECT 'QA Engineer', Id, 'Tests applications for quality and performance', 1, 'System' FROM dbo.Department WHERE Code = 'QA'
+    UNION ALL
+    SELECT 'QA Lead', Id, 'Leads QA team and testing strategies', 1, 'System' FROM dbo.Department WHERE Code = 'QA'
+    UNION ALL
+    SELECT 'Operations Executive', Id, 'Monitors and supports daily operations', 1, 'System' FROM dbo.Department WHERE Code = 'OPS'
+    UNION ALL
+    SELECT 'Operations Manager', Id, 'Leads operations and logistics', 1, 'System' FROM dbo.Department WHERE Code = 'OPS'
+    UNION ALL
+    SELECT 'Project Manager', Id, 'Manages project scope, timeline, and resources', 1, 'System' FROM dbo.Department WHERE Code = 'MGMT'
+    UNION ALL
+    SELECT 'Project Owner', Id, 'Owns and oversees project delivery', 1, 'System' FROM dbo.Department WHERE Code = 'MGMT'
+    UNION ALL
+    SELECT 'Team Lead', Id, 'Leads team members and coordinates with management', 1, 'System' FROM dbo.Department WHERE Code = 'MGMT';
+END
+ELSE
+BEGIN
+    PRINT 'Table [dbo].[Designation] does not exist.';
+END;
+
+ALTER TABLE dbo.Designation WITH CHECK CHECK CONSTRAINT ALL;
+
+DROP TABLE ModuleType;
+
+CREATE TABLE ModuleType (
+	Id Int IDENTITY(1,1) PRIMARY KEY,
+	GuidId  uniqueidentifier default newid() not null,
+
+	[Name] NVARCHAR(50) NOT NULL UNIQUE ,
+	Module NVARCHAR(50) NOT NULL,
+	IconName NVARCHAR(100) NOT NULL,
+	[Action] NVARCHAR(100),
+	Controller NVARCHAR(100),
+	[Description] NVARCHAR(255),
+	ParentModuleId INT NULL FOREIGN KEY REFERENCES ModuleType(Id),
+	HasChildren bit default 0,
+	ListOrder INT NOT NULL,
+
+	CreatedDate datetime  not null  default getdate(),
+	CreatedUser varchar(50) not null  default '',
+	UpdatedDate datetime     default getdate(),
+	UpdatedUser varchar(50)   default '',
+	IsDeleted bit default 0
+);
+
+IF OBJECT_ID('dbo.ModuleType', 'U') IS NOT NULL
+BEGIN
+    DELETE FROM dbo.ModuleType;
+
+    INSERT INTO dbo.ModuleType (Name, Module, IconName, [Action], Controller,CreatedUser ,ListOrder, ParentModuleId, HasChildren)
+    VALUES
+    ('Dashboard', 'Dashboard', 'bi bi-speedometer2','Index','Home', 'System',1, null, 0),
+    ('Chats', 'Chats', 'bi bi-chat-dots','Chats','Chat', 'System',2, null, 0),
+	('Employees', 'Employees', 'bi bi-person-fill','GetEmployees','Employee', 'System', 3, null, 0),
+	('Leave Management', 'Leave Management', 'bi bi-calendar3','Index','Home', 'System', 4, null, 0),
+	('Maintenance', 'Maintenance', 'bi bi-house-gear-fill','Index','Maintenance', 'System', 6, null,1),
+	('Payrolls', 'Payrolls', 'bi bi-cash-coin','Index','Home', 'System', 5, null, 0);
+
+	INSERT INTO dbo.ModuleType (Name, Module, IconName, [Action], Controller,CreatedUser ,ListOrder, ParentModuleId)
+    VALUES
+	('Users', 'Maintenance', 'bi bi-people-fill','UsersMaintenance','Maintenance', 'System', 1, (select top 1 Id from ModuleType where [Name] = 'Maintenance')),
+	('Authorizations', 'Maintenance', 'bi bi-person-fill-lock','AuthorizationsMaintenance','Maintenance', 'System', 2, (select top 1 Id from ModuleType where [Name] = 'Maintenance'));
+END
+ELSE
+BEGIN
+    PRINT 'Table [dbo].[ModuleType] does not exist.';
+END;
+
+select * from ModuleType
+
+
+
+-- =============================================
+-- DROP TABLES (Order is important due to FK)
+-- =============================================
+IF OBJECT_ID('Attachments', 'U') IS NOT NULL DROP TABLE Attachments;
+IF OBJECT_ID('MessageStatus', 'U') IS NOT NULL DROP TABLE MessageStatus;
+IF OBJECT_ID('Messages', 'U') IS NOT NULL DROP TABLE Messages;
+IF OBJECT_ID('ConversationParticipants', 'U') IS NOT NULL DROP TABLE ConversationParticipants;
+IF OBJECT_ID('Conversations', 'U') IS NOT NULL DROP TABLE Conversations;
+IF OBJECT_ID('ConversationTypes', 'U') IS NOT NULL DROP TABLE ConversationTypes;
+
+CREATE TABLE ConversationTypes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+    Name NVARCHAR(50) NOT NULL UNIQUE,
+    Description NVARCHAR(255),
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE Conversations (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+    Name NVARCHAR(200),
+
+    Type INT NOT NULL,  -- FK -> ConversationTypes
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_Conversations_ConversationTypes 
+        FOREIGN KEY (Type) REFERENCES ConversationTypes(Id)
+            ON DELETE NO ACTION
+);
+
+CREATE INDEX IX_Conversations_UpdatedDate 
+ON Conversations (UpdatedDate);
+
+CREATE TABLE ConversationParticipants (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+	GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+    ConversationId INT NOT NULL,
+    EmployeeId INT NOT NULL,
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_ConversationParticipants_Conversations
+        FOREIGN KEY (ConversationId) REFERENCES Conversations(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_ConversationParticipants_Employee
+        FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT UQ_ConversationParticipants UNIQUE (ConversationId, EmployeeId)
+);
+
+CREATE TABLE Messages (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+    ConversationId INT NOT NULL,
+    SenderId INT NOT NULL,
+    ParentMessageId INT NULL,
+
+    Content NVARCHAR(MAX),
+    MessageTypeId INT NOT NULL,
+
+    IsEdited BIT NOT NULL DEFAULT 0,
+	CreatedUtcAt DATETIME2 NOT NULL,
+	UpdatedUtcAt DATETIME2,
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_Messages_Conversations
+        FOREIGN KEY (ConversationId) REFERENCES Conversations(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_Messages_Employee
+        FOREIGN KEY (SenderId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Messages_MessageTypes
+        FOREIGN KEY (MessageTypeId) REFERENCES GeneralReference(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Messages_ParentMessage
+        FOREIGN KEY (ParentMessageId) REFERENCES Messages(Id)
+            ON DELETE NO ACTION
+);
+
+CREATE INDEX IX_Messages_ConversationId_CreatedDate
+ON Messages (ConversationId, CreatedUtcAt);
+
+
+CREATE TABLE MessageStatus (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+    MessageId INT NOT NULL,
+    EmployeeId INT NOT NULL,
+
+    DeliveredAt DATETIME2 NULL,
+    ReadAt DATETIME2 NULL,
+	CreatedUtcAt DATETIME2 NOT NULL,
+	UpdatedUtcAt DATETIME2,
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_MessageStatus_Messages
+        FOREIGN KEY (MessageId) REFERENCES Messages(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_MessageStatus_Employee
+        FOREIGN KEY (EmployeeId) REFERENCES Employee(Id)
+            ON DELETE NO ACTION,
+
+    CONSTRAINT UQ_MessageStatus UNIQUE (MessageId, EmployeeId)
+);
+
+CREATE TABLE Attachments (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+	GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+
+    MessageId INT NOT NULL,
+    FileId INT NOT NULL,
+
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    UpdatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedUser VARCHAR(50) NOT NULL DEFAULT '',
+    IsDeleted BIT NOT NULL DEFAULT 0,
+
+    CONSTRAINT FK_Attachments_Messages
+        FOREIGN KEY (MessageId) REFERENCES Messages(Id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT FK_Attachments_File
+        FOREIGN KEY (FileId) REFERENCES StoredFiles(Id)
+            ON DELETE NO ACTION
+);
+
+CREATE INDEX IX_Attachments_MessageId
+ON Attachments (MessageId);
+
+DELETE FROM Attachments;
+DELETE FROM MessageStatus;
+DELETE FROM Messages;
+DELETE FROM ConversationParticipants;
+DELETE FROM Conversations;
+DELETE FROM ConversationTypes;
+
+INSERT INTO ConversationTypes (Name, Description, CreatedUser)
+VALUES
+    ('Direct', 'One-to-one conversation', 'system'),
+    ('Group', 'Group conversation', 'system'),
+    ('System', 'System-generated thread', 'system');
+
+	INSERT INTO dbo.GeneralReference (Category, Code, [Value], Description, SortOrder, CreatedUser)
+    VALUES
+    ('MessageType', 'T', 'Text', 'Plain text message', 1, 'System'),
+    ('MessageType', 'I', 'Image', 'Image file message', 2, 'System'),
+    ('MessageType', 'F', 'File', 'File attachment message', 3, 'System'),
+    ('MessageType', 'S', 'System', 'System notification', 4, 'System');
+
+
+
+select * from employee
+select * from users
+
+select e.FirstName, e.LastName, u.Email from employee e
+join users u on e.Id = u.EmployeeId
+
+update Users set EmployeeId = 4
+where Id = 1
+
+update MessageStatus set ReadAt = null
+
+select * from [Messages] m
+join MessageStatus ms on m.Id = ms.MessageId
+where 
+
+m.ConversationId = 1 and m.CreatedDate <= GETDATE()
+and ms.EmployeeId = 2 and m.SenderId <> 2 --and ms.ReadAt is null
+
+truncate table  Messages
+
+sel

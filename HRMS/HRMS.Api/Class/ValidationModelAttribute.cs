@@ -24,7 +24,7 @@ namespace HRMS.Api.Class
 
                 await LogValidationErrorAsync(errorsList);
 
-                var response = ApiResponseDto<object?>.CustomStatus(StatusCodes.Status400BadRequest, false, null, "Validation failed");
+                var response = ApiResponseDto.CustomStatus(StatusCodes.Status400BadRequest, false, null, "Validation failed");
 
                 context.Result = new BadRequestObjectResult(response);
 

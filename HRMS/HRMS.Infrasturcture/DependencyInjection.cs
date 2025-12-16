@@ -1,13 +1,14 @@
 ﻿using AspNetCore.ReCaptcha;
 using HRMS.Application.Common.Interface;
-using HRMS.Infrastructure.Email;
-using HRMS.Infrastructure.FileLogging;
-using HRMS.Infrastructure.ImageCompressor;
-using HRMS.Infrastructure.Jwt;
+using HRMS.Infrastructure.Caching.MemoryCaching;
+using HRMS.Infrastructure.Communication.Email;
+using HRMS.Infrastructure.Communication.Messaging.ConnectionManager;
+using HRMS.Infrastructure.Logging;
+using HRMS.Infrastructure.MediaProcessing.ImageCompressor;
 using HRMS.Infrastructure.Persistence;
 using HRMS.Infrastructure.Persistence.Configuration;
-using HRMS.Infrastructure.Recaptcha;
-using HRMS.Infrastructure.Sockets.ConnectionManager;
+using HRMS.Infrastructure.Security.Jwt;
+using HRMS.Infrastructure.Security.Recaptcha;
 using HRMS.Infrastructure.Storage.Factory;
 using HRMS.SharedKernel.Attributes;
 using HRMS.SharedKernel.Models.Common.Class;
@@ -36,10 +37,11 @@ namespace HRMS.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             return services
+                .AddSingleton<ICacheService, MemoryCacheService>()
                 .AddScoped<IJwtTokenServices, JwtTokenServices>()
                 .AddScoped<IFileStorageFactory, FileStorageFactory>()
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()
-                .AddScoped<IDocumentGenerator, DocumentGenerator.DocumentGenerator>()
+                .AddScoped<IDocumentGenerator, Document.DocumentGenerator.DocumentGenerator>()
                 .AddScoped<IImageCompressor, SkiaSharpCompressor>()
                 .AddScoped<IEmailServices, MailkitServices>()
                 .AddAppConfigs(configuration)

@@ -8,7 +8,7 @@ namespace HRMS.SharedKernel.Models.Common.Class
 {
     public class BaseRefDto
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 }

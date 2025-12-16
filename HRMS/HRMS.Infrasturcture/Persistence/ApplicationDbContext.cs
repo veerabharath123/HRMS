@@ -4,6 +4,7 @@ using HRMS.Domain.Entites;
 using HRMS.Infrastructure.Persistence.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HRMS.Infrastructure.Persistence
 {
@@ -25,6 +26,22 @@ namespace HRMS.Infrastructure.Persistence
         public DbSet<StoredFiles> StoredFiles { get; set; }
         public DbSet<FileLocationConfigurations> FileLocationConfigurations { get; set; }
         public DbSet<SystemSettings> SystemSettings { get; set; }
+        public DbSet<EmployeeGuardian> EmployeeGuardian { get; set; }
+        public DbSet<EmployeeContact> EmployeeContact { get; set; }
+        public DbSet<Employee> Employee { get; set; }
+        public DbSet<Designation> Designation { get; set; }
+        public DbSet<Department> Department { get; set; }
+        public DbSet<GeneralReference> GeneralReference { get; set; }
+        public DbSet<ModuleType> ModuleType { get; set; }
+
+        // Chat related
+        public DbSet<ConversationType> ConversationTypes { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationParticipants> ConversationParticipants { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<MessageStatus> MessageStatus { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
+        public DbSet<ConversationMember> ConversationMembers { get; set; }
 
         public Task<int> SaveChangesAsync()
         {
@@ -32,7 +49,7 @@ namespace HRMS.Infrastructure.Persistence
 
             foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
             {
-                if (string.IsNullOrWhiteSpace(user))
+                if (!string.IsNullOrWhiteSpace(user))
                 {
                     switch (entry.State)
                     {
@@ -54,7 +71,7 @@ namespace HRMS.Infrastructure.Persistence
             if (user == null || user.Identity is null || !user.Identity.IsAuthenticated)
                 return string.Empty;
 
-            var username = user.FindFirst("Username");
+            var username = user.FindFirst(ClaimTypes.Name);
 
             return username?.Value ?? string.Empty;
         }
@@ -62,7 +79,7 @@ namespace HRMS.Infrastructure.Persistence
         private void SetAuditFieldsCreated(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
             entry1.Entity.CreatedUser = user;
-            entry1.Entity.CreatedDate = _currentDateTime.Date;
+            entry1.Entity.CreatedDate = _currentDateTime;
             SetAuditFieldsModified(entry1, user);
 
 
@@ -70,7 +87,7 @@ namespace HRMS.Infrastructure.Persistence
         private void SetAuditFieldsModified(Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<IAuditableEntity> entry1, string user)
         {
             entry1.Entity.UpdatedUser = user;
-            entry1.Entity.UpdatedDate = _currentDateTime.Date;
+            entry1.Entity.UpdatedDate = _currentDateTime;
         }
 
 

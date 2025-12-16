@@ -46,7 +46,7 @@ namespace HRMS.Api.Controllers.V1
 
             var proxyConfig = new ProxyConfigResponseDto { Routes = routes, Clusters = clusters };
 
-            return Ok(ApiResponseDto<ProxyConfigResponseDto>.SuccessStatus(proxyConfig));
+            return Ok(ApiResponseDto.SuccessStatus(proxyConfig));
         }
 
     }

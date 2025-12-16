@@ -18,6 +18,7 @@ namespace HRMS.Domain.Entites
         public DateTime? OtpDateTime { get; private set; }
         public bool FirstTime { get; private set; }
         public bool IsActive { get; private set; }
+        public int? EmployeeId { get; private set; }
 
         public void Add(UserAddOrUpdateRec rec)
         {

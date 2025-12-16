@@ -1,14 +1,12 @@
-﻿using HRMS.SharedKernel.Models.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using HRMS.SharedKernel.Models.Request;
+using HRMS.SharedKernel.Models.Response;
 
 namespace HRMS.Application.Services.File
 {
     public interface IFileServices
     {
-        Task<ApiResponseDto<bool>> ProcessFileMaintenanceAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponseDto> ProcessFileMaintenanceAsync(CancellationToken cancellationToken = default);
+        Task<ApiResponseDto> UploadFileAsync(FileRequestDto request);
+        Task<string> GetFileByStoredFileIdAsync(int storedFileId);
     }
 }

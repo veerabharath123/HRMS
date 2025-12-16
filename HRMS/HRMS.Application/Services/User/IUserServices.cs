@@ -5,15 +5,16 @@ namespace HRMS.Application.Services
 {
     public interface IUserServices
     {
-        Task<ApiResponseDto<bool>> InsertUserAsync(UserInsertRequestDto request);
-        Task<List<string>> GetPermissionsByUserIdAsync(Guid Id);
+        Task<ApiResponseDto> InsertUserAsync(UserInsertRequestDto request);
+        Task<List<string>> GetPermissionsByUserIdAsync(int Id);
 
-        Task<ApiResponseDto<LoginResponseDto>> ValidateUserLoginAsync(LoginRequestDto request);
-        Task<ApiResponseDto<FileResponseDto>> GetDocument();
-        Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request);
-        Task<ApiResponseDto<LoginResponseDto>> SignUpUserAsync(UserInsertRequestDto request);
-        Task<ApiResponseDto<bool>> SendMessageByUser(MessageRequestDto request);
+        Task<ApiResponseDto> ValidateUserLoginAsync(LoginRequestDto request);
+        Task<ApiResponseDto> GetDocument();
+        Task<ApiResponseDto> UploadImage(FileRequestDto request);
+        Task<ApiResponseDto> SignUpUserAsync(UserInsertRequestDto request);
+        Task<ApiResponseDto> SendMessageByUser(MessageRequestDto request);
 
-        Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync();
+        Task<ApiResponseDto> GetUsersAsync();
+        Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request);
     }
 }

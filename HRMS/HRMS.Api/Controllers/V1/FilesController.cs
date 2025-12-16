@@ -1,13 +1,17 @@
-﻿using HRMS.Application.Services.File;
+﻿using Asp.Versioning;
+using HRMS.Application.Services.File;
 using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HRMS.Api.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Authorize]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class FilesController : ControllerBase
     {
         private readonly IFileServices _fileServices;
@@ -19,12 +23,12 @@ namespace HRMS.Api.Controllers.V1
         public async Task<IActionResult> GetLanguageJson()
         {
             
-            return Ok(ApiResponseDto<Dictionary<string, string>>.SuccessStatus([],"Test Json"));
+            return Ok(ApiResponseDto.SuccessStatus(new Dictionary<string,string>(),"Test Json"));
         }
-        [HttpPost]
-        public async Task<IActionResult> UploadFileAsync([FromBody] FileRequestDto request)
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UploadFile([FromBody] FileRequestDto request)
         {
-            var response = ApiResponseDto<bool>.SuccessStatus(true);
+            var response = await _fileServices.UploadFileAsync(request);
             return Ok(response);
         }
     }

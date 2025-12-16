@@ -1,0 +1,77 @@
+﻿@model ChatConversationDetailResponseDto
+
+<div class="card-title border-bottom px-3 py-2">
+    <div class="bg-body-tertiary">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex flex-row">
+                <button class="chat-more-options-btn me-2" id="back-btn"><b><i class="bi bi-arrow-left"></i></b></button>
+                <img src="~/images/user-no-img.png" alt="avatar"
+                     class="rounded-circle d-flex align-self-center me-3 shadow-1-strong bg-dark" width="40" id="open-menu">
+                <div class="pt-1">
+                    <p class="fw-bold mb-0">@Model.Name</p>
+                    <p class="small text-muted"><span></span>Online</p>
+                </div>
+            </div>
+            <div class="dropdown d-flex flex-column justify-content-center">
+                <button type="button" class="chat-more-options-btn" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-share-fill me-3"></i>Share</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-star me-3"></i>Starred</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="card-body scrollarea position-relative d-flex flex-column" id="chat-messages" data-conversation="@Model.Id">
+    @if(Model.Messages.Count == 0)
+    {
+        <div class="d-col-center">
+            <div class="text-center text-muted border rounded bg-light p-3">
+                <i class="bi bi-chat-dots fs-1 mb-3"></i>
+                <p class="mb-3">No messages yet. Start the conversation!</p>
+                <button type="button" class="btn btn-primary btn-sm ms-2" id="sendHiBtn">Send Hi</button>
+            </div>
+        </div>
+    }
+
+    <div id="new-message-indicator"
+         class="new-message-indicator d-none">
+        New messages ↓
+    </div>
+
+    @foreach (var m in Model.Messages)
+    {
+        <partial name="ChatMessage" model="m" />
+    }
+    
+    <div class="flex-column align-items-start mb-3" id="typing-status">
+        <div class="typing-box">
+            <div class="ticontainer">
+                <div class="tiblock">
+                    <div class="tidot"></div>
+                    <div class="tidot"></div>
+                    <div class="tidot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card-footer p-2">  
+    <div id="reply-container" class="mb-2 d-none">
+        <div class="reply-box gap-3" data-message-id="">
+            <span>My text</span>
+            <button class="btn-close"></button>
+        </div>
+    </div>
+    <div class="text-section d-flex" id="@Model.Id">
+        
+        <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
+        <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+        <button class="btn btn-primary me-2" type="button"><i class="bi bi-paperclip"></i></button>
+        <button class="btn btn-success me-2" type="button" id="sendBtn">Send</button>
+    </div>
+    
+</div>

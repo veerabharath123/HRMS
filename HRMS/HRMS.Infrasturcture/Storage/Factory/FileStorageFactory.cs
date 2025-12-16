@@ -16,23 +16,27 @@ namespace HRMS.Infrastructure.Storage.Factory
         }
         public IFileStorageProvider CreateProvider(FileLocationConfigDto locationConfig)
         {
-            var jsonConfig = JsonConvert.DeserializeObject<dynamic?>(locationConfig.ConfigJson);
-            string? providerType = jsonConfig?.ProviderType?.ToString();            
+            string? providerType = locationConfig?.ProviderType?.ToString();            
 
-            if (jsonConfig is null || !Enum.TryParse(providerType, out FileStorageProvider provider))
+            if (locationConfig?.ConfigJson is null || !Enum.TryParse(providerType, out FileStorageProvider provider))
                 throw new ArgumentException("ProviderType or JsonConfig is missing in the configuration.");
 
             return provider switch
             {
-                FileStorageProvider.Ftp => new FtpStorageProvider(jsonConfig!.baseUrl,jsonConfig!.username, GetConfigValue(locationConfig.ConfigName, jsonConfig.passowrd), jsonConfig.useSsl),
-                FileStorageProvider.Local => new LocalStorageProvider(jsonConfig),
-                FileStorageProvider.S3 => new S3StorageProvider(jsonConfig!.bucket,jsonConfig.key, jsonConfig.secret, jsonConfig.serviceurl),
+                FileStorageProvider.Ftp => new FtpStorageProvider(ResolveJsonConfig<FtpConfigDto>(locationConfig.ConfigJson)),
+                FileStorageProvider.Local => new LocalStorageProvider(locationConfig.ConfigJson),
+                FileStorageProvider.S3 => new S3StorageProvider(ResolveJsonConfig<S3BucketConfigDto>(locationConfig.ConfigJson)),
                 _ => throw new NotSupportedException($"The provider type '{providerType}' is not supported.")
             };
         }
         private string GetConfigValue(string configName, string configSuffix, string defaultValue = "")
         {
             return _configuration[$"{configName}_{configSuffix}"] ?? defaultValue;
+        }
+        private T ResolveJsonConfig<T>(string configJson)
+        {
+            var config = JsonConvert.DeserializeObject<T>(configJson);
+            return config ?? throw new ArgumentException("JsonConfig is missing in the configuration.");
         }
     }
 }

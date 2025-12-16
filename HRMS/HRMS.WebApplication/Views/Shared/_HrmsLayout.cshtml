@@ -7,27 +7,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMS Dashboard</title>
+    
+    <meta name="csrf-token" content="@AntiForgery.GetAndStoreTokens(ViewContext.HttpContext).RequestToken" />
     @* <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> *@
     @* <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script> *@
     @* <script src="https://cdn.jsdelivr.net/npm/chart.js" ></script> *@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+    <title>HRMS - @ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
 
     <link rel="stylesheet" href="~/HRMS.WebApplication.styles.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
-    <link href="https://cdn.datatables.net/2.3.3/css/dataTables.bootstrap5.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
-    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js" nonce="@Html.ScriptNonce()"></script>
-    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js" nonce="@Html.ScriptNonce()"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" nonce="@Html.ScriptNonce()" />
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet" nonce="@Html.ScriptNonce()" />
+
+    <!-- DataTables core + Bootstrap integration -->
+    <link href="https://cdn.datatables.net/2.3.3/css/dataTables.bootstrap5.min.css"
+          rel="stylesheet" nonce="@Html.ScriptNonce()" />
+
+    <!-- DataTables Select extension -->
+    <link href="https://cdn.datatables.net/select/2.3.3/css/select.bootstrap5.min.css"
+          rel="stylesheet" nonce="@Html.ScriptNonce()" />
+
+    <!-- DataTables core -->
+    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.min.js"
+            nonce="@Html.ScriptNonce()"></script>
+
+    <!-- DataTables Bootstrap integration -->
+    <script src="https://cdn.datatables.net/2.3.3/js/dataTables.bootstrap5.min.js"
+            nonce="@Html.ScriptNonce()"></script>
+
+    <!-- DataTables Select extension -->
+    <script src="https://cdn.datatables.net/select/2.3.3/js/dataTables.select.min.js"
+            nonce="@Html.ScriptNonce()"></script>
+
+
     <script src="~/lib/microsoft-signalr/signalr.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/js/advance.search.table.js" nonce="@Html.ScriptNonce()"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
     <link href="~/lib/toastr.js/toastr.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/toastr.js/toastr.min.js" nonce="@Html.ScriptNonce()"></script>
+    <script src="~/js/site.js" nonce="@Html.ScriptNonce()"></script>
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+    <link href="~/lib/selectize.js/css/selectize.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
+    <script src="~/lib/selectize.js/js/selectize.min.js" nonce="@Html.ScriptNonce()"></script>
+    <script src="~/js/advance.form.builder.js" nonce="@Html.ScriptNonce()"></script>
+    <link rel="stylesheet" href="" nonce="@Html.ScriptNonce()">
+    @RenderSection("Scripts", required: false)
     <style nonce="@Html.ScriptNonce()">
         body {
             min-height: 100vh;
@@ -64,23 +93,35 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                padding: 0.75rem 1rem;
                 border-radius: .5rem;
                 transition: all 0.3s;
                 color: var(--bs-body-color);
+                min-height:40px;
+                padding: 1rem;
             }
+
+                .sidebar .nav-link i{
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center
+                }
 
                 .sidebar .nav-link span {
                     transition: opacity 0.3s;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
                 }
 
             .sidebar.collapsed .nav-link.active {
-                width:53px
+                justify-content: normal
             }
 
             .sidebar.collapsed .nav-link span {
                 opacity: 0;
                 visibility: hidden;
+                display: none;
             }
 
             .sidebar .nav-link.active {
@@ -95,6 +136,7 @@
             margin-top: 56px;
             flex: 1;
             transition: margin-left 0.3s;
+            overflow: auto
         }
 
             .content.expanded {
@@ -115,7 +157,7 @@
 
         .content {
             margin-left: 0 !important;
-            overflow:auto
+            
         }
 
         }
@@ -126,38 +168,77 @@
             padding: 0.5rem;
             border-radius: 0.5rem;
         }
+
+        #countdownBar{
+            width: 100%;
+        }
+
+        .user-img{
+            width:2rem;
+        }
+
+        .sidebar.collapsed li {
+            
+        }
     </style>
 </head>
-<body>
+<body class="position-relative">
+    <div class="" id="spinner">
+        <!-- From Uiverse.io by NlghtM4re -->
+        <div class="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        @* <img src="~/images/spinner.png" class="bg-image" alt="Background" /> *@
+    </div>
     <script nonce="@Html.ScriptNonce()">
         window.basePath = '@(Context.Request.PathBase.Value)';
     </script>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm fixed-top">
         <div class="container-fluid">
-            <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="bi bi-list"></i></button>
             <a class="navbar-brand fw-bold" href="#">HRMS</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+                <span class="navbar-toggler-icon d-center"><i class="bi bi-toggles"></i></span>
             </button>
 
-            <div class="collapse navbar-collapse mt-2 mt-lg-0" id="topNav">
+            <div class="collapse navbar-collapse mt-2 mt-lg-0 shadow-md-only" id="topNav">
+                               
                 <form class="d-flex ms-auto my-2 my-lg-0" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search...">
-                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                    <input class="form-control form-control-sm me-2" type="search" placeholder="Search...">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
                 </form>
                 <ul class="navbar-nav ms-3">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <img src="" class="rounded-circle me-2" alt="Profile">
-                            <span>Admin</span>
+                        <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" role="button" data-bs-toggle="dropdown">
+                            <img src="~/images/user-no-img.png" class="rounded-circle me-2 img-thumbnail user-img" alt="Profile">
+                            <span class="">@User.Identity?.Name</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fa-solid fa-user me-2"></i>
+                                    Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fa-solid fa-gear me-2"></i>
+                                    Settings
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="@Url.Action("Logout","Login")">Logout</a></li>
+                            <li>
+                                <a class="dropdown-item" href="@Url.Action("Login", "Account")">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i>
+                                    Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -167,16 +248,7 @@
 
     <!-- Sidebar -->
     <div class="sidebar collapsed d-flex flex-column p-2" id="sidebarMenu">
-        <ul class="nav nav-pills flex-column">
-            <li class="nav-item"><a href="@Url.Action("Index", "Home")" class="nav-link @(currentModule == "Home" ? "active" : "")"><i class="fas fa-chart-line"></i> <span>Dashboards</span></a></li>
-            <li class="nav-item">
-                <a href="@Url.Action("Chats", "Chat")" class="nav-link @(currentModule == "Chats" ? "active" : "")"><i class="fa-solid fa-message"></i> <span>Chats</span></a>
-            </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-users"></i> <span>Employees</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Leave Management</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-money-bill"></i> <span>Payrolls</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cogs"></i> <span>Admin</span></a></li>
-        </ul>
+       
     </div>
 
     <!-- Main Content -->
@@ -184,7 +256,48 @@
         @RenderBody()
     </main>
 
+    <div class="modal fade" id="timeoutModal" tabindex="-1" aria-labelledby="timeoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timeoutModalLabel">Session Expiring</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Your session will expire in <span id="countdown">30</span> seconds.</p>
+                    <div class="progress">
+                        <div id="countdownBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="stayLoggedIn" class="btn btn-primary">Stay Logged In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="image-viewer" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm-fullscreen h-100">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title w-100" id="image-viewer-label">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    <img class="h-100" src="~/images/hrms-app-logo.png" alt="no-image">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script defer nonce="@Html.ScriptNonce()">
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
         const sidebar = $('#sidebarMenu');
         const content = $('#mainContent');
         const toggleBtn = $('#sidebarToggle');
@@ -211,22 +324,7 @@
             
         });
 
-        // // Charts
-        // new Chart(document.getElementById('lineChart'), {
-        //   type: 'line',
-        //   data: {
-        //     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        //     datasets: [{ label: 'Employees', data: [50, 60, 70, 90, 120], borderColor: 'blue', fill: false }]
-        //   }
-        // });
-
-        // new Chart(document.getElementById('barChart'), {
-        //   type: 'bar',
-        //   data: {
-        //     labels: ['Sick Leave', 'Casual Leave', 'Earned Leave'],
-        //     datasets: [{ label: 'Count', data: [12, 19, 7], backgroundColor: ['#0d6efd', '#198754', '#ffc107'] }]
-        //   }
-        // });
+       
 
         // Restore collapse state on page load
         $(document).on("DOMContentLoaded", () => {
@@ -239,7 +337,181 @@
                 sidebar.addClass("collapsed")
                 content.addClass('expanded');
             }
+
+            ajaxLoadHtml(
+                '@Url.Action("GetSideMenuModules", "Home")',
+                '',
+                '#sidebarMenu',
+                {
+                    afterLoad: function($target){
+                        
+                        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl)
+                        })
+
+                        $target.find('li[data-bs-original-title="@currentModule"]').children().addClass('active')
+                    },
+                    contentType: "application/json",
+                    processData: false,
+                    spinner: false
+                }
+        )
         });
+
+        let idleTime = 0;
+        const maxIdleMinutes = 30; // for testing
+        const warningSeconds = 30;
+        let idleInterval = setInterval(incrementIdleTime, 60000); // every 1 min
+
+        // Reset idle time on activity
+        $(document).on('mousemove keydown scroll click', function () {
+            idleTime = 0;
+        });
+
+        // Detect when user comes back to tab
+        $(document).on('visibilitychange', function () {
+            if (document.hidden) return
+
+            return
+            ajaxGet(
+                '@Url.Action("SessionStatus", "Account")',
+                function (data) {
+                    if (data.expired) {
+                        logout();
+                    } else {
+                        idleTime = Math.max(maxIdleMinutes - Math.floor(data.remainingSeconds / 60), 0);
+                    }
+                },
+                { useDefaultSuccessCallBack : false }
+            );
+        });
+
+        function incrementIdleTime() {
+            idleTime++;
+            if (idleTime >= maxIdleMinutes) {
+                clearInterval(idleInterval);
+                showWarningModal();
+            }
+        }
+
+        function showWarningModal() {
+            const $modal = $('#timeoutModal');
+            const modal = new bootstrap.Modal($modal[0], { backdrop: 'static', keyboard: false });
+            modal.show();
+
+            let countdown = warningSeconds;
+            const $countdown = $('#countdown');
+            const $countdownBar = $('#countdownBar');
+
+            const interval = setInterval(function () {
+                countdown--;
+                $countdown.text(countdown);
+                $countdownBar.css('width', (countdown / warningSeconds * 100) + '%');
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    logout();
+                }
+            }, 1000);
+
+            $('#stayLoggedIn').one('click', function () {
+                return
+                ajaxGet(
+                    '@Url.Action("KeepAlive", "Account")',
+                    function (data) {
+                        clearInterval(interval);
+                        modal.hide();
+                        idleTime = 0;
+                        idleInterval = setInterval(incrementIdleTime, 60000);
+                    },
+                    { useDefaultSuccessCallBack : false }
+                );
+            });
+        }
+
+        function logout() {
+            window.location.href = '@Url.Action("Login", "Account")';
+        }
+
+        const logoutUrl = '/Account/Logout';        
+        
+        const chatConnection= new signalR.HubConnectionBuilder()
+                        .withUrl(resolveSafeUrl(`/hubs/chat`))
+                        .withAutomaticReconnect()
+                        .build();
+
+            // Start connection
+        async function startConnection() {
+            try {
+                await chatConnection.start();
+                console.log("SignalR connected.");
+            } catch (err) {
+                console.error("Connection failed: ", err);
+                setTimeout(startConnection, 5000); // retry
+            }
+        }
+
+        startConnection();
+
+        chatConnection.on("ReceiveChatMessage", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if(!$('#chat-box').hasClass('open-chat')){
+                    toastr.info(result.content, result.senderName);
+                    ajaxPost('@Url.Action("MarkMessageAsDelivered", "Chat")',JSON.stringify(result), ()=>{})
+                    typeof updateReadCount === 'function' && updateReadCount(result)
+                } else{
+                    typeof createMessage === 'function' && createMessage(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
+        chatConnection.on("ReceiveDeliveredStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if($('#chat-box').hasClass('open-chat') && result?.length){
+                    result.forEach(id => {
+                        $(`#chat-messages .message-section#${id} .delivered-status`).removeClass("d-none")
+                    });
+
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
+        chatConnection.on("ReceiveSeenStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+                if($('#chat-box').hasClass('open-chat') && result?.length){
+                    result.forEach(id => {
+                        $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")
+                        $(`#chat-messages .message-section#${id} .delivered-status`).removeClass("d-none")
+                    });
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
+        chatConnection.on("ReceiveTypingStatus", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+
+                if(result){
+                    typeof updateTypingStatus === 'function' && updateTypingStatus(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+
     </script>
+    
 </body>
 </html>

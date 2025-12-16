@@ -29,10 +29,10 @@ namespace HRMS.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IDocumentGenerator _documentGenerator;
         private readonly ISystemNotificationServices _systemNotificationServices;
-        private readonly IChatServices _chatServices;
+        private readonly IChatNotificationServices _chatServices;
         private readonly IEmailServices _emailServices;
         public UserServices(IUnitOfWork unitOfWork, IJwtTokenServices jwtTokenServices, IOptions<JwtAuthConfigDto> jwtConfig, IMemoryCache cache, IDocumentGenerator documentGenerator,
-            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatServices chatServices,
+            ISystemNotificationServices systemNotificationServices,IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatServices,
             IEmailServices emailServices)
         {
             _unitOfWork = unitOfWork;
@@ -45,12 +45,12 @@ namespace HRMS.Application.Services
             _chatServices = chatServices;
             _emailServices = emailServices;
         }
-        public async Task<ApiResponseDto<List<ChatUserResponseDto>>> GetUsersAsync()
+        public async Task<ApiResponseDto> GetUsersAsync()
         {
             var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(currentUserId, out Guid userId))
             {
-                return ApiResponseDto<List<ChatUserResponseDto>>.FailureStatus("Invalid user ID");
+                return ApiResponseDto.FailureStatus("Invalid user ID");
             }
             
             var chatUsers = await _unitOfWork.UserRepo.TableNoTracking
@@ -61,17 +61,37 @@ namespace HRMS.Application.Services
                     UserName = x.UserName
                 }).ToListAsync();
 
-            return ApiResponseDto<List<ChatUserResponseDto>>.SuccessStatus(chatUsers);
+            return ApiResponseDto.SuccessStatus(chatUsers);
         }
-        private async Task<bool> CheckUserExistAsync(string username)
+        public async Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request)
         {
-            return await _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);
+            var chatUsers = await(from u in _unitOfWork.UserRepo.TableNoTracking
+                                  join emp in _unitOfWork.EmployeeRepo.TableNoTracking on u.EmployeeId equals emp.Id
+                                  into empJoin from emp in empJoin.DefaultIfEmpty()
+                                  where !u.IsDeleted
+                                  select new UserListResponseDto
+                                  {
+                                      Id = u.Id,
+                                      UserName = u.UserName,
+                                      IsActive = u.IsActive,
+                                      Email = u.Email,
+                                      EmployeeId = u.EmployeeId,
+                                      EmpFullName = string.IsNullOrEmpty(emp.FirstName) || string.IsNullOrEmpty(emp.LastName) ? string.Empty : $"{emp.FirstName} {emp.LastName}"
+                                  })
+                .SortBy(request?.Sort).FilterBy(request?.FilterGroup)
+                .PaginateAsync(request?.Pagination);
+
+            return ApiResponseDto.SuccessStatus(chatUsers);
         }
-        public async Task<ApiResponseDto<bool>> InsertUserAsync(UserInsertRequestDto request)
+        private Task<bool> CheckUserExistAsync(string username)
+        {
+            return _unitOfWork.UserRepo.TableNoTracking.AnyAsync(x => x.UserName == username && !x.IsDeleted);
+        }
+        public async Task<ApiResponseDto> InsertUserAsync(UserInsertRequestDto request)
         {
             var userExist = await CheckUserExistAsync(request.UserName);
 
-            if (userExist) return ApiResponseDto<bool>.FailureStatus(GeneralConstants.USER_ALREADY_EXISTS_MSG, request.UserName);
+            if (userExist) return ApiResponseDto.FailureStatus(GeneralConstants.USER_ALREADY_EXISTS_MSG, request.UserName);
 
             var user = new User();
 
@@ -85,12 +105,12 @@ namespace HRMS.Application.Services
             _unitOfWork.UserRepo.Add(user);
             var saved = await _unitOfWork.SaveAsync();
 
-            return ApiResponseDto<bool>.SuccessStatus(saved);
+            return ApiResponseDto.SuccessStatus(saved);
         }
-        public async Task<ApiResponseDto<LoginResponseDto>> SignUpUserAsync(UserInsertRequestDto request)
+        public async Task<ApiResponseDto> SignUpUserAsync(UserInsertRequestDto request)
         {
             var insertRes = await InsertUserAsync(request);
-            if (!insertRes.Success) return ApiResponseDto<LoginResponseDto>.FailureStatus(insertRes.Message);
+            if (!insertRes.Success) return ApiResponseDto.FailureStatus(insertRes.Message);
 
             return await ValidateUserLoginAsync(request);
         }
@@ -108,34 +128,34 @@ namespace HRMS.Application.Services
                 .SingleOrDefaultAsync(x => !x.IsDeleted && x.UserName.ToLower().Equals(username.ToLower()));
         }
 
-        public async Task<ApiResponseDto<LoginResponseDto>> ValidateUserLoginAsync(LoginRequestDto request)
+        public async Task<ApiResponseDto> ValidateUserLoginAsync(LoginRequestDto request)
         {
             var user = await GetUnqiueUserByUserNameAsync(request.UserName);
 
             if (user is null)
-                return ApiResponseDto<LoginResponseDto>.FailureStatus("User {0} does not exists", request.UserName);
+                return ApiResponseDto.FailureStatus("User {0} does not exists", request.UserName);
 
             var isValid = PasswordHasher.VerifyPasswordHash(request.Password, user.Password, user.HashSalt);
 
-            await _emailServices.SendMailAsync(new EmailMessageDto
-            {
-                To = [new EmailAddressDto { EmailAddress = user.Email, DisplayName = user.UserName }],
-                Subject = "Login Alert",
-                Body = $"<p>Hi {user.UserName},</p><p>Your account was just accessed on {DateTime.UtcNow} UTC. If this was not you, please reset your password immediately or contact support.</p><p>Thank you,<br/>HRMS Team</p>",
-                IsHtml = true
-            });
+            //await _emailServices.SendMailAsync(new EmailMessageDto
+            //{
+            //    To = [new EmailAddressDto { EmailAddress = user.Email, DisplayName = user.UserName }],
+            //    Subject = "Login Alert",
+            //    Body = $"<p>Hi {user.UserName},</p><p>Your account was just accessed on {DateTime.UtcNow} UTC. If this was not you, please reset your password immediately or contact support.</p><p>Thank you,<br/>HRMS Team</p>",
+            //    IsHtml = true
+            //});
 
             if (isValid) return await CreateLoginResponseAsync(user);
 
-            return ApiResponseDto<LoginResponseDto>.FailureStatus("Incorrect password/username");
+            return ApiResponseDto.FailureStatus("Incorrect password/username");
         }
-        private async Task<ApiResponseDto<LoginResponseDto>> CreateLoginResponseAsync(User user)
+        private async Task<ApiResponseDto> CreateLoginResponseAsync(User user)
         {
             var loginResponse = new LoginResponseDto
             {
                 Permissions = await GetPermissionsByUserIdAsync(user.Id),
                 Roles = await GetRolesByUserIdAsync(user.Id),
-                UserId = user.GuidId,
+                UserId = user.Id,
                 UserName = user.UserName,
                 TokenExpiry = DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiresIn)
             };
@@ -143,18 +163,12 @@ namespace HRMS.Application.Services
             loginResponse.Token = _jwtTokenServices.GenerateToken(loginResponse);
             _cache.Set($"permissions_{user.Id}", loginResponse.Permissions, TimeSpan.FromMinutes(15));
 
-            return ApiResponseDto<LoginResponseDto>.SuccessStatus(loginResponse);
-        }
-        public async Task<List<string>> GetPermissionsByUserIdAsync(Guid Id)
-        {
-            var userId = await _unitOfWork.UserRepo.GetIdByGuid(Id);
-            if (userId is null) return [];
-            return await GetPermissionsByUserIdAsync(userId.Value);
+            return ApiResponseDto.SuccessStatus(loginResponse);
         }
 
-        private Task<List<string>> GetPermissionsByUserIdAsync(int userId)
+        public async Task<List<string>> GetPermissionsByUserIdAsync(int userId)
         {
-            return (from u in _unitOfWork.UserRolesRepo.TableNoTracking
+            return await (from u in _unitOfWork.UserRolesRepo.TableNoTracking
                                 join rp in _unitOfWork.RolePermissionsRepo.TableNoTracking on u.RoleId equals rp.RoleId
                                 join p in _unitOfWork.PermissionsRepo.TableNoTracking on rp.PermissionId equals p.Id
                                 where u.UserId == userId && !u.IsDeleted && !p.IsDeleted && !rp.IsDeleted
@@ -168,7 +182,7 @@ namespace HRMS.Application.Services
                                 select r.Name).ToListAsync();
 
         }
-        public async Task<ApiResponseDto<FileResponseDto>> GetDocument()
+        public async Task<ApiResponseDto> GetDocument()
         {
             var filename = "Sample Template";
             var username = "Venkat";
@@ -217,10 +231,10 @@ namespace HRMS.Application.Services
             if(user is not null)
                 await _systemNotificationServices.SendNotificationAsync(user.GuidId.ToString(),"hello", "Test");
 
-            return await Task.FromResult(ApiResponseDto<FileResponseDto>.SuccessStatus(response));
+            return await Task.FromResult(ApiResponseDto.SuccessStatus(response));
         }
 
-        public async Task<ApiResponseDto<bool>> UploadImage(FileRequestDto request)
+        public async Task<ApiResponseDto> UploadImage(FileRequestDto request)
         {
             //if (FileValidator.Validate(request))
             //{
@@ -234,15 +248,15 @@ namespace HRMS.Application.Services
                 FtpPassword = "ftppswd001"
             };
 
-            var remotePath = $"{Path.GetFileNameWithoutExtension(request.FileName)}-{Guid.NewGuid()}.{Path.GetExtension(request.FileName)}";
+            var remotePath = $"{Path.GetFileNameWithoutExtension(request.FileName)}|{Guid.NewGuid()}.{Path.GetExtension(request.FileName)}";
 
             using var stream = new MemoryStream(request.FileContent!);
 
             var isUploaded = false;// await _ftpFileServices.UploadAsync(remotePath, stream, ftpConfig);
 
-            return await Task.FromResult(ApiResponseDto<bool>.SuccessStatus(isUploaded));
+            return await Task.FromResult(ApiResponseDto.SuccessStatus(isUploaded));
         }
-        public async Task<ApiResponseDto<bool>> SendMessageByUser(MessageRequestDto request)
+        public async Task<ApiResponseDto> SendMessageByUser(MessageRequestDto request)
         {
             var response = new MessageResponseDto
             {
@@ -256,8 +270,7 @@ namespace HRMS.Application.Services
 
             //TODO: Save message to database
 
-            return ApiResponseDto<bool>.FlagStatus(true, "Message sent");
-
+            return ApiResponseDto.FlagStatus(true, "Message sent");
         }
     }
 }

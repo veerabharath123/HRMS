@@ -1,0 +1,33 @@
+﻿@model List<ChatConversationListResponseDto>
+
+@foreach (var user in Model)
+{
+    <div class="p-2 border-bottom bg-body-tertiary" id="chat-convo-card-@user.Id">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex flex-row flex-grow-1 user-info">
+                <img src="~/images/user-no-img.png" alt="avatar"
+                     class="rounded-circle d-flex align-self-center me-3 shadow-1-strong bg-dark" width="50">
+                <div class="pt-1 user flex-grow-1 user-clickable" id="@user.Id">
+                    <p class="fw-bold mb-0">@user.Participants.FirstOrDefault()</p>
+                    <p class="small text-muted last-message" data-last-message-id="@user.LastMessageId">@user.LastMessage</p>
+                    <p class="small text-muted typing-message">Typing...</p>
+                </div>
+            </div>
+            <div class="pt-1" id="@(user.Id)-status">
+                <p class="small text-muted mb-1">
+                    @{
+                        var dt = string.Empty;
+                        if (user.LastMessageDate.HasValue)
+                        {
+                            dt = user.LastMessageDate.Value.Date == DateTime.Now.Date
+                            ? user.LastMessageDate?.ToLocalTime().ToString("hh:mm tt")
+                            : user.LastMessageDate?.ToLocalTime().ToString("yyyy-MM-dd");
+                        }
+                    }
+                    @dt
+                </p>
+                <span class="badge bg-success float-end new-message-icon @(user.UnreadCount > 0 ? "d-center" : "d-none")">@user.UnreadCount</span>
+            </div>
+        </div>
+    </div>
+}

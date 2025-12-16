@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = ViewBag.ModuleTitle;    
+    ViewData["Module"] = ViewBag.ModuleTitle;
+    var table = ("Users", "user-table");
+}
+<style nonce="@Html.ScriptNonce()">
+
+</style>
+
+<div class="container-fluid">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h3 class="mt-1">@ViewBag.ModuleTitle</h3>
+
+    <div class="row mb-2">
+        <div class="col-12">
+            <a href="@Url.Action("CreateUser", "Maintenance")" class="btn btn-success btn-sm shadow">Add User</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <partial name="Utilities/_Datatables" model="table" />
+        </div>
+    </div>
+</div>

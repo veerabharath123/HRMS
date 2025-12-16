@@ -14,6 +14,7 @@ namespace HRMS.Domain.Constants
         public const string DOWLOAD_FAIL_MSG = "Failed to download File.";
         public const string NO_STORAGE_CONFIG_MSG = "File storage location is not configured.";
         public const string UPLOAD_FAILED_MSG = "Failed to upload File.";
+        public const string UPLOAD_SUCCESS_MSG = "File uploaded successfully.";
         public const string PROCESSING_FAILED_MSG = "Unable to process the file.";
         public const string PROCESSING_SUCCESS_MSG = "File processed successfully.";
         public const string MAINTENANCE_PROCESS_SUCCESS_MSG = "File maintenance process completed.";

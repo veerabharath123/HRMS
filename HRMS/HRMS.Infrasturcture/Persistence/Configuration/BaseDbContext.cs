@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using HRMS.Domain.Common;
+﻿using HRMS.Domain.Common;
+using HRMS.SharedKernel.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
 {
@@ -83,7 +85,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration
             }
             else
             {
-                builder.HasColumnType("decimal(18,2)"); // Default fallback
+                builder.HasColumnType("decimal(18,0)"); // Default fallback
             }
         }
 

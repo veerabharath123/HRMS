@@ -1,0 +1,15 @@
+﻿using HRMS.SharedKernel.Models.Request;
+using HRMS.SharedKernel.Models.Response;
+
+namespace HRMS.Application.Services.Employee
+{
+    public interface IEmployeeServices
+    {
+        Task<ApiResponseDto> GetPaginatedEmployeesShortAsync(AdvanceTableRequestDto request);
+        Task<ApiResponseDto> AddEmployeeAsync(InsertEmployeeRequestDto request);
+        Task<ApiResponseDto> GetEmployeeImagesAsync(ListIdRequestDto request);
+        Task<ApiResponseDto> GetEmployeeSearchListByNameOrEmailAsync(string name);
+        Task<ApiResponseDto> GetEmployeeDetailsAsync(int employeeId);
+        Task<ApiResponseDto> GetEmployeeByIdAsync(int employeeId);
+    }
+}

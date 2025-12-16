@@ -1,24 +1,124 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
-    ViewData["Module"] = "Home";
-    (string, string) tableModel = ("Index Table", "index-table");
+    ViewData["Title"] = "Dashboard";
+    ViewData["Module"] = "Dashboard";
+    //(string, string) tableModel = ("Index Table", "index-table");
 }
 
-<partial name="Datatables" model="tableModel" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js" nonce="@Html.ScriptNonce()"></script>
+<style nonce="@Html.ScriptNonce()">
+    .chart-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden; /* prevents x-scroll */
+    }
+
+    canvas {
+        display: block;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+</style>
+
+<div class="container-fluid chart-container">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h3 class="mt-1">@ViewData["Module"]</h3>
+
+    <div class="row mt-3">
+        <div class="col-lg-6 col-sm-12 mb-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-12 mb-3">
+            <div class="row">
+                <div class="col-md-6 col-12 mb-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <canvas id="donutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-12 mb-3">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <canvas id="donutChart2"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
 
 <script nonce="@Html.ScriptNonce()">
+
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false                  
+        }
+    });
+
+    const ctx1 = document.getElementById('donutChart');
+
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Inactive', 'Pending'],
+            datasets: [{
+                data: [60, 25, 15],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            maintainAspectRatio: false
+        }
+    });
+
+    $('#exampleModal #upload').on('file:upload', function(e, res){
+        console.log(e , res.files)
+    })
 
     $('#msg').on('submit', function(e) {
         e.preventDefault();
         const username = $('#username').val();
-        const title = '@User.Identity.Name';
+        const title = '@User.Identity?.Name';
         const message = $('#message').val();
+
         if (username && title && message) {
-           $.ajax({
-               url: '@Url.Action("SendMessage", "Home")',
-                type: 'POST',
-                data: { Username: username, Title: title, Message: message },
-                success: function(response) {
+            ajaxPost(
+                '@Url.Action("SendMessage", "Home")',
+                { Username: username, Title: title, Message: message },
+                function(response) {
                     if(response?.success) {
                         const li = document.createElement("li");
                         li.textContent = `$Me: ${message}`;
@@ -26,8 +126,8 @@
                     } else {
                         alert('Failed to send message');
                     }
-                },
-           })
+                }
+            )
         }
         return false
     });
@@ -52,8 +152,8 @@
     });
   
 
-        const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${window.basePath}/hubs/notification`) // Proxy endpoint, not backend URL
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl(resolveSafeUrl('/hubs/notification')) 
         .withAutomaticReconnect()
         .build();
 

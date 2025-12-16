@@ -1,28 +1,46 @@
 ﻿using HRMS.Application.Common.Interface;
 using HRMS.Domain.Entites;
 using HRMS.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HRMS.Infrastructure.Persistence.Configuration
 {
-    internal class UnitOfWork : IUnitOfWork
+    internal class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationDbContext _context;
-        IDbContextTransaction dbContextTransaction;
+        IDbContextTransaction? dbContextTransaction;
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
         }
         #region private repositories
 
-        private IRepository<User> _userRepo;
-        private IRepository<Roles> _rolesRepo;
-        private IRepository<Permissions> _permissionsRepo;
-        private IRepository<RolePermissions> _rolePermissionsRepo;
-        private IRepository<UserRoles> _userRolesRepo;
-        private IRepository<StoredFiles> _storedFilesRepo;
-        private IRepository<FileLocationConfigurations> _fileLocationConfigurationsRepo;
-        private IRepository<SystemSettings> _systemSettingsRepo;
+        private IRepository<User>? _userRepo;
+        private IRepository<Roles>? _rolesRepo;
+        private IRepository<Permissions>? _permissionsRepo;
+        private IRepository<RolePermissions>? _rolePermissionsRepo;
+        private IRepository<UserRoles>? _userRolesRepo;
+        private IRepository<StoredFiles>? _storedFilesRepo;
+        private IRepository<FileLocationConfigurations>? _fileLocationConfigurationsRepo;
+        private IRepository<SystemSettings>? _systemSettingsRepo;
+        private IRepository<EmployeeGuardian>? _employeeGuardianRepo;
+        private IRepository<EmployeeContact>? _employeeContactRepo;
+        private IRepository<Employee>? _employeeRepo;
+        private IRepository<Designation>? _designationRepo;
+        private IRepository<Department>? _departmentRepo;
+        private IRepository<GeneralReference>? _generalReferenceRepo;
+        private IRepository<ModuleType>? _moduleTypeRepo;
+
+        // chat related
+        private IRepository<ConversationType>? _conversationTypesRepo;
+        private IRepository<Conversation>? _conversationsRepo;
+        private IRepository<ConversationParticipants>? _conversationParticipantsRepo;
+        private IRepository<Message>? _messagesRepo;
+        private IRepository<MessageStatus>? _messageStatusRepo;
+        private IRepository<Attachment>? _attachmentsRepo;
+        private IRepository<ConversationMember>? _conversationMembersRepo;
 
         #endregion private repositories
 
@@ -92,6 +110,128 @@ namespace HRMS.Infrastructure.Persistence.Configuration
                 return _systemSettingsRepo;
             }
         }
+        public IRepository<EmployeeGuardian> EmployeeGuardianRepo
+        {
+            get
+            {
+                _employeeGuardianRepo ??= new EFRepository<EmployeeGuardian>(_context);
+                return _employeeGuardianRepo;
+            }
+        }
+        public IRepository<EmployeeContact> EmployeeContactRepo
+        {
+            get
+            {
+                _employeeContactRepo ??= new EFRepository<EmployeeContact>(_context);
+                return _employeeContactRepo;
+            }
+        }
+        public IRepository<Employee> EmployeeRepo
+        {
+            get
+            {
+                _employeeRepo ??= new EFRepository<Employee>(_context);
+                return _employeeRepo;
+            }
+        }
+        public IRepository<Designation> DesignationRepo
+        {
+            get
+            {
+                _designationRepo ??= new EFRepository<Designation>(_context);
+                return _designationRepo;
+            }
+        }
+        public IRepository<Department> DepartmentRepo
+        {
+            get
+            {
+                _departmentRepo ??= new EFRepository<Department>(_context);
+                return _departmentRepo;
+            }
+        }
+        public IRepository<GeneralReference> GeneralReferenceRepo
+        {
+            get
+            {
+                _generalReferenceRepo ??= new EFRepository<GeneralReference>(_context);
+                return _generalReferenceRepo;
+            }
+        }
+
+        // chat related
+        public IRepository<ConversationType> ConversationTypesRepo
+        {
+            get
+            {
+                _conversationTypesRepo ??= new EFRepository<ConversationType>(_context);
+                return _conversationTypesRepo;
+            }
+        }
+
+        public IRepository<Conversation> ConversationsRepo
+        {
+            get
+            {
+                _conversationsRepo ??= new EFRepository<Conversation>(_context);
+                return _conversationsRepo;
+            }
+        }
+
+        public IRepository<ConversationParticipants> ConversationParticipantsRepo
+        {
+            get
+            {
+                _conversationParticipantsRepo ??= new EFRepository<ConversationParticipants>(_context);
+                return _conversationParticipantsRepo;
+            }
+        }
+
+        public IRepository<Message> MessagesRepo
+        {
+            get
+            {
+                _messagesRepo ??= new EFRepository<Message>(_context);
+                return _messagesRepo;
+            }
+        }
+
+        public IRepository<MessageStatus> MessageStatusRepo
+        {
+            get
+            {
+                _messageStatusRepo ??= new EFRepository<MessageStatus>(_context);
+                return _messageStatusRepo;
+            }
+        }
+
+        public IRepository<Attachment> AttachmentsRepo
+        {
+            get
+            {
+                _attachmentsRepo ??= new EFRepository<Attachment>(_context);
+                return _attachmentsRepo;
+            }
+        }
+
+        public IRepository<ConversationMember> ConversationMembersRepo
+        {
+            get
+            {
+                _conversationMembersRepo ??= new EFRepository<ConversationMember>(_context);
+                return _conversationMembersRepo;
+            }
+        }
+
+        public IRepository<ModuleType> ModuleTypeRepo
+        {
+            get
+            {
+                _moduleTypeRepo ??= new EFRepository<ModuleType>(_context);
+                return _moduleTypeRepo;
+            }
+        }
+
         #endregion public repositories
 
         #region transaction methods

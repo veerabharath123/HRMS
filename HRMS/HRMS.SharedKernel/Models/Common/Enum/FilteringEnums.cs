@@ -16,7 +16,8 @@ namespace HRMS.SharedKernel.Models.Common.Enum
         GreaterThanOrEqual,
         Contains,
         StartsWith,
-        EndsWith
+        EndsWith,
+        NotImp
     }
 
     public enum FilterOperator

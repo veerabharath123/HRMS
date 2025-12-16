@@ -1,0 +1,21 @@
+﻿
+@if (ViewBag.Breadcrumbs is List<BreadCrumbModel> breadcrumbs)
+{
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @foreach (var breadcrumb in breadcrumbs)
+            {
+                if (breadcrumb.IsActive)
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@breadcrumb.Name</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item"><a href="@breadcrumb.Url">@breadcrumb.Name</a></li>
+                }
+            }
+        </ol>
+    </nav>
+}
+
+

@@ -9,6 +9,20 @@
     {
       "library": "toastr.js@2.1.4",
       "destination": "wwwroot/lib/toastr.js/"
+    },
+    {
+      "library": "bootstrap-icons@1.13.1",
+      "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "selectize.js@0.15.2",
+      "destination": "wwwroot/lib/selectize.js/",
+      "files": [
+        "js/selectize.min.js",
+        "css/selectize.css",
+        "css/selectize.min.css",
+        "js/selectize.js"
+      ]
     }
   ]
 }

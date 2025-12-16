@@ -1,5 +1,4 @@
-﻿using HRMS.Infrastructure.Sockets.ConnectionManager;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace HRMS.Api.Hubs
 {

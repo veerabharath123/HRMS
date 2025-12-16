@@ -1,12 +1,9 @@
-﻿using HRMS.SharedKernel.Models.Response;
+﻿using HRMS.WebApplication.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HRMS.WebApplication.Class
 {
@@ -15,10 +12,26 @@ namespace HRMS.WebApplication.Class
         private readonly string _apiBaseUrl;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        private const string APIBASE_URL_SETTING = "WebAppSettings:ApiBaseUrl";
+        private const string API_REQUEST_FAILED = "Request failed.";
+        private const string API_AUTH_NAME = "Bearer";
+        private const string NOT_A_VALID_URL = "Invalid Url.";
+
         public ApiRequest(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _apiBaseUrl = configuration["WebAppSettings:ApiBaseUrl"] ?? throw new ArgumentNullException("API Base URL is not configured.");
+            _apiBaseUrl = configuration[APIBASE_URL_SETTING] ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor;
+        }
+        private string GetAccessToken()
+        {
+            var token = _httpContextAccessor?.HttpContext?.Session.GetString("AccessToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                token = _httpContextAccessor?.HttpContext?.User.Claims
+                    .FirstOrDefault(c => c.Type == "AccessToken")?.Value?.ToString()
+                    ?? string.Empty;
+            }
+            return token ?? string.Empty;
         }
 
         private HttpRequestMessage CreateRequest(HttpMethod method, Uri url, object? data, bool authRequired)
@@ -33,8 +46,7 @@ namespace HRMS.WebApplication.Class
 
             if(authRequired)
             {
-                var token = _httpContextAccessor?.HttpContext?.Session.GetString("AccessToken");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token ?? string.Empty);
+                request.Headers.Authorization = new AuthenticationHeaderValue(API_AUTH_NAME, GetAccessToken());
             }
 
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue("en-US"));
@@ -52,29 +64,39 @@ namespace HRMS.WebApplication.Class
 
             return uri.Scheme.Equals(Uri.UriSchemeHttps);
         }
-
-        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<object>> PostAsync(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            return PostAsync<object?, object>(actionPath, data, authRequired, cancellationToken);
+        }
+        public Task<ApiResponseModel<TResponse>> PostAsync<TResponse>(string actionPath, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if(!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus(NOT_A_VALID_URL));
 
             return PostAsync<object?, TResponse>(uri!, null, authRequired, cancellationToken);
         }
-        public Task<ApiResponseDto<TResponse>> PostAsync<TResponse>(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<TResponse>> PostAsync<TResponse>(string actionPath, object? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus(NOT_A_VALID_URL));
 
             return PostAsync<object?, TResponse>(uri!, data, authRequired, cancellationToken);
         }
-        public Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        public Task<ApiResponseModel<TResponse>> PostAsync<TRequest, TResponse>(string actionPath, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             if (!TryCreateUri(_apiBaseUrl + actionPath, out Uri? uri))
-                return Task.FromResult(ApiResponseDto<TResponse>.FailureStatus("Invalid URL"));
+                return Task.FromResult(ApiResponseModel<TResponse>.FailureStatus(NOT_A_VALID_URL));
 
             return PostAsync<TRequest, TResponse>(uri!, data, authRequired, cancellationToken);
         }
-        private async Task<ApiResponseDto<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
+        public async Task<SelectList> DropdownListAsync(string action, object? data = null, bool authRequired = false, CancellationToken cancellationToken = default)
+        {
+            var response = await PostAsync<List<BaseRefModel>>(action, data, authRequired, cancellationToken);
+            var dropdownList = response.Success && response.HasResult ? response.Result : [];
+
+            return BaseRefModel.ToSelectList(dropdownList!);
+        }
+        private async Task<ApiResponseModel<TResponse>> PostAsync<TRequest, TResponse>(Uri url, TRequest? data, bool authRequired = false, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -88,17 +110,32 @@ namespace HRMS.WebApplication.Class
             catch (WebException ex)
             {
                 // Handle exceptions (log them, rethrow them, etc.)
-                return ApiResponseDto<TResponse>.FailureStatus(ex.ToString());
+                return ApiResponseModel<TResponse>.FailureStatus(ex.ToString());
             }
         }
-        private static async Task<ApiResponseDto<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
+        private static async Task<ApiResponseModel<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
 
-            // Try to deserialize as ApiResponseDto<TResponse>
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return ApiResponseModel<TResponse>.UnauthorizedStatus(
+                    "Your session has expired. Please log in again."
+                );
+            }
+
+            // 🚫 Forbidden → no access
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                return ApiResponseModel<TResponse>.ForbiddenStatus(
+                    "You do not have permission to access this resource."
+                );
+            }
+
+            // Try to deserialize as ApiResponseModel<TResponse>
             try
             {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponseDto<TResponse>>(content);
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponseModel<TResponse>>(content);
                 if (apiResponse != null)
                     return apiResponse;
             }
@@ -109,11 +146,11 @@ namespace HRMS.WebApplication.Class
             {
                 var result = JsonConvert.DeserializeObject<TResponse>(content);
                 if (response.IsSuccessStatusCode)
-                    return ApiResponseDto<TResponse>.SuccessStatus(result, "Request successful");
+                    return ApiResponseModel<TResponse>.SuccessStatus(result);
                 else
-                    return ApiResponseDto<TResponse>.FailureStatus("Request Failed");
+                    return ApiResponseModel<TResponse>.FailureStatus(API_REQUEST_FAILED);
             }
-            catch { return ApiResponseDto<TResponse>.FailureStatus(content); }
+            catch { return ApiResponseModel<TResponse>.FailureStatus(content); }
         }
     }
 }

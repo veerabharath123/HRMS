@@ -1,0 +1,13 @@
+﻿@model IEnumerable<ModulesResponseDto>
+
+<ul class="nav nav-pills flex-column">
+
+    @foreach(var module in Model)
+    {
+        <li class="nav-item" data-bs-toggle="tooltip" title="@module.Name" data-bs-placement="right">
+            <a href="@Url.Action(module.Action, module.Controller, module.RouteValues)" class="nav-link">
+                <i class="@module.IconName"></i> <span>@module.Name</span>
+            </a>
+        </li>
+    }
+</ul>
