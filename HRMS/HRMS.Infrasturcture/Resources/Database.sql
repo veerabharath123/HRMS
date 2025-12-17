@@ -806,6 +806,9 @@ CREATE TABLE Attachments (
 
     MessageId INT NOT NULL,
     FileId INT NOT NULL,
+	FileName    varchar(100) not null,
+	FileContentType   varchar(50) not null,
+	FileExtension varchar(10) not null,
 
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedUser VARCHAR(50) NOT NULL DEFAULT '',
@@ -847,7 +850,7 @@ VALUES
 
 
 
-select * from employee
+select * from GeneralReference
 select * from users
 
 select e.FirstName, e.LastName, u.Email from employee e
@@ -860,11 +863,9 @@ update MessageStatus set ReadAt = null
 
 select * from [Messages] m
 join MessageStatus ms on m.Id = ms.MessageId
-where 
+where m.Id = 64
 
 m.ConversationId = 1 and m.CreatedDate <= GETDATE()
 and ms.EmployeeId = 2 and m.SenderId <> 2 --and ms.ReadAt is null
 
 truncate table  Messages
-
-sel

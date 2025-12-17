@@ -24,5 +24,8 @@ namespace HRMS.SharedKernel.Models.Request
         [Required]
         public string Content { get; set; } =string.Empty;
         public int? ParentMessageId { get; set; }
+        public Guid? FileId { get; set; }
+        [Required]
+        public string MessageType { get; set; } = "Text";
     }
 }

@@ -160,7 +160,10 @@ namespace HRMS.Application.Services.Chat
                                     .Select(ms => ms.DeliveredAt)
                                     .FirstOrDefault(),
                     ReadAt = m.MessageStatuses
-                                    .Where(ms => ms.EmployeeId != employeeId)
+                                    .Where(ms => 
+                                        (m.SenderId == employeeId && ms.EmployeeId != employeeId)
+                                        || (m.SenderId != employeeId && ms.EmployeeId == employeeId)
+                                    )
                                     .Select(ms => ms.ReadAt)
                                     .FirstOrDefault()
                 });
@@ -212,7 +215,7 @@ namespace HRMS.Application.Services.Chat
         public async Task<Message> SaveMessageAsync(int employeeId, ChatMessageRequestDto request)
         {
             var messageTypeId = await _unitOfWork.GeneralReferenceRepo.TableNoTracking
-                .Where(mt => mt.Code == "T" && mt.Category == "MessageType")
+                .Where(mt => mt.Value.ToLower() == request.MessageType.ToLower() && mt.Category == "MessageType")
                 .Select(mt => mt.Id)
                 .FirstOrDefaultAsync();
 
@@ -232,13 +235,10 @@ namespace HRMS.Application.Services.Chat
 
             message = await _unitOfWork.MessagesRepo.TableNoTracking
                         .Include(m => m.Sender)
-                        .Include(m => m.ParentMessage)
+                        .Include(m => m.ParentMessage).ThenInclude(pm => pm!.Sender)
                         .FirstAsync(m => m.Id == message.Id);
 
-            if(message.ParentMessage != null)
-            {
-                message.ParentMessage.Sender = await _unitOfWork.EmployeeRepo.TableNoTracking.FirstOrDefaultAsync(x => x.Id == message.ParentMessage.SenderId);
-            }
+            
 
             return message;
         }

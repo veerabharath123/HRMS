@@ -10,12 +10,13 @@
         bottom: 10px;
         margin: auto;
         width: fit-content;
-        background: #0d6efd;
-        color: #fff;
+        background: #e1a90c;
+        color: black;
         padding: 6px 12px;
         border-radius: 12px;
         cursor: pointer;
         z-index: 10;
+        box-shadow: 0px 0px 22px 5px #0000006b;
     }
 
     #typing-status{
@@ -347,12 +348,30 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="chat-file-upload-modal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <partial name="Utilities/_FileUpload" />
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script nonce="@Html.ScriptNonce()">
     let loading = false;
     let hasMore = true;
     let userIsNearBottom = true;
+    const MESSAGE_TYPES = {
+        Text : 'Text',
+        File : 'File',
+    }
 
     $('#chat-box').on({
         'drop': function (e) {
@@ -392,8 +411,9 @@
                     hasMore = true;
                     $('#chat-box').removeClass('open-chat').addClass('open-chat');
                     scrollToBottom(false);
-                    initLazyLoading();
+                    
                     initScrollStateTracking();
+                    initLazyLoading();
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
                     const lastMessageSection = container.find('.message-section-other').last();
 
@@ -443,7 +463,8 @@
         sendMessage({
             ConversationId: conversationId,
             Content: message,
-            ParentMessageId: parentMessageId
+            ParentMessageId: parentMessageId,
+            MessageType: MESSAGE_TYPES.Text
         });
     });
 
@@ -493,7 +514,7 @@
                     const message = container.find('.message-section').last()[0];
 
                     if(userIsNearBottom) scrollToBottom();
-                    $('#messageInput').val('').trigger('blur');
+                    $('#messageInput').val('');
 
                     if(!$('#reply-container').hasClass('d-none')) 
                         $('#reply-container .btn-close').trigger('click')
@@ -511,7 +532,8 @@
             '#typing-status',
             { 
                 beforeLoad: function(){
-                    $('#new-message-indicator').insertBefore('#typing-status')
+                    const nonReadMessage = $('#chat-messages .message-section-other .message-time[data-read="False"]').first()
+                    $('#new-message-indicator').insertBefore(nonReadMessage.closest('.message-section-other'))
                 },
                 afterLoad: function($target){
                    const container = $('#chat-messages');
@@ -521,8 +543,11 @@
 
                     if(!$('#chat-box').hasClass('open-chat')) return;
 
-                    const lastMessageSection = container.find('.message-section-other').last();
-                    checkLastMessageForSeen(lastMessageSection,data.conversationId )
+                    if(userIsNearBottom){
+                        const lastMessageSection = container.find('.message-section-other').last();
+                        checkLastMessageForSeen(lastMessageSection,data.conversationId )
+                    }
+                    
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -616,9 +641,11 @@
         if(result.isTyping){
             $('#typing-status').addClass('show')
             $(`#${result.conversationId}.user-clickable`).addClass('show-typing')
+            $('.profile-status').text('Typing...')
         } else{
             $('#typing-status').removeClass('show')
             $(`#${result.conversationId}.user-clickable`).removeClass('show-typing')
+            $('.profile-status').text('Online')
         }
         const container = $('#chat-messages')
         const message = container.find('.message-section').last()[0];
@@ -675,6 +702,27 @@
             }, typingTimeoutMs);
 
         }, 300);
+    });
+    $(document).on('keydown', function (e) {
+
+        // Only plain "m" or "M"
+        if (e.key.toLowerCase() !== 'm') return;
+
+        // Ignore if modifier keys are pressed
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+        const $target = $(e.target);
+
+        // Ignore if user is already typing somewhere
+        if ($target.is('input, textarea, [contenteditable="true"]')) return;
+
+        const $input = $('#messageInput');
+
+        // Focus only if not already focused
+        if (!$input.is(':focus')) {
+            e.preventDefault();
+            $input.trigger('focus');
+        }
     });
 
     $(document).on("blur", "#messageInput", function () {
@@ -757,7 +805,7 @@
     }
     
     const BOTTOM_TOLERANCE = 50; // px
-
+    const debouncedHideIndicator = debounceFn(hideNewMessageIndicator, 500);
     function initScrollStateTracking() {
         const chatscreen = $('#chat-messages');
 
@@ -769,7 +817,7 @@
 
             // Hide indicator when user scrolls back down
             if (userIsNearBottom) {
-                hideNewMessageIndicator();
+                debouncedHideIndicator()
             }
         });
     }
@@ -789,10 +837,36 @@
     }
 
     function hideNewMessageIndicator() {
+        const lastMessageSection =  $('#chat-messages').find('.message-section-other').last();
+        checkLastMessageForSeen(lastMessageSection,$('#chat-messages').data('conversation'))
         $('#new-message-indicator').addClass('d-none');
     }
+    
     $(document).on('click','#new-message-indicator',function(){
         scrollToBottom()
         hideNewMessageIndicator()
     })
+
+    $('#emp-detail-img-upload-modal #upload').on('file:upload',function(e , files){
+        const formData = new FormData();
+        const $imgId = $('#emp-photo-id').val('');
+
+        formData.append('file',files.files[0]);
+
+        ajaxPostFile(
+            '@Url.Action("FileUpload", "File")',
+            formData,
+            function(res){
+                if(res?.success && res?.data){
+                    sendMessage({
+                        ConversationId: conversationId,
+                        Content: message,
+                        ParentMessageId: parentMessageId,
+                        MessageType: MESSAGE_TYPES.File
+                    });
+                }
+            },
+            { useDefaultSuccessCallBack: false }
+        );
+    });
 </script>

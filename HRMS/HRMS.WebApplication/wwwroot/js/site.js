@@ -395,7 +395,7 @@ function handleServerActions(response) {
     }
 }
 
-function debounce(fn, delay = 300) {
+function debounceFn(fn, delay = 300) {
     let timeout;
     return function (...args) {
         clearTimeout(timeout);

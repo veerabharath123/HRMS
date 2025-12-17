@@ -34,7 +34,7 @@ namespace HRMS.Infrastructure.Persistence.Configuration.EntityConfiguration
                 .OnDelete(DeleteBehavior.Cascade);
 
             // For fast loading and sorting chat history
-            builder.HasIndex(m => new { m.ConversationId, m.CreatedDate });
+            builder.HasIndex(m => new { m.ConversationId, m.CreatedUtcAt });
         }
     }
 }
