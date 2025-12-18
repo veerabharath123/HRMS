@@ -300,7 +300,7 @@ function ajaxLoadHtml(url, data = {}, targetSelector, options = {}) {
 
                 // Optional per-request callback
                 if (typeof options.afterLoad === 'function') {
-                    options.afterLoad($target);
+                    options.afterLoad($target, $(html));
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
+using HRMS.Application.Services.File;
 using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
@@ -17,11 +18,14 @@ namespace HRMS.Application.Services.Chat
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IChatNotificationServices _chatNotificationServices;
-        public ChatServices(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatNotificationServices)
+        private readonly IFileServices _fileServices;
+        public ChatServices(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatNotificationServices,
+            IFileServices fileServices)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _chatNotificationServices = chatNotificationServices;
+            _fileServices = fileServices;
         }
         private async Task<int> GetCurrentEmployeeIdAsync()
         {
@@ -165,7 +169,8 @@ namespace HRMS.Application.Services.Chat
                                         || (m.SenderId != employeeId && ms.EmployeeId == employeeId)
                                     )
                                     .Select(ms => ms.ReadAt)
-                                    .FirstOrDefault()
+                                    .FirstOrDefault(),
+                    MessageType = m.MessageType != null ? m.MessageType.Value : "Text"
                 });
         }
         public async Task<ApiResponseDto> GetPreviousMessagesAsync(NextMessagesRequestDto request)
@@ -233,14 +238,29 @@ namespace HRMS.Application.Services.Chat
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
 
+            if (request.MessageType == "File" && request.FileId is not null) await AddAttachmentAsync(request.FileId.Value, message.Id);
+
             message = await _unitOfWork.MessagesRepo.TableNoTracking
                         .Include(m => m.Sender)
                         .Include(m => m.ParentMessage).ThenInclude(pm => pm!.Sender)
+                        .Include(m => m.MessageType)
+                        .Include(m => m.Attachments).ThenInclude(a => a.File)
                         .FirstAsync(m => m.Id == message.Id);
 
-            
-
             return message;
+        }
+        private async Task AddAttachmentAsync(Guid Id, int messageId)
+        {
+            var fileId = await _unitOfWork.StoredFilesRepo.GetIdByGuid(Id);
+
+            if(fileId is not null)
+            {
+                var attachment = new Attachment();
+                attachment.Attach(messageId, fileId.Value);
+                _unitOfWork.AttachmentsRepo.Add(attachment);
+                await _unitOfWork.SaveAsync();
+            }
+
         }
         public async Task SaveMessageStatus(int messageId, List<ConversationParticipants> participants)
         {
@@ -291,7 +311,9 @@ namespace HRMS.Application.Services.Chat
                 DeliveredAt = null,
                 ReadAt = null,
                 ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
-                ParentMessage = message.ParentMessage?.Content ?? string.Empty
+                ParentMessage = message.ParentMessage?.Content ?? string.Empty,
+                MessageType = message.MessageType != null ? message.MessageType.Value : "Text",
+                FileId = message.Attachments.Count != 0 ? message.Attachments.First().File!.GuidId : null
             };
 
             foreach (var participant in participants)
@@ -454,5 +476,25 @@ namespace HRMS.Application.Services.Chat
             return ApiResponseDto.SuccessStatus("");
         }
 
+        public async Task<ApiResponseDto> GetAttachmentFileAsync(Guid Id)
+        {
+            var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
+                .Include(a => a.File)
+                .FirstOrDefaultAsync(a => a.File != null && a.File.GuidId == Id);
+
+            if (attachment == null || attachment.File == null)
+                return ApiResponseDto.FailureStatus("Attachment not found.");
+
+            var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
+
+            if(string.IsNullOrEmpty(file))
+                return ApiResponseDto.FailureStatus("Attachment file could not be retrieved.");
+
+            return ApiResponseDto.SuccessStatus(new FileBase64ResponseDto
+            {
+                FileBase64 = file,
+                FileId = attachment.File.GuidId
+            });
+        }
     }
 }

@@ -11,4 +11,9 @@ namespace HRMS.SharedKernel.Models.Response
     {
         public string FileNameWithExtension { get => $"{FileName}.{FileExtension}"; }
     }
+    public class FileBase64ResponseDto 
+    {
+        public string FileBase64 { get; set; } = string.Empty;
+        public Guid FileId { get; set; } 
+    }
 }

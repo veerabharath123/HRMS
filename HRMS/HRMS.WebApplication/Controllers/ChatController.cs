@@ -98,5 +98,11 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync("/Chats/SendTypingStatus", request, true);
             return JsonResponse(response);
         }
+        [HttpPost]
+        public async Task<IActionResult> GetAttachmentFile([FromBody] GuidIdRequestDto request)
+        {
+            var response = await _api.PostAsync<FileBase64ResponseDto>("/Chats/GetAttachmentFile", request, true);
+            return JsonResponse(response);
+        }
     }
 }

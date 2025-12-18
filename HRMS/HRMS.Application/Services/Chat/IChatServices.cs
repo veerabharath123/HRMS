@@ -14,5 +14,6 @@ namespace HRMS.Application.Services.Chat
         Task<ApiResponseDto> MarkMessageAsReadAsync(UpdateSeenRequestDto request);
         Task<ApiResponseDto> SendTypingStatusAsync(TypingRequestDto request);
         Task<ApiResponseDto> GetPreviousMessagesAsync(NextMessagesRequestDto request);
+        Task<ApiResponseDto> GetAttachmentFileAsync(Guid Id);
     }
 }

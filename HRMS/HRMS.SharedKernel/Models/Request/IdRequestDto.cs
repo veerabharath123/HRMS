@@ -12,4 +12,9 @@ namespace HRMS.SharedKernel.Models.Request
         [Required]
         public int Id { get; set; }
     }
+    public class GuidIdRequestDto
+    {
+        [Required]
+        public Guid? Id { get; set; }
+    }
 }

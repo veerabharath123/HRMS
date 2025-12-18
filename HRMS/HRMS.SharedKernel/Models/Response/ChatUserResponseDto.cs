@@ -51,6 +51,8 @@ namespace HRMS.SharedKernel.Models.Response
         public DateTime? DeliveredAt { get; set; }
         public DateTime? ReadAt { get; set; }
         public int UnreadCount { get; set; }
+        public string MessageType { get; set; } = string.Empty;
+        public Guid? FileId { get; set; }
     }
     public class ChatMessagesResponseDto
     {

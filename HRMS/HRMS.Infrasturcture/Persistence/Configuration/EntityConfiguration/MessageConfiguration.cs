@@ -33,6 +33,11 @@ namespace HRMS.Infrastructure.Persistence.Configuration.EntityConfiguration
                 .HasForeignKey(a => a.MessageId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(m => m.MessageType)
+                .WithMany()
+                .HasForeignKey(a => a.MessageTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // For fast loading and sorting chat history
             builder.HasIndex(m => new { m.ConversationId, m.CreatedUtcAt });
         }

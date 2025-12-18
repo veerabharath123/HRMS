@@ -6,11 +6,18 @@
         <div class="message-sender-name">
             @Model.SenderName
         </div>
+        
         <div class="message-box-other message-box">
             <div class="message-reply-box @(Model.ParentMessageId == null ? "d-none" : "")" data-parent-id="@Model.ParentMessageId">
                 <b>@Model.ParentMessageSenderName</b>
                 <p>@Model.ParentMessage</p>
             </div>
+            @if (Model.MessageType != "Text")
+            {
+                <div class="message-type-file">
+                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.Id)-attachment" />
+                </div>
+            }
             <p class="message-content">@Model.Content</p>
             
             <div class="text-end text-action-others">
@@ -36,8 +43,6 @@
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Star</a></li>
                 <li><a class="dropdown-item" href="#" data-message-id="@Model.Id">Copy</a></li>
             </ul>
-
-            
         </div>
 
         
@@ -73,6 +78,12 @@ else
                 <b>@Model.ParentMessageSenderName</b>
                 <p>@Model.ParentMessage</p>
             </div>
+            @if (Model.MessageType != "Text")
+            {
+                <div class="message-type-file">
+                    <img alt="attachment" class="img-thumbnail attached-img" id="@Model.FileId" />
+                </div>
+            }
             <p class="message-content">@Model.Content</p>
 
             <div class="text-end text-muted text-action-mine">

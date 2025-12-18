@@ -806,9 +806,6 @@ CREATE TABLE Attachments (
 
     MessageId INT NOT NULL,
     FileId INT NOT NULL,
-	FileName    varchar(100) not null,
-	FileContentType   varchar(50) not null,
-	FileExtension varchar(10) not null,
 
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedUser VARCHAR(50) NOT NULL DEFAULT '',

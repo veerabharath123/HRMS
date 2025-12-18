@@ -30,6 +30,7 @@ namespace HRMS.Domain.Entites
 
         public ICollection<MessageStatus> MessageStatuses { get; set; } = [];
         public ICollection<Attachment> Attachments { get; set; } = [];
+        public GeneralReference? MessageType { get; set; }
 
         public void Add(int conversationId, int senderId, string? content, int messageTypeId, int? parentMessageId = null)
         {
