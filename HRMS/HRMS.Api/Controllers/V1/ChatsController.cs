@@ -71,5 +71,11 @@ namespace HRMS.Api.Controllers.V1
             var response = await _chatServices.GetAttachmentFileAsync(request.Id!.Value);
             return Ok(response);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetAttachmentFiles([FromBody] ListGuidIdRequestDto request)
+        {
+            var response = await _chatServices.GetAttachmentFilesAsync(request);
+            return Ok(response);
+        }
     }
 }

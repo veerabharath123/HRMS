@@ -5,6 +5,11 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
+    .message-type-file.show::after{
+        content: '';
+        background-image: url('@Url.Content("/images/spinner.png") ');  
+        background-size: 30px 30px;
+    }
     .attached-img{
         width: 50%;
     }
@@ -425,6 +430,7 @@
                     const lastMessageSection = $container.find('.message-section-other').last();
 
                     checkLastMessageForSeen(lastMessageSection, conversationId);
+                    checkAndLoadImages();
                 }
             }
         )
@@ -847,19 +853,56 @@
         hideNewMessageIndicator()
     })
 
+    function checkAndLoadImages(){
+        debugger
+        const fileSections = $('#chat-messages').find('.message-type-file img');
+        const idsToLoad = [];
+        fileSections.each(function(){
+            const fileImage = $(this);
+            const id =  fileImage.attr('id').split('-attachment')[0]
+            if(!fileImage.attr('src') && id){
+                idsToLoad.push(id);
+            }
+        });
+        loadFiles(idsToLoad);
+    }
+    function loadFiles(ids){
+        if(!ids.length) return;
+
+        ajaxPost(
+            '@Url.Action("GetAttachmentFiles", "Chat")',
+            JSON.stringify({ IdList : ids}),
+            function(res){
+                if(res?.success && res?.data?.length)
+                {
+                    res.data.forEach(f =>{
+                        setImageSrc(`#${f.fileId}-attachment`, f.fileBase64)
+                    })
+                    scrollToBottom();
+                }
+            },
+            { useDefaultSuccessCallBack: false }
+        )
+    }
+
     function loadFile(fileSection){
         const fileImage = fileSection.find('img')[0];
-        console.log('Loading file with ID:', fileImage.id);
-        if(!fileImage && fileImage.id) return;
+        const id =  fileImage.id.split('-attachment')[0]
+        if(!fileImage && id) return;
+
+        scrollToBottom();
+
+        $(fileImage).addClass('show');
 
         ajaxPost(
             '@Url.Action("GetAttachmentFile", "Chat")',
-            JSON.stringify({ Id : fileImage.id }),
+            JSON.stringify({ Id : id}),
             function(res){
                 if(res?.success && res?.data)
                 {
-                    console.log(fileImage.id, res.data.fileId);
-                    setImageSrc(fileImage, res.data.fileBase64)
+                    setImageSrc(`#${res.data.fileId}-attachment`, res.data.fileBase64)
+                    fileImage.removeClass('show');
+                    scrollToBottom();
                 }
             },
             { useDefaultSuccessCallBack: false }
@@ -876,6 +919,8 @@
             formData,
             function(res){
                 if(res?.success && res?.data){
+                    const att = bootstrap.Modal.getInstance(document.getElementById('chat-file-upload-modal'))
+                    att.hide();
                     sendMessage({
                         ConversationId: $('#chat-messages').data('conversation'),
                         Content: files.files[0].name,
@@ -885,7 +930,7 @@
                     });
                 }
             },
-            { useDefaultSuccessCallBack: false }
+            { useDefaultSuccessCallBack: false, spinner : true }
         );
     });
     $(document).on('click','#add-attachment-btn', function(){

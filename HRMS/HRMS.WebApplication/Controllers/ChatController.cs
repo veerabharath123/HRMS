@@ -104,5 +104,11 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync<FileBase64ResponseDto>("/Chats/GetAttachmentFile", request, true);
             return JsonResponse(response);
         }
+        [HttpPost]
+        public async Task<IActionResult> GetAttachmentFiles([FromBody] ListGuidIdRequestDto request)
+        {
+            var response = await _api.PostAsync<List<FileBase64ResponseDto>>("/Chats/GetAttachmentFiles", request, true);
+            return JsonResponse(response);
+        }
     }
 }

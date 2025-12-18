@@ -15,7 +15,7 @@
             @if (Model.MessageType != "Text")
             {
                 <div class="message-type-file">
-                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.Id)-attachment" />
+                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.FileId)-attachment" />
                 </div>
             }
             <p class="message-content">@Model.Content</p>
@@ -81,7 +81,7 @@ else
             @if (Model.MessageType != "Text")
             {
                 <div class="message-type-file">
-                    <img alt="attachment" class="img-thumbnail attached-img" id="@Model.FileId" />
+                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.FileId)-attachment" />
                 </div>
             }
             <p class="message-content">@Model.Content</p>

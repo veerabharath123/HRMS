@@ -10,4 +10,8 @@ namespace HRMS.SharedKernel.Models.Request
     {
         public List<int> IdList { get; set; } = [];
     }
+    public class ListGuidIdRequestDto
+    {
+        public List<Guid> IdList { get; set; } = [];
+    }
 }

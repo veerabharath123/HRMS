@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
+using System.Net.Mail;
 using System.Security.Claims;
 
 namespace HRMS.Application.Services.Chat
@@ -146,6 +147,7 @@ namespace HRMS.Application.Services.Chat
                 .Where(predicate)
                 .OrderByDescending(m => m.CreatedUtcAt)   // newest of the older messages first
                 .Take(take)
+                .Include(m => m.Attachments).ThenInclude(a => a.File)
                 .Select(m => new ChatMessageResponseDto
                 {
                     Id = m.Id,
@@ -164,13 +166,14 @@ namespace HRMS.Application.Services.Chat
                                     .Select(ms => ms.DeliveredAt)
                                     .FirstOrDefault(),
                     ReadAt = m.MessageStatuses
-                                    .Where(ms => 
+                                    .Where(ms =>
                                         (m.SenderId == employeeId && ms.EmployeeId != employeeId)
                                         || (m.SenderId != employeeId && ms.EmployeeId == employeeId)
                                     )
                                     .Select(ms => ms.ReadAt)
                                     .FirstOrDefault(),
-                    MessageType = m.MessageType != null ? m.MessageType.Value : "Text"
+                    MessageType = m.MessageType != null ? m.MessageType.Value : "Text",
+                    FileId = m.Attachments.Any() ? m.Attachments.First().File.GuidId : null
                 });
         }
         public async Task<ApiResponseDto> GetPreviousMessagesAsync(NextMessagesRequestDto request)
@@ -495,6 +498,56 @@ namespace HRMS.Application.Services.Chat
                 FileBase64 = file,
                 FileId = attachment.File.GuidId
             });
+        }
+        public async Task<ApiResponseDto> GetAttachmentFilesAsync(ListGuidIdRequestDto request)
+        {
+            //var attachments = await _unitOfWork.AttachmentsRepo.TableNoTracking
+            //    .Include(a => a.File)
+            //    .Where(a => a.File != null && request.IdList.Contains(a.File.GuidId))
+            //    .ToListAsync();
+
+            //if (attachments.Count == 0)
+            //    return ApiResponseDto.FailureStatus("Attachment not found.");
+
+            List<FileBase64ResponseDto> images = [];
+
+            //foreach(var attachment in attachments)
+            //{
+            //    if(attachment.File == null) continue;
+
+            //    var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
+
+            //    if (string.IsNullOrEmpty(file)) continue;
+
+            //    images.Add(new FileBase64ResponseDto
+            //    {
+            //        FileBase64 = file ?? string.Empty,
+            //        FileId = attachment.File.GuidId
+            //    });
+            //}
+
+            foreach (var id in request.IdList)
+            {
+                var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
+                    .Include(a => a.File)
+                    .FirstOrDefaultAsync(a => a.File != null && a.File.GuidId == id);
+
+                if (attachment == null || attachment.File == null)
+                    return ApiResponseDto.FailureStatus("Attachment not found.");
+
+                var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
+
+                if (string.IsNullOrEmpty(file)) continue;
+
+                images.Add(new FileBase64ResponseDto
+                {
+                    FileBase64 = file ?? string.Empty,
+                    FileId = attachment.File.GuidId
+                });
+
+            }
+
+            return ApiResponseDto.SuccessStatus(images);
         }
     }
 }
