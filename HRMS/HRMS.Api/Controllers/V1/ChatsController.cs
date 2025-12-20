@@ -71,11 +71,21 @@ namespace HRMS.Api.Controllers.V1
             var response = await _chatServices.GetAttachmentFileAsync(request.Id!.Value);
             return Ok(response);
         }
-        [HttpPost("[action]")]
-        public async Task<IActionResult> GetAttachmentFiles([FromBody] ListGuidIdRequestDto request)
+        [HttpGet("[action]/{id:guid}")]
+        public async Task<IActionResult> GetAttachmentFile(Guid id, CancellationToken ct)
         {
-            var response = await _chatServices.GetAttachmentFilesAsync(request);
-            return Ok(response);
+            var response = await _chatServices.GetAttachmentFileResponseAsync(id);
+
+            if (response is null || response.FileContent is null || response.FileContent.Length == 0)
+                return NotFound();
+
+            Response.Headers["Cache-Control"] = "private, max-age=31536000";
+
+            return File(
+                response.FileContent,
+                response.FileContentType,
+                enableRangeProcessing: true
+            );
         }
     }
 }

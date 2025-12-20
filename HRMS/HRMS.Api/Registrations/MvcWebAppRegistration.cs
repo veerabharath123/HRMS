@@ -6,7 +6,7 @@ namespace HRMS.Api.Registrations
 {
     public class MvcWebAppRegistration : IWebApplicationRegistration
     {
-        private readonly string _policyName = "ExpenseTrackerPolicy";
+        private readonly string _policyName = "HRMSPolicy";
         public void RegisterPipelineComponents(WebApplication app)
         {
             if(!app.Environment.IsDevelopment())

@@ -104,11 +104,42 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync<FileBase64ResponseDto>("/Chats/GetAttachmentFile", request, true);
             return JsonResponse(response);
         }
-        [HttpPost]
-        public async Task<IActionResult> GetAttachmentFiles([FromBody] ListGuidIdRequestDto request)
+        [HttpGet]
+        public async Task<IActionResult> DownloadAttachmentFile(Guid id)
         {
-            var response = await _api.PostAsync<List<FileBase64ResponseDto>>("/Chats/GetAttachmentFiles", request, true);
-            return JsonResponse(response);
+            var response = await _api.PostAsync<FileResponseDto?>("/Chats/GetAttachmentFile", new { Id = id }, true);
+            if(response.Result?.FileContent is not null && response.Result.FileContent.Length > 0)
+            {
+                return File(response.Result.FileContent, response.Result.FileContentType, response.Result.FileNameWithExtension);
+            }
+
+            return NotFound();
+        }
+ 
+        public async Task<IActionResult> GetAttachmentsFile(Guid id, CancellationToken ct)
+        {
+            using var raw = await _api.GetRawFileAsync(
+                $"/Chats/GetAttachmentFile/{id}",
+                authRequired: true,
+                cancellationToken: ct);
+
+            if (raw == null)
+                return NotFound();
+
+            await using var ms = new MemoryStream();
+            await raw.Stream.CopyToAsync(ms, ct);
+
+            if (ms.Length == 0)
+                return NotFound(); // proves empty stream
+
+            Response.Headers["Cache-Control"] = "private, max-age=31536000";
+            Response.Headers["Content-Disposition"] = "inline";
+
+            return File(
+                ms.ToArray(),
+                raw.ContentType,
+                enableRangeProcessing: true
+            );
         }
     }
 }

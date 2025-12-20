@@ -3,7 +3,7 @@ namespace HRMS.Api.Registrations
 {
     public class CORSRegistration : IWebApplicationBuilderRegistration
     {
-        private readonly string _policyName = "ExpenseTrackerPolicy";
+        private readonly string _policyName = "HRMSPolicy";
 
         public void RegisterServices(WebApplicationBuilder builder)
         {
@@ -16,7 +16,7 @@ namespace HRMS.Api.Registrations
                 var origins = hosts.Split(',');
                 options.AddPolicy(_policyName, p =>
                 {
-                    p.WithOrigins(origins).AllowAnyHeader().WithMethods("POST").AllowCredentials();
+                    p.WithOrigins(origins).AllowAnyHeader().WithMethods("GET","POST").AllowCredentials();
                 });
             });
         }

@@ -72,6 +72,25 @@ namespace HRMS.Application.Services.File
 
             return await RetrieveFileFromStorageAsync(file.FileName, location);
         }
+        public async Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId)
+        {
+            var file = await _unitOfWork.StoredFilesRepo.Table
+                        .FirstOrDefaultAsync(s => s.Id == storedFileId && !s.IsDeleted);
+
+            var location = file is null
+                ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG)
+                : await GetStorageLocationConfigAsync(file.FileLocationId);
+
+            var bytes = await RetrieveFileBytesFromStorageAsync(file.FileName, location);
+
+            return new FileResponseDto
+            {
+                FileName = file.FileName,
+                FileContentType = file.FileContentType,
+                FileExtension = file.FileExtension,
+                FileContent = bytes
+            };
+        }
 
         public async Task<string> RetrieveFileFromStorageAsync(string filename, FileLocationConfigDto configDto, CancellationToken cancellationToken = default)
         {
@@ -83,6 +102,17 @@ namespace HRMS.Application.Services.File
                 return string.Empty;
 
             return Convert.ToBase64String(fileBytes);
+        }
+        public async Task<byte[]> RetrieveFileBytesFromStorageAsync(string filename, FileLocationConfigDto configDto, CancellationToken cancellationToken = default)
+        {
+            var fileBytes = await _fileStorageFactory
+                        .CreateProvider(configDto)
+                        .FetchAsync(filename, cancellationToken);
+
+            if (fileBytes is null || fileBytes.Length == 0)
+                return [];
+
+            return fileBytes;
         }
 
         #endregion File Retrieval

@@ -2,22 +2,29 @@
 
 @if (!Model.IsMine)
 {
-    <div class="d-flex flex-wrap justify-content-start message-section message-section-other" id="@Model.Id">
-        <div class="message-sender-name">
+    <div class="d-flex flex-wrap justify-content-start message-section message-section-other rounded" id="@Model.Id">
+        @* <div class="message-sender-name">
             @Model.SenderName
-        </div>
+        </div> *@
         
         <div class="message-box-other message-box">
             <div class="message-reply-box @(Model.ParentMessageId == null ? "d-none" : "")" data-parent-id="@Model.ParentMessageId">
                 <b>@Model.ParentMessageSenderName</b>
                 <p>@Model.ParentMessage</p>
             </div>
-            @if (Model.MessageType != "Text")
+
+            @if (Model.MessageType != "Text" && Model.FileId is not null)
             {
-                <div class="message-type-file">
-                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.FileId)-attachment" />
+                <div class="message-type-file load rounded mb-1">
+                    <div class="img-wrapper">
+                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId })" loading="lazy" />
+                        <a class="d-center atth-download-btn" href="@Url.Action("DownloadAttachmentFile", "Chat", new { id = Model.FileId })" download>
+                            <i class="bi bi-box-arrow-down"></i>
+                        </a>
+                    </div>
                 </div>
             }
+            
             <p class="message-content">@Model.Content</p>
             
             <div class="text-end text-action-others">
@@ -50,10 +57,11 @@
 }
 else
 {
-    <div class="d-flex flex-wrap justify-content-end message-section" id="@Model.Id">
-        <div class="message-sender-name text-end">
+    <div class="d-flex flex-wrap justify-content-end message-section rounded" id="@Model.Id">
+       @*  <div class="message-sender-name text-end">
             @Model.SenderName
-        </div>
+        </div> *@
+        
         <div class="dropdown dropstart message-options d-flex">
             <button type="button" class="message-options-btn" data-bs-toggle="dropdown">
                 <i class="bi bi-three-dots-vertical"></i>
@@ -78,12 +86,16 @@ else
                 <b>@Model.ParentMessageSenderName</b>
                 <p>@Model.ParentMessage</p>
             </div>
+
             @if (Model.MessageType != "Text")
             {
-                <div class="message-type-file">
-                    <img alt="attachment" class="img-thumbnail attached-img" id="@(Model.FileId)-attachment" />
+                <div class="message-type-file load rounded bg-secondary mb-1">
+                    <div class="img-wrapper">
+                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId })" id="@(Model.FileId)-attachment" loading="lazy" />
+                    </div>
                 </div>
             }
+            
             <p class="message-content">@Model.Content</p>
 
             <div class="text-end text-muted text-action-mine">

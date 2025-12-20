@@ -33,7 +33,7 @@
     const columns = [
         { property: 'email', displayName: 'Email' },
         { property: 'userName', displayName: 'Username' },
-        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {            
+        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {          
             return getIconElement(data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger');
         }},
         { property: 'empFullName', displayName: 'Employee Name' ,search: false, render: function(data, type, row) {

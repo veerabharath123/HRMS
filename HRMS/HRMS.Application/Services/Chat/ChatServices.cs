@@ -258,7 +258,7 @@ namespace HRMS.Application.Services.Chat
 
             if(fileId is not null)
             {
-                var attachment = new Attachment();
+                var attachment = new HRMS.Domain.Entites.Attachment();
                 attachment.Attach(messageId, fileId.Value);
                 _unitOfWork.AttachmentsRepo.Add(attachment);
                 await _unitOfWork.SaveAsync();
@@ -478,7 +478,6 @@ namespace HRMS.Application.Services.Chat
 
             return ApiResponseDto.SuccessStatus("");
         }
-
         public async Task<ApiResponseDto> GetAttachmentFileAsync(Guid Id)
         {
             var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
@@ -488,66 +487,21 @@ namespace HRMS.Application.Services.Chat
             if (attachment == null || attachment.File == null)
                 return ApiResponseDto.FailureStatus("Attachment not found.");
 
-            var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
+            var fileRes = await _fileServices.GetFileBytesByStoredFileIdAsync(attachment.File.Id);
 
-            if(string.IsNullOrEmpty(file))
-                return ApiResponseDto.FailureStatus("Attachment file could not be retrieved.");
-
-            return ApiResponseDto.SuccessStatus(new FileBase64ResponseDto
-            {
-                FileBase64 = file,
-                FileId = attachment.File.GuidId
-            });
+            return ApiResponseDto.SuccessStatus(fileRes);
         }
-        public async Task<ApiResponseDto> GetAttachmentFilesAsync(ListGuidIdRequestDto request)
+        public async Task<FileResponseDto?> GetAttachmentFileResponseAsync(Guid Id)
         {
-            //var attachments = await _unitOfWork.AttachmentsRepo.TableNoTracking
-            //    .Include(a => a.File)
-            //    .Where(a => a.File != null && request.IdList.Contains(a.File.GuidId))
-            //    .ToListAsync();
+            var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
+                .Include(a => a.File)
+                .FirstOrDefaultAsync(a => a.File != null && a.File.GuidId == Id);
 
-            //if (attachments.Count == 0)
-            //    return ApiResponseDto.FailureStatus("Attachment not found.");
+            if (attachment == null || attachment.File == null)
+                return null;
 
-            List<FileBase64ResponseDto> images = [];
+            return await _fileServices.GetFileBytesByStoredFileIdAsync(attachment.File.Id);
 
-            //foreach(var attachment in attachments)
-            //{
-            //    if(attachment.File == null) continue;
-
-            //    var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
-
-            //    if (string.IsNullOrEmpty(file)) continue;
-
-            //    images.Add(new FileBase64ResponseDto
-            //    {
-            //        FileBase64 = file ?? string.Empty,
-            //        FileId = attachment.File.GuidId
-            //    });
-            //}
-
-            foreach (var id in request.IdList)
-            {
-                var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
-                    .Include(a => a.File)
-                    .FirstOrDefaultAsync(a => a.File != null && a.File.GuidId == id);
-
-                if (attachment == null || attachment.File == null)
-                    return ApiResponseDto.FailureStatus("Attachment not found.");
-
-                var file = await _fileServices.GetFileByStoredFileIdAsync(attachment.File.Id);
-
-                if (string.IsNullOrEmpty(file)) continue;
-
-                images.Add(new FileBase64ResponseDto
-                {
-                    FileBase64 = file ?? string.Empty,
-                    FileId = attachment.File.GuidId
-                });
-
-            }
-
-            return ApiResponseDto.SuccessStatus(images);
         }
     }
 }

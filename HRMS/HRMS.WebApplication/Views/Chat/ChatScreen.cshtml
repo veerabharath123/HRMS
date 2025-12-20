@@ -25,7 +25,7 @@
         </div>
     </div>
 </div>
-<div class="card-body scrollarea position-relative d-flex flex-column" id="chat-messages" data-conversation="@Model.Id">
+<div class="card-body scrollarea position-relative d-flex flex-column px-2" id="chat-messages" data-conversation="@Model.Id">
     @if(Model.Messages.Count == 0)
     {
         <div class="d-col-center">
@@ -47,7 +47,7 @@
         <partial name="ChatMessage" model="m" />
     }
     
-    <div class="flex-column align-items-start my-3" id="typing-status">
+    <div class="flex-column align-items-start" id="typing-status">
         <div class="typing-box">
             <div class="ticontainer">
                 <div class="tiblock">
@@ -71,7 +71,7 @@
         <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
         <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
         <button class="btn btn-primary me-2" type="button" id="add-attachment-btn"><i class="bi bi-paperclip"></i></button>
-        <button class="btn btn-success me-2" type="button" id="sendBtn">Send</button>
+        <button class="btn btn-success me-2 send-btn" type="button" id="sendBtn">Send</button>
     </div>
     
 </div>

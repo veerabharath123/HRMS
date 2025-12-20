@@ -41,7 +41,8 @@ namespace HRMS.WebApplication.Registrations
                 options.RequestCultureProviders.Insert(1, new CookieRequestCultureProvider { CookieName = "UserCulture" });
             });
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<ApiRequest>();
+            //builder.Services.AddScoped<ApiRequest>();
+            builder.Services.AddHttpClient<ApiRequest>();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {

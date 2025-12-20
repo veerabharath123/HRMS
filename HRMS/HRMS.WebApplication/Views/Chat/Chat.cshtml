@@ -5,13 +5,104 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
-    .message-type-file.show::after{
-        content: '';
-        background-image: url('@Url.Content("/images/spinner.png") ');  
-        background-size: 30px 30px;
+    #chat-attachment-modal .modal-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #000;
     }
-    .attached-img{
-        width: 50%;
+
+    #attachmentPreview {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        cursor: zoom-in;
+        user-select: none;
+        touch-action: none;
+        transition: transform 0.15s ease;
+        user-select:none
+    }
+
+    .overlay{
+        position: absolute;
+        inset: 0; /* exact visible height */
+        background: rgba(255, 255, 255, 0.75);
+        z-index: 10;
+        
+        align-items: center;
+        justify-content: center;
+    }
+    @@keyframes fadeHighlight {
+        0% {
+            background-color: transparent;
+        }
+
+        20%, 60% {
+            background-color: #60b6dfa1;
+        }
+
+        
+
+        100% {
+            background-color: transparent;
+        }
+    }
+
+    /* Apply this class once */
+    .fade-highlight {
+        animation: fadeHighlight 2s ease-out forwards;
+    }
+    @@media (max-width: 576px) {
+        .img-wrapper {
+            max-width: 75%;
+        }
+    }
+
+    .img-wrapper .atth-download-btn {
+        display: none !important;
+    }
+
+    .img-wrapper:not(.load):hover .atth-download-btn {
+        display: flex !important;
+    }
+
+    .atth-download-btn{
+        position: absolute;
+        right: .5rem;
+        bottom: .5rem;
+        background: #000000a3;
+        border-radius: 50%;
+        width: 1.5rem;
+        aspect-ratio: 1;
+        color: white;
+    }
+
+    .img-wrapper.load::after {
+        content: '';
+        background-image: url('@Url.Content("/images/spinner.png")');  
+        background-size: 30px 30px;
+        position: absolute;
+        aspect-ratio: 1 / 1;
+        width: 30px;
+    }
+    .img-wrapper {
+        max-width: 260px; /* WhatsApp bubble width */
+        overflow: hidden;
+        display:flex;
+        justify-content:center;
+        align-items: center;
+        position: relative;
+    }
+
+    .img-wrapper .attached-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        max-height: 320px; /* Prevent tall images */
+        object-fit: contain; /* Keep full image visible */
+        background: #f1f1f1;
+        min-height: 100px;
     }
     .new-message-indicator {
         position: sticky;
@@ -29,9 +120,10 @@
 
     #typing-status{
         display: none ;
+        padding:.5rem;
     }
     #typing-status.show {
-            display: flex !important;
+        display: flex !important;
     }
 
     .user-clickable.show-typing p.typing-message,
@@ -58,10 +150,18 @@
         background-color: dodgerblue;
         color: white;
     }
+    .message-section{
+        padding: .5rem;
+    }
 
     .message-section:has(.message-box:hover) .message-sender-name,
     .message-section:hover .message-options-btn {
         opacity: 1;
+    }
+
+    .message-type-file {
+        display:flex;
+        justify-content: center;
     }
 
     .message-sender-name{
@@ -371,7 +471,48 @@
             </div>
         </div>
     </div>
+    <div class="modal fade show" id="chat-attachment-modal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-dark" id="zoomOutBtn">
+                            <i class="bi bi-zoom-out"></i>
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-dark" id="zoomInBtn">
+                            <i class="bi bi-zoom-in"></i>
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-dark" id="resetZoomBtn">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+
+                        <a id="downloadAttachmentBtn"
+                           class="btn btn-sm btn-outline-dark"
+                           download>
+                            <i class="bi bi-download"></i>
+                        </a>
+
+                        
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img class="img-fluid" id="attachmentPreview" draggable="false" />
+                </div>
+                <div class="card-footer d-flex">
+                    <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput-attach"></textarea>
+                    <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+                    <button class="btn btn-success send-btn" type="button" id="sendBtn-attach">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <button class="d-none" data-bs-toggle="modal" data-bs-target="#chat-file-upload-modal"  id="attachment-btn"> click</button>
+    <button class="d-none" data-bs-toggle="modal" data-bs-target="#chat-attachment-modal" id="attachment-pop-btn"> click</button>
 </div>
 
 <script nonce="@Html.ScriptNonce()">
@@ -430,7 +571,6 @@
                     const lastMessageSection = $container.find('.message-section-other').last();
 
                     checkLastMessageForSeen(lastMessageSection, conversationId);
-                    checkAndLoadImages();
                 }
             }
         )
@@ -469,8 +609,8 @@
 
     $(document).on('click','#sendBtn', function(){
         
-        const message = messageInput.val().trim();
-        const conversationId = messageInput.parent().attr('id');
+        const message = $('#messageInput').val().trim();
+        const conversationId = $('#messageInput').parent().attr('id');
         const parentMessageId = $('.reply-box').data('message-id') || null;
 
         sendMessage({
@@ -505,7 +645,13 @@
             const container = document.getElementById("chat-messages");
             const target = $(`.message-section#${id}`)[0];
 
+            if(!target) return;
+
             container.scrollTop = target.offsetTop - container.offsetTop;
+
+            target.classList.remove('fade-highlight');
+            void target.offsetWidth;
+            target.classList.add('fade-highlight');
         }
     })
 
@@ -528,9 +674,6 @@
 
                     if(!$('#reply-container').hasClass('d-none')) 
                         $('#reply-container .btn-close').trigger('click')
-
-                    const file = $message.find('.message-type-file');
-                    if(file) loadFile(file);
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -539,13 +682,14 @@
     }
 
     function createMessage(data){
+        const container = $('#chat-messages');
         ajaxLoadHtml(
             '@Url.Action("CreateMessageHtml","Chat")',
             JSON.stringify(data),
             '#typing-status',
             { 
                 beforeLoad: function(){
-                    const nonReadMessage = $container.find('.message-section-other .message-time[data-read="False"]').first()
+                    const nonReadMessage = container.find('.message-section-other .message-time[data-read="False"]').first()
                     $('#new-message-indicator').insertBefore(nonReadMessage.closest('.message-section-other'))
                 },
                 afterLoad: function(){
@@ -556,7 +700,7 @@
                     if(!$('#chat-box').hasClass('open-chat')) return;
 
                     if(userIsNearBottom){
-                        const lastMessageSection = $container.find('.message-section-other').last();
+                        const lastMessageSection = container.find('.message-section-other').last();
                         checkLastMessageForSeen(lastMessageSection,data.conversationId )
                     }
                     
@@ -677,11 +821,20 @@
     let debounceTimer;
     const typingTimeoutMs = 3000
 
-    $(document).on("keydown", "#messageInput", function (e) {
+    $(document).on("keydown", "#messageInput,#messageInput-attach", function (e) {
         if (e.key === "Enter") {
             if (e.shiftKey) return;
             e.preventDefault();
-            $("#sendBtn").trigger('click');
+            debugger
+
+            $(e.target).closest('div').find('.send-btn').trigger('click');
+            clearTimeout(debounceTimer);
+            clearTimeout(typingTimeout);
+            const conversationId = $('#chat-messages').data('conversation');
+            SendTypingStatus({
+                ConversationId: conversationId,
+                IsTyping: false
+            });
         }
     })
 
@@ -765,16 +918,16 @@
     
 
     function initLazyLoading() {
-        $container.off('scroll.lazy').on('scroll.lazy', function () {
+        $('#chat-messages').off('scroll.lazy').on('scroll.lazy', function () {
             if (this.scrollTop <= 5) {
-                getPreviousMessages($container.data('conversation'));
+                getPreviousMessages($('#chat-messages').data('conversation'));
             }
         });
     }
     function getPreviousMessages(conversationId) {
         if (loading || !hasMore) return;
 
-        const firstMessage = $container.find('.message-section').first();
+        const firstMessage = $('#chat-messages').find('.message-section').first();
 
         if (!firstMessage.length) return;
 
@@ -786,7 +939,7 @@
 
         loading = true;
 
-        const previousScrollHeight = $chat[0].scrollHeight;
+        const previousScrollHeight = $('#chat-messages')[0].scrollHeight;
 
         ajaxLoadHtml(
             '@Url.Action("GetPreviousMessages", "Chat")',
@@ -800,10 +953,10 @@
                 useDefaultSuccessCallBack: false,
                 afterLoad: function () {
 
-                    const newScrollHeight = $container[0].scrollHeight;
-                    $container.scrollTop(newScrollHeight - previousScrollHeight);
+                    const newScrollHeight = $('#chat-messages')[0].scrollHeight;
+                    $('#chat-messages').scrollTop(newScrollHeight - previousScrollHeight);
 
-                    if ($container.find('.message-section').first()[0] === firstMessage[0]) {
+                    if ($('#chat-messages').find('.message-section').first()[0] === firstMessage[0]) {
                         hasMore = false;
                     }
 
@@ -816,9 +969,9 @@
     const BOTTOM_TOLERANCE = 50; // px
     const debouncedHideIndicator = debounceFn(hideNewMessageIndicator, 500);
     function initScrollStateTracking() {
-        $container.off('scroll').on('scroll', function() {
+        $('#chat-messages').off('scroll').on('scroll', function() {
             const distanceFromBottom =
-                $container[0].scrollHeight - $container[0].scrollTop - $container[0].clientHeight;
+                this.scrollHeight - this.scrollTop - this.clientHeight;
 
             userIsNearBottom = distanceFromBottom <= BOTTOM_TOLERANCE;
 
@@ -843,8 +996,8 @@
     }
 
     function hideNewMessageIndicator() {
-        const lastMessageSection =  $container.find('.message-section-other').last();
-        checkLastMessageForSeen(lastMessageSection,$container.data('conversation'))
+        const lastMessageSection =  $('#chat-messages').find('.message-section-other').last();
+        checkLastMessageForSeen(lastMessageSection,$('#chat-messages').data('conversation'))
         $('#new-message-indicator').addClass('d-none');
     }
     
@@ -853,87 +1006,241 @@
         hideNewMessageIndicator()
     })
 
-    function checkAndLoadImages(){
-        debugger
-        const fileSections = $('#chat-messages').find('.message-type-file img');
-        const idsToLoad = [];
-        fileSections.each(function(){
-            const fileImage = $(this);
-            const id =  fileImage.attr('id').split('-attachment')[0]
-            if(!fileImage.attr('src') && id){
-                idsToLoad.push(id);
-            }
-        });
-        loadFiles(idsToLoad);
-    }
-    function loadFiles(ids){
-        if(!ids.length) return;
-
-        ajaxPost(
-            '@Url.Action("GetAttachmentFiles", "Chat")',
-            JSON.stringify({ IdList : ids}),
-            function(res){
-                if(res?.success && res?.data?.length)
-                {
-                    res.data.forEach(f =>{
-                        setImageSrc(`#${f.fileId}-attachment`, f.fileBase64)
-                    })
-                    scrollToBottom();
-                }
-            },
-            { useDefaultSuccessCallBack: false }
-        )
-    }
-
-    function loadFile(fileSection){
-        const fileImage = fileSection.find('img')[0];
-        const id =  fileImage.id.split('-attachment')[0]
-        if(!fileImage && id) return;
-
-        scrollToBottom();
-
-        $(fileImage).addClass('show');
-
-        ajaxPost(
-            '@Url.Action("GetAttachmentFile", "Chat")',
-            JSON.stringify({ Id : id}),
-            function(res){
-                if(res?.success && res?.data)
-                {
-                    setImageSrc(`#${res.data.fileId}-attachment`, res.data.fileBase64)
-                    fileImage.removeClass('show');
-                    scrollToBottom();
-                }
-            },
-            { useDefaultSuccessCallBack: false }
-        )
-    }
-
     $('#chat-file-upload-modal #upload').on('file:upload',function(e , files){
         const formData = new FormData();
         formData.append('file',files.files[0]);
-        console.log(files.files[0].name)
+        $('#attachment-pop-btn').trigger('click');
+        const objectUrl = URL.createObjectURL(files.files[0]);
+        $('#chat-attachment-modal').find('img').attr('src',objectUrl);
+        $('#messageInput-attach').val('')
+        bootstrap.Modal.getInstance(document.getElementById('chat-file-upload-modal')).hide();
 
-        ajaxPostFile(
-            '@Url.Action("FileUpload", "File")',
-            formData,
-            function(res){
-                if(res?.success && res?.data){
-                    const att = bootstrap.Modal.getInstance(document.getElementById('chat-file-upload-modal'))
-                    att.hide();
-                    sendMessage({
-                        ConversationId: $('#chat-messages').data('conversation'),
-                        Content: files.files[0].name,
-                        ParentMessageId: null,
-                        MessageType: MESSAGE_TYPES.File,
-                        FileId: res.data || null
-                    });
-                }
-            },
-            { useDefaultSuccessCallBack: false, spinner : true }
-        );
+        $('#sendBtn-attach').off('click').on('click',function(){
+            bootstrap.Modal.getInstance(document.getElementById('chat-attachment-modal')).hide();
+            ajaxPostFile(
+                '@Url.Action("FileUpload", "File")',
+                formData,
+                function(res){
+                    if(res?.success && res?.data){
+                        
+                        sendMessage({
+                            ConversationId: $('#chat-messages').data('conversation'),
+                            Content: $('#messageInput-attach').val(),
+                            ParentMessageId: null,
+                            MessageType: MESSAGE_TYPES.File,
+                            FileId: res.data || null
+                        });
+                    }
+                },
+                { useDefaultSuccessCallBack: false, spinner : true }
+            );
+        })
+        return
+
+        
     });
     $(document).on('click','#add-attachment-btn', function(){
         $('#attachment-btn').trigger('click')
     })
+    function handleChatImage(img) {
+        const container = img.closest('.message-type-file');
+        if (!container) return;
+
+        // Case 1: Image already loaded (cache)
+        if (img.complete && img.naturalWidth !== 0) {
+            container.classList.remove('load');
+            if(userIsNearBottom) scrollToBottom();
+            return;
+        }
+
+        // Case 2: Image loads later
+        const onDone = () => {
+            container.classList.remove('load');
+            img.removeEventListener('load', onDone);
+            img.removeEventListener('error', onDone);
+            if(userIsNearBottom) scrollToBottom();
+        };
+
+        img.addEventListener('load', onDone);
+        img.addEventListener('error', onDone);
+    }
+
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            m.addedNodes.forEach(node => {
+                if (node.nodeType === 1) {
+                    node.querySelectorAll?.('.message-type-file img')?.forEach(handleChatImage);
+                }
+            });
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+</script>
+
+<script nonce="@Html.ScriptNonce()">
+        (function () {
+        const modal = document.getElementById('chat-attachment-modal');
+        const img = document.getElementById('attachmentPreview');
+
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const resetZoomBtn = document.getElementById('resetZoomBtn');
+        const downloadBtn = document.getElementById('downloadAttachmentBtn');
+
+        if (!modal || !img) return;
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        const MIN_SCALE = 1;
+        const MAX_SCALE = 4;
+        const ZOOM_STEP = 0.25;
+
+        /* ------------------ CORE ------------------ */
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function applyTransform() {
+            constrainBounds();
+            img.style.transform =
+                `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+
+            img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+        }
+
+        function resetTransform() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            applyTransform();
+        }
+
+        /* ------------------ BOUNDS ------------------ */
+
+        function constrainBounds() {
+            if (scale === 1) {
+                translateX = 0;
+                translateY = 0;
+                return;
+            }
+
+            const rect = img.getBoundingClientRect();
+            const parent = img.parentElement.getBoundingClientRect();
+
+            const maxX = (rect.width - parent.width) / 2;
+            const maxY = (rect.height - parent.height) / 2;
+
+            translateX = clamp(translateX, -maxX, maxX);
+            translateY = clamp(translateY, -maxY, maxY);
+        }
+
+        /* ------------------ BUTTON ZOOM ------------------ */
+
+        zoomInBtn.addEventListener('click', () => {
+            scale = clamp(scale + ZOOM_STEP, MIN_SCALE, MAX_SCALE);
+            applyTransform();
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            scale = clamp(scale - ZOOM_STEP, MIN_SCALE, MAX_SCALE);
+            applyTransform();
+        });
+
+        resetZoomBtn.addEventListener('click', resetTransform);
+
+        /* ------------------ DOUBLE CLICK ------------------ */
+
+        img.addEventListener('dblclick', () => {
+            scale = scale > 1 ? 1 : 2;
+            translateX = 0;
+            translateY = 0;
+            applyTransform();
+        });
+
+        /* ------------------ MOUSE WHEEL ZOOM ------------------ */
+
+        img.addEventListener('wheel', e => {
+            e.preventDefault();
+            scale = clamp(scale + (e.deltaY < 0 ? 0.2 : -0.2), MIN_SCALE, MAX_SCALE);
+            applyTransform();
+        }, { passive: false });
+
+        /* ------------------ DRAG / PAN ------------------ */
+
+        img.addEventListener('mousedown', e => {
+            if (scale === 1) return;
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            img.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            applyTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+        });
+
+        /* ------------------ PINCH TO ZOOM ------------------ */
+
+        let startDistance = 0;
+        let startScale = 1;
+
+        img.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                startDistance = getDistance(e.touches[0], e.touches[1]);
+                startScale = scale;
+            }
+        });
+
+        img.addEventListener('touchmove', e => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const newDistance = getDistance(e.touches[0], e.touches[1]);
+                scale = clamp(startScale * (newDistance / startDistance), MIN_SCALE, MAX_SCALE);
+                applyTransform();
+            }
+        }, { passive: false });
+
+        function getDistance(t1, t2) {
+            return Math.hypot(
+                t2.clientX - t1.clientX,
+                t2.clientY - t1.clientY
+            );
+        }
+
+        /* ------------------ DOWNLOAD ------------------ */
+
+        function setDownload(url, filename = 'attachment') {
+            downloadBtn.href = url;
+            downloadBtn.setAttribute('download', filename);
+        }
+
+        /* ------------------ RESET ON CLOSE ------------------ */
+
+        modal.addEventListener('hidden.bs.modal', resetTransform);
+
+        /* ------------------ PUBLIC API ------------------ */
+
+        window.openAttachmentPreview = function (url, filename) {
+            img.src = url;
+            setDownload(url, filename);
+            resetTransform();
+        };
+    })();
+
 </script>

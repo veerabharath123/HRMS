@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -11,16 +12,18 @@ namespace HRMS.WebApplication.Class
     {
         private readonly string _apiBaseUrl;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
 
         private const string APIBASE_URL_SETTING = "WebAppSettings:ApiBaseUrl";
         private const string API_REQUEST_FAILED = "Request failed.";
         private const string API_AUTH_NAME = "Bearer";
         private const string NOT_A_VALID_URL = "Invalid Url.";
 
-        public ApiRequest(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public ApiRequest(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
         {
             _apiBaseUrl = configuration[APIBASE_URL_SETTING] ?? throw new ArgumentNullException(nameof(configuration));
             _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
         }
         private string GetAccessToken()
         {
@@ -112,6 +115,29 @@ namespace HRMS.WebApplication.Class
                 // Handle exceptions (log them, rethrow them, etc.)
                 return ApiResponseModel<TResponse>.FailureStatus(ex.ToString());
             }
+        }
+        public async Task<RawFileResponse?> GetRawFileAsync(
+            string actionPath,
+            bool authRequired = false,
+            CancellationToken cancellationToken = default)
+        {
+            if (!TryCreateUri(_apiBaseUrl + actionPath, out var uri))
+                return null;
+
+            var request = CreateRequest(HttpMethod.Get, uri!, null, authRequired);
+
+            var response = await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                response.Dispose();
+                return null;
+            }
+
+            return new RawFileResponse(response);
         }
         private static async Task<ApiResponseModel<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {
