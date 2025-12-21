@@ -39,5 +39,7 @@ namespace HRMS.SharedKernel.Models.Common.Class
         public string Gender { get; set; } = string.Empty;
         public bool UserExists { get; set; } 
         public string Email { get; set; } = string.Empty;
+        public Guid GuidId { get; set; } 
+        public bool HasPicture { get; set; } 
     }
 }

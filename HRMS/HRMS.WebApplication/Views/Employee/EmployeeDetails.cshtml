@@ -37,7 +37,14 @@
 
                         <div class="col-6 col-sm-12 mb-3">
                             <div class="d-flex align-items-center justify-content-center position-relative" id="emp-detail-img-block">
-                                <img src="~/images/user-no-img.png" class="img-thumbnail bg-dark emp-detail-img rounded-circle profile-picture" />
+                                @if (!Model.EmployeeDetails.HasPicture)
+                                {
+                                    <img class="img-thumbnail bg-dark emp-detail-img rounded-circle profile-picture" src="~/images/user-no-img.png" alt="@Model.EmployeeDetails.FirstName">
+                                }
+                                else
+                                {
+                                    <img class="img-thumbnail bg-dark emp-detail-img rounded-circle profile-picture" src="@Url.Action("GetEmployeeImage", "Employee", new { id = Model.EmployeeDetails.GuidId })" alt="@Model.EmployeeDetails.FirstName">
+                                }
                             </div>
                         </div>
                         <div class="col-6 col-sm-12">

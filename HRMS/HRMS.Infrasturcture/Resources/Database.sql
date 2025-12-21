@@ -341,7 +341,8 @@ BEGIN
 	);
 
 END
-select * from users
+
+select email from employee
 
 GO
 
@@ -866,3 +867,9 @@ m.ConversationId = 1 and m.CreatedDate <= GETDATE()
 and ms.EmployeeId = 2 and m.SenderId <> 2 --and ms.ReadAt is null
 
 truncate table  Messages
+
+update users set EmployeeId = 9 where id = 5 
+UPDATE e
+SET e.email = u.email
+FROM employee e
+JOIN users u ON u.employeeid = e.id;

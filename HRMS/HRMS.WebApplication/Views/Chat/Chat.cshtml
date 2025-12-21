@@ -5,34 +5,7 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
-    #chat-attachment-modal .modal-body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        background: #000;
-    }
-
-    #attachmentPreview {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        cursor: zoom-in;
-        user-select: none;
-        touch-action: none;
-        transition: transform 0.15s ease;
-        user-select:none
-    }
-
-    .overlay{
-        position: absolute;
-        inset: 0; /* exact visible height */
-        background: rgba(255, 255, 255, 0.75);
-        z-index: 10;
-        
-        align-items: center;
-        justify-content: center;
-    }
+    
     @@keyframes fadeHighlight {
         0% {
             background-color: transparent;
@@ -472,41 +445,19 @@
         </div>
     </div>
     <div class="modal fade show" id="chat-attachment-modal" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+        <div class="modal-dialog modal-fullscreen modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-sm btn-outline-dark" id="zoomOutBtn">
-                            <i class="bi bi-zoom-out"></i>
-                        </button>
-
-                        <button class="btn btn-sm btn-outline-dark" id="zoomInBtn">
-                            <i class="bi bi-zoom-in"></i>
-                        </button>
-
-                        <button class="btn btn-sm btn-outline-dark" id="resetZoomBtn">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-
-                        <a id="downloadAttachmentBtn"
-                           class="btn btn-sm btn-outline-dark"
-                           download>
-                            <i class="bi bi-download"></i>
-                        </a>
-
-                        
-                    </div>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">Send image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <img class="img-fluid" id="attachmentPreview" draggable="false" />
+                    <partial name="Utilities/_ImageViewer" />
                 </div>
                 <div class="card-footer d-flex">
                     <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput-attach"></textarea>
-                    <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
-                    <button class="btn btn-success send-btn" type="button" id="sendBtn-attach">Send</button>
+                    <button class="btn btn-outline-secondary  me-2 emoji-opener" type="button"><i class="bi bi-emoji-smile"></i></button>
+                    <button class="btn btn-success send-btn d-center" type="button" id="sendBtn-attach">Send<span class="spinner-border spinner-border-sm ms-2"></span></button>
                 </div>
             </div>
         </div>
@@ -514,6 +465,8 @@
     <button class="d-none" data-bs-toggle="modal" data-bs-target="#chat-file-upload-modal"  id="attachment-btn"> click</button>
     <button class="d-none" data-bs-toggle="modal" data-bs-target="#chat-attachment-modal" id="attachment-pop-btn"> click</button>
 </div>
+
+
 
 <script nonce="@Html.ScriptNonce()">
     let loading = false;
@@ -571,6 +524,9 @@
                     const lastMessageSection = $container.find('.message-section-other').last();
 
                     checkLastMessageForSeen(lastMessageSection, conversationId);
+
+                    
+
                 }
             }
         )
@@ -825,7 +781,6 @@
         if (e.key === "Enter") {
             if (e.shiftKey) return;
             e.preventDefault();
-            debugger
 
             $(e.target).closest('div').find('.send-btn').trigger('click');
             clearTimeout(debounceTimer);
@@ -838,7 +793,7 @@
         }
     })
 
-    $(document).on("input", "#messageInput", function (e) {
+    $(document).on("input", "#messageInput,#messageInput-attach", function (e) {
         const conversationId = $(this).parent().attr('id');
 
         const request = {
@@ -890,7 +845,7 @@
         }
     });
 
-    $(document).on("blur", "#messageInput", function () {
+    $(document).on("blur", "#messageInput,#messageInput-attach", function () {
         const conversationId = $(this).parent().attr('id');
 
         if (isTyping) {
@@ -1005,40 +960,112 @@
         scrollToBottom()
         hideNewMessageIndicator()
     })
+    const attachmentViewer = ImageViewerFactory.create({
+        modalId: '#chat-attachment-modal',
+        imageId: '#chat-attachment-modal .preview-image',
+        zoomInBtnId: '#chat-attachment-modal .zoomInBtn',
+        zoomOutBtnId: '#chat-attachment-modal .zoomOutBtn',
+        resetBtnId: '#chat-attachment-modal .resetZoomBtn',
+        downloadBtnId: '#chat-attachment-modal .downloadAttachmentBtn',
 
-    $('#chat-file-upload-modal #upload').on('file:upload',function(e , files){
-        const formData = new FormData();
-        formData.append('file',files.files[0]);
-        $('#attachment-pop-btn').trigger('click');
-        const objectUrl = URL.createObjectURL(files.files[0]);
-        $('#chat-attachment-modal').find('img').attr('src',objectUrl);
-        $('#messageInput-attach').val('')
-        bootstrap.Modal.getInstance(document.getElementById('chat-file-upload-modal')).hide();
-
-        $('#sendBtn-attach').off('click').on('click',function(){
-            bootstrap.Modal.getInstance(document.getElementById('chat-attachment-modal')).hide();
-            ajaxPostFile(
-                '@Url.Action("FileUpload", "File")',
-                formData,
-                function(res){
-                    if(res?.success && res?.data){
-                        
-                        sendMessage({
-                            ConversationId: $('#chat-messages').data('conversation'),
-                            Content: $('#messageInput-attach').val(),
-                            ParentMessageId: null,
-                            MessageType: MESSAGE_TYPES.File,
-                            FileId: res.data || null
-                        });
-                    }
-                },
-                { useDefaultSuccessCallBack: false, spinner : true }
-            );
-        })
-        return
-
-        
+        enableZoomButtons: true,
+        enableWheelZoom: true,
+        enableDrag: true,
+        enablePinchZoom: true,
+        enableDoubleClickZoom: true,
+        enableDownload: true
     });
+    const uploadModal = document.getElementById('chat-file-upload-modal');
+    const previewModal = document.getElementById('chat-attachment-modal');
+
+    const $previewImg = $('#chat-attachment-modal img');
+    const $messageInput = $('#messageInput-attach');
+    const $sendBtn = $('#sendBtn-attach');
+
+    let currentFile = null;
+    let currentObjectUrl = null;
+
+    $('#chat-file-upload-modal #upload').on('file:upload', function (e, files) {
+        const file = files?.files?.[0];
+        if (!file) return;
+
+        preparePreview(file);
+        showPreviewModal();
+    });
+
+    function preparePreview(file) {
+        cleanupObjectUrl();
+
+        currentFile = file;
+        currentObjectUrl = URL.createObjectURL(file);
+        attachmentViewer.open(currentObjectUrl)
+        $messageInput.val('');
+    }
+
+    function showPreviewModal() {
+        $('#attachment-pop-btn').trigger('click');
+        bootstrap.Modal.getInstance(uploadModal)?.hide();
+    }
+
+    $sendBtn.on('click', function () {
+        if (!currentFile) return;
+
+        toggleSendButton(true);
+        uploadFile(currentFile);
+    }).find('span').hide();
+
+    function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        ajaxPostFile(
+            '@Url.Action("FileUpload", "File")',
+            formData,
+            handleUploadSuccess,
+            { useDefaultSuccessCallBack: false }
+        );
+    }
+
+    function handleUploadSuccess(res) {
+        toggleSendButton(false);
+
+        if (!res?.success || !res?.data) return;
+
+        closePreviewModal();
+        sendChatMessage(res.data);
+        cleanupObjectUrl();
+        attachmentViewer.reset()
+    }
+
+    function sendChatMessage(fileId) {
+        sendMessage({
+            ConversationId: $('#chat-messages').data('conversation'),
+            Content: $messageInput.val(),
+            ParentMessageId: null,
+            MessageType: MESSAGE_TYPES.File,
+            FileId: fileId
+        });
+    }
+
+    function toggleSendButton(disabled) {
+        $sendBtn.prop('disabled', disabled);
+        $sendBtn.find('span').toggle(disabled);
+    }
+
+    function closePreviewModal() {
+        bootstrap.Modal.getInstance(previewModal)?.hide();
+    }
+
+    function cleanupObjectUrl() {
+        if (currentObjectUrl) {
+            URL.revokeObjectURL(currentObjectUrl);
+            currentObjectUrl = null;
+        }
+        currentFile = null;
+    }
+
+
+
     $(document).on('click','#add-attachment-btn', function(){
         $('#attachment-btn').trigger('click')
     })
@@ -1076,171 +1103,17 @@
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-</script>
-
-<script nonce="@Html.ScriptNonce()">
-        (function () {
-        const modal = document.getElementById('chat-attachment-modal');
-        const img = document.getElementById('attachmentPreview');
-
-        const zoomInBtn = document.getElementById('zoomInBtn');
-        const zoomOutBtn = document.getElementById('zoomOutBtn');
-        const resetZoomBtn = document.getElementById('resetZoomBtn');
-        const downloadBtn = document.getElementById('downloadAttachmentBtn');
-
-        if (!modal || !img) return;
-
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-
-        const MIN_SCALE = 1;
-        const MAX_SCALE = 4;
-        const ZOOM_STEP = 0.25;
-
-        /* ------------------ CORE ------------------ */
-
-        function clamp(value, min, max) {
-            return Math.min(Math.max(value, min), max);
-        }
-
-        function applyTransform() {
-            constrainBounds();
-            img.style.transform =
-                `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-
-            img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
-        }
-
-        function resetTransform() {
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            applyTransform();
-        }
-
-        /* ------------------ BOUNDS ------------------ */
-
-        function constrainBounds() {
-            if (scale === 1) {
-                translateX = 0;
-                translateY = 0;
-                return;
-            }
-
-            const rect = img.getBoundingClientRect();
-            const parent = img.parentElement.getBoundingClientRect();
-
-            const maxX = (rect.width - parent.width) / 2;
-            const maxY = (rect.height - parent.height) / 2;
-
-            translateX = clamp(translateX, -maxX, maxX);
-            translateY = clamp(translateY, -maxY, maxY);
-        }
-
-        /* ------------------ BUTTON ZOOM ------------------ */
-
-        zoomInBtn.addEventListener('click', () => {
-            scale = clamp(scale + ZOOM_STEP, MIN_SCALE, MAX_SCALE);
-            applyTransform();
-        });
-
-        zoomOutBtn.addEventListener('click', () => {
-            scale = clamp(scale - ZOOM_STEP, MIN_SCALE, MAX_SCALE);
-            applyTransform();
-        });
-
-        resetZoomBtn.addEventListener('click', resetTransform);
-
-        /* ------------------ DOUBLE CLICK ------------------ */
-
-        img.addEventListener('dblclick', () => {
-            scale = scale > 1 ? 1 : 2;
-            translateX = 0;
-            translateY = 0;
-            applyTransform();
-        });
-
-        /* ------------------ MOUSE WHEEL ZOOM ------------------ */
-
-        img.addEventListener('wheel', e => {
-            e.preventDefault();
-            scale = clamp(scale + (e.deltaY < 0 ? 0.2 : -0.2), MIN_SCALE, MAX_SCALE);
-            applyTransform();
-        }, { passive: false });
-
-        /* ------------------ DRAG / PAN ------------------ */
-
-        img.addEventListener('mousedown', e => {
-            if (scale === 1) return;
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-            img.style.cursor = 'grabbing';
-        });
-
-        window.addEventListener('mousemove', e => {
-            if (!isDragging) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            applyTransform();
-        });
-
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-            img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
-        });
-
-        /* ------------------ PINCH TO ZOOM ------------------ */
-
-        let startDistance = 0;
-        let startScale = 1;
-
-        img.addEventListener('touchstart', e => {
-            if (e.touches.length === 2) {
-                startDistance = getDistance(e.touches[0], e.touches[1]);
-                startScale = scale;
-            }
-        });
-
-        img.addEventListener('touchmove', e => {
-            if (e.touches.length === 2) {
-                e.preventDefault();
-                const newDistance = getDistance(e.touches[0], e.touches[1]);
-                scale = clamp(startScale * (newDistance / startDistance), MIN_SCALE, MAX_SCALE);
-                applyTransform();
-            }
-        }, { passive: false });
-
-        function getDistance(t1, t2) {
-            return Math.hypot(
-                t2.clientX - t1.clientX,
-                t2.clientY - t1.clientY
-            );
-        }
-
-        /* ------------------ DOWNLOAD ------------------ */
-
-        function setDownload(url, filename = 'attachment') {
-            downloadBtn.href = url;
-            downloadBtn.setAttribute('download', filename);
-        }
-
-        /* ------------------ RESET ON CLOSE ------------------ */
-
-        modal.addEventListener('hidden.bs.modal', resetTransform);
-
-        /* ------------------ PUBLIC API ------------------ */
-
-        window.openAttachmentPreview = function (url, filename) {
-            img.src = url;
-            setDownload(url, filename);
-            resetTransform();
-        };
-    })();
-
+    
+    EmojiPicker.create({
+        namespace: 'chat',
+        triggerSelector: '#openEmojiModal',
+        inputContainerSelector: '#chat-window',
+        inputSelector: '.message-input'
+    });
+    EmojiPicker.create({
+        namespace: 'chat-attach',
+        triggerSelector: '#chat-attachment-modal .emoji-opener',
+        inputContainerSelector: '#chat-attachment-modal',
+        inputSelector: '.message-input'
+    });
 </script>

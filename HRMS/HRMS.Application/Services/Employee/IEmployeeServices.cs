@@ -11,5 +11,6 @@ namespace HRMS.Application.Services.Employee
         Task<ApiResponseDto> GetEmployeeSearchListByNameOrEmailAsync(string name);
         Task<ApiResponseDto> GetEmployeeDetailsAsync(int employeeId);
         Task<ApiResponseDto> GetEmployeeByIdAsync(int employeeId);
+        Task<FileResponseDto?> GetEmployeeImageAsync(Guid id);
     }
 }

@@ -97,6 +97,31 @@ namespace HRMS.WebApplication.Controllers
             return JsonResponse(response);
         }
 
+        public async Task<IActionResult> GetEmployeeImage(Guid id, CancellationToken ct)
+        {
+            using var raw = await _api.GetRawFileAsync(
+                $"/Employees/GetEmployeeImage/{id}",
+                authRequired: true,
+                cancellationToken: ct);
+
+            if (raw == null)
+                return NotFound();
+
+            await using var ms = new MemoryStream();
+            await raw.Stream.CopyToAsync(ms, ct);
+
+            if (ms.Length == 0)
+                return NotFound(); // proves empty stream
+
+            Response.Headers["Cache-Control"] = "private, max-age=31536000";
+            Response.Headers["Content-Disposition"] = "inline";
+
+            return File(
+                ms.ToArray(),
+                raw.ContentType,
+                enableRangeProcessing: true
+            );
+        }
         [HttpPost]
         public async Task<IActionResult> GetEmployeeSearchListByNameOrEmail([FromBody] EmployeeSearchRequestDto request)
         {

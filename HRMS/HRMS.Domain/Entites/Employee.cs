@@ -15,6 +15,7 @@ namespace HRMS.Domain.Entites
         public string LastName { get; private set; } = string.Empty;
         public string MiddleName { get; private set; } = string.Empty;
         public string FirstName { get; private set; } = string.Empty;
+        public string Email { get; private set; } = string.Empty;
         public DateTime BirthDate { get; private set; }
         public int? GenderId { get; private set; }
         public int? MaritalStatusId { get; private set; }

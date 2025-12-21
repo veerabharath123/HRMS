@@ -69,9 +69,12 @@
     <div class="text-section d-flex" id="@Model.Id">
         
         <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput"></textarea>
-        <button class="btn me-2" type="button"><i class="bi bi-emoji-smile"></i></button>
+        <button class="btn" id="openEmojiModal">
+            <i class="bi bi-emoji-smile"></i>
+        </button>
         <button class="btn btn-primary me-2" type="button" id="add-attachment-btn"><i class="bi bi-paperclip"></i></button>
         <button class="btn btn-success me-2 send-btn" type="button" id="sendBtn">Send</button>
+        
     </div>
     
 </div>

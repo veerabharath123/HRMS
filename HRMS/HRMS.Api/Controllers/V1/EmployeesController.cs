@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Azure;
 using HRMS.Application.Services.Employee;
 using HRMS.SharedKernel.Models.Request;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +46,22 @@ namespace HRMS.Api.Controllers.V1
         {
             var result = await _employeeServices.GetEmployeeImagesAsync(request);
             return Ok(result);
+        }
+        [Authorize]
+        [HttpGet("[action]/{id:guid}")]
+        public async Task<IActionResult> GetEmployeeImage(Guid id, CancellationToken ct)
+        {
+            var response = await _employeeServices.GetEmployeeImageAsync(id);
+            if (response is null || response.FileContent is null || response.FileContent.Length == 0)
+                return NotFound();
+
+            Response.Headers["Cache-Control"] = "private, max-age=31536000";
+
+            return File(
+                response.FileContent,
+                response.FileContentType,
+                enableRangeProcessing: true
+            );
         }
         [Authorize]
         [HttpPost("[action]")]

@@ -16,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HRMS - @ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" nonce="@Html.ScriptNonce()" />
-
+    
     <link rel="stylesheet" href="~/HRMS.WebApplication.styles.css" asp-append-version="true" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/jquery/dist/jquery.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" nonce="@Html.ScriptNonce()"></script>
@@ -52,6 +52,8 @@
     <link href="~/lib/selectize.js/css/selectize.min.css" rel="stylesheet" nonce="@Html.ScriptNonce()" />
     <script src="~/lib/selectize.js/js/selectize.min.js" nonce="@Html.ScriptNonce()"></script>
     <script src="~/js/advance.form.builder.js" nonce="@Html.ScriptNonce()"></script>
+    <script src="~/js/image.preview.js" nonce="@Html.ScriptNonce()"></script>
+    <script src="~/js/emoji-picker.js" nonce="@Html.ScriptNonce()"></script>
     <link rel="stylesheet" href="" nonce="@Html.ScriptNonce()">
     @RenderSection("Scripts", required: false)
     <style nonce="@Html.ScriptNonce()">
@@ -177,6 +179,17 @@
         .sidebar.collapsed li {
             
         }
+        .img-full-preview{
+            z-index: 10000;
+            background: white;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .img-full-preview img{
+            max-height:90vh;
+            max-width: 90vw;
+        }
     </style>
 </head>
 <body class="position-relative">
@@ -191,14 +204,45 @@
 
         @* <img src="~/images/spinner.png" class="bg-image" alt="Background" /> *@
     </div>
+    <div class="modal fade emoji-picker-modal"
+         id="emojiPickerModal"
+         tabindex="-1"
+         data-bs-theme="auto" >
+
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+
+                <div class="modal-body p-2">
+
+                    <!-- Emoji Grid -->
+                    <div id="emojiPickerGrid" class="emoji-grid"></div>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs emoji-tabs w-100 mt-2">
+                        <li class="nav-item"><button class="nav-link active" data-category="recent">🕘</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="smileys">😀</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="people">🧑</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="gestures">👍</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="objects">🎉</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="symbols">❤️</button></li>
+                        <li class="nav-item"><button class="nav-link" data-category="delete">⌫</button></li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
     <script nonce="@Html.ScriptNonce()">
         window.basePath = '@(Context.Request.PathBase.Value)';
+         EmojiPicker.globalLoad({
+            emojiModalSelector: '#emojiPickerModal'
+        });
     </script>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm fixed-top">
         <div class="container-fluid">
             <button class="btn-minimal btn-minimal-primary me-2" id="sidebarToggle"><i class="bi bi-list"></i></button>
-            <a class="navbar-brand fw-bold" href="#">HRMS</a>
+            <a class="navbar-brand fw-bold" href="#" data-bs-toggle="modal" data-bs-target="#image-viewer-fukk">HRMS</a>
 
             <button class="navbar-toggler text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
                 <span class="navbar-toggler-icon d-center"><i class="bi bi-toggles"></i></span>
@@ -274,7 +318,7 @@
     </div>
 
     <div class="modal fade" id="image-viewer" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm-fullscreen h-100">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header text-center">
                     <h4 class="modal-title w-100" id="image-viewer-label">Modal title</h4>
@@ -287,9 +331,13 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>  
+    
+    
+
 
     <script defer nonce="@Html.ScriptNonce()">
+       
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
           return new bootstrap.Tooltip(tooltipTriggerEl)

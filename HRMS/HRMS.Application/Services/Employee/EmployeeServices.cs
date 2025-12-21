@@ -46,6 +46,8 @@ namespace HRMS.Application.Services.Employee
                                     Designation = des.Name,
                                     LastName = emp.LastName,
                                     FirstName = emp.FirstName,
+                                    GuidId = emp.GuidId,
+                                    HasPicture = emp.PhotoPictureId != null
                                 }
                               )
                               .FilterBy(request.FilterGroup)
@@ -72,7 +74,8 @@ namespace HRMS.Application.Services.Employee
                             DepartmentId = emp.DepartmentId,
                             DesignationId = emp.DesignationId,
                             MaritalStatusId = emp.MaritalStatusId ?? 0,
-                            GenderId = emp.GenderId
+                            GenderId = emp.GenderId,
+                            
                         }).FirstOrDefaultAsync();
 
             if (emp == null) return ApiResponseDto.FailureStatus("Employee not found.");
@@ -114,8 +117,10 @@ namespace HRMS.Application.Services.Employee
                                     ReportingManager = rm != null ? rm.FullName : string.Empty,
                                     MartialStatus = ms != null ? ms.Value : string.Empty,
                                     Gender = g != null ? g.Value : string.Empty,
-                                    Email = usr.Email,
-                                    UserExists = usr != null
+                                    Email = emp.Email,
+                                    UserExists = usr != null,
+                                    HasPicture = emp.PhotoPictureId != null,
+                                    GuidId = emp.GuidId
                                 }
                               )
                               .FirstOrDefaultAsync();
@@ -191,6 +196,14 @@ namespace HRMS.Application.Services.Employee
             }
 
             return ApiResponseDto.SuccessStatus(employeeImages);
+        }
+        public async Task<FileResponseDto?> GetEmployeeImageAsync(Guid id)
+        {
+            var employee = await _unitOfWork.EmployeeRepo.TableNoTracking.FirstOrDefaultAsync(e => e.GuidId == id && !e.IsDeleted);
+
+            if (employee is null || !employee.PhotoPictureId.HasValue) return null;
+
+            return await _fileServices.GetFileBytesByStoredFileIdAsync(employee.PhotoPictureId.Value);
         }
         private async Task<int> GetCurrentEmployeeIdAsync()
         {

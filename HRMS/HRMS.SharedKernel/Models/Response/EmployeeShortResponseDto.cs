@@ -18,6 +18,8 @@ namespace HRMS.SharedKernel.Models.Response
         public string LastName { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public Guid GuidId { get; set; } 
+        public bool HasPicture { get; set; } 
     }
     public class EmployeeDetaisResponseDto
     {
