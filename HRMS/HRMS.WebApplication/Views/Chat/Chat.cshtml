@@ -5,7 +5,11 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
-    
+    .participant-img{
+        object-fit: cover;
+        width: 50px;
+        aspect-ratio:1;
+    }
     @@keyframes fadeHighlight {
         0% {
             background-color: transparent;
@@ -505,8 +509,9 @@
         $('.sliding-menu').removeClass('show');
     });
 
-    $('.user').on('click',function(){
+    $(document).on('click','.user',function(){
         const conversationId = this.id;
+        const participantImg = $(this).prev()
 
         ajaxLoadHtml(
             '@Url.Action("GetChatConversationDetails", "Chat")',
@@ -525,8 +530,8 @@
 
                     checkLastMessageForSeen(lastMessageSection, conversationId);
 
+                    if(participantImg.length) $('#open-menu').attr('src', participantImg.attr('src'))
                     
-
                 }
             }
         )

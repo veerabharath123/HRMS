@@ -14,10 +14,12 @@ namespace HRMS.WebApplication.Controllers
     {
         private readonly ApiRequest _api;
         private readonly BreadcrumbManager _breadcrumbManager;
-        public EmployeeController(ApiRequest api , BreadcrumbManager breadcrumbManager)
+        private readonly IWebHostEnvironment _env;
+        public EmployeeController(ApiRequest api , BreadcrumbManager breadcrumbManager, IWebHostEnvironment env)
         {
             _api = api;
             _breadcrumbManager = breadcrumbManager;
+            _env = env;
         }
         [HttpGet]
         public async Task<IActionResult> GetEmployees()
@@ -85,42 +87,18 @@ namespace HRMS.WebApplication.Controllers
         {
             return View();
         }
-
-        [HttpPost]
-        public async Task<IActionResult> GetEmployeeImages([FromBody]ListIdRequestDto request)
+        public async Task<IActionResult> GetEmployeeImage(Guid? id, CancellationToken ct)
         {
-            if (request == null || request.IdList == null || request.IdList.Count == 0)
-            {
-                return JsonResponse<object>(null);
-            }
-            var response = await _api.PostAsync<List<EmpImageResponseDto>>("/Employees/GetEmployeeImages", request, true);
-            return JsonResponse(response);
-        }
+            if (id is null) return DefaultAvatar(_env.WebRootPath);
 
-        public async Task<IActionResult> GetEmployeeImage(Guid id, CancellationToken ct)
-        {
-            using var raw = await _api.GetRawFileAsync(
+            var raw = await _api.GetRawFileAsync(
                 $"/Employees/GetEmployeeImage/{id}",
                 authRequired: true,
                 cancellationToken: ct);
 
-            if (raw == null)
-                return NotFound();
+            if (raw is null) return DefaultAvatar(_env.WebRootPath);
 
-            await using var ms = new MemoryStream();
-            await raw.Stream.CopyToAsync(ms, ct);
-
-            if (ms.Length == 0)
-                return NotFound(); // proves empty stream
-
-            Response.Headers["Cache-Control"] = "private, max-age=31536000";
-            Response.Headers["Content-Disposition"] = "inline";
-
-            return File(
-                ms.ToArray(),
-                raw.ContentType,
-                enableRangeProcessing: true
-            );
+            return FileFromRawResponse(raw, true);
         }
         [HttpPost]
         public async Task<IActionResult> GetEmployeeSearchListByNameOrEmail([FromBody] EmployeeSearchRequestDto request)
@@ -150,6 +128,13 @@ namespace HRMS.WebApplication.Controllers
             await LoadEmployeeDropdownsAsync();
 
             return ReturnView("EmployeeDetails",response);
+        }
+        [HttpPost]
+        public async Task<IActionResult> LinkEmployeeToUser([FromBody] LinkEmployeeRequestDto request)
+        {
+            var response = await _api.PostAsync<bool>("/User/LinkEmployeeToUser", request, true);
+
+            return JsonResponse(response);
         }
     }
 }

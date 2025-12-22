@@ -76,12 +76,50 @@ namespace HRMS.Application.Services
                                       IsActive = u.IsActive,
                                       Email = u.Email,
                                       EmployeeId = u.EmployeeId,
-                                      EmpFullName = string.IsNullOrEmpty(emp.FirstName) || string.IsNullOrEmpty(emp.LastName) ? string.Empty : $"{emp.FirstName} {emp.LastName}"
+                                      EmpFullName = string.IsNullOrEmpty(emp.FirstName) || string.IsNullOrEmpty(emp.LastName) ? string.Empty : emp.FirstName + " " + emp.LastName
                                   })
                 .SortBy(request?.Sort).FilterBy(request?.FilterGroup)
                 .PaginateAsync(request?.Pagination);
 
             return ApiResponseDto.SuccessStatus(chatUsers);
+        }
+        public async Task<ApiResponseDto> GetUserByIdAsync(int id)
+        {
+            var user = await (from u in _unitOfWork.UserRepo.TableNoTracking
+                                   join emp in _unitOfWork.EmployeeRepo.TableNoTracking on u.EmployeeId equals emp.Id
+                                   into empJoin
+                                   from emp in empJoin.DefaultIfEmpty()
+                                   where !u.IsDeleted && u.Id == id
+                                   select new UserDetailsResponseDto
+                                   {
+                                       Id = u.Id,
+                                       UserName = u.UserName,
+                                       IsActive = u.IsActive,
+                                       Email = u.Email,
+                                   })
+                .FirstOrDefaultAsync();
+
+            if(user is null)
+                return ApiResponseDto.FailureStatus("User not found");
+
+            return ApiResponseDto.SuccessStatus(user);
+        }
+        public async Task<ApiResponseDto> LinkEmployeeToUserAsync(LinkEmployeeRequestDto request)
+        {
+            var user = await _unitOfWork.UserRepo.TableNoTracking
+                .FirstOrDefaultAsync(x => !x.IsDeleted && x.Email.ToLower() == request.Email.ToLower());
+
+            if (user is null)
+                return ApiResponseDto.FailureStatus("User with email {0} not found", request.Email);
+
+            if(user.EmployeeId is not null)
+                return ApiResponseDto.FailureStatus("User is already linked to an employee.");
+
+            user.LinkEmployee(request.EmployeeId);
+            _unitOfWork.UserRepo.Update(user);
+            var saved = await _unitOfWork.SaveAsync();
+
+            return ApiResponseDto.SuccessStatus(saved, "Employee Linked to user successfully.");
         }
         private Task<bool> CheckUserExistAsync(string username)
         {

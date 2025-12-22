@@ -22,6 +22,8 @@ namespace HRMS.SharedKernel.Models.Response
         public string? LastMessage { get; set; }
         public int? LastMessageId { get; set; }
         public int EmployeeId { get; set; }
+        public Guid? ParticipantId { get; set; }
+        public bool ParticipantHasPicture { get; set; }
     }
     public class ChatConversationDetailResponseDto
     {

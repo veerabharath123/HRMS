@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = ViewBag.ModuleTitle;
+    ViewData["Module"] = "Maintenance";
+}
+
+<div class="container-fluid">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h2 class="mt-1">@ViewBag.ModuleTitle</h2>
+
+    <form id="user-form">
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>User Info</h5>
+                        <hr />
+
+                        <partial name="User/UserForm" />
+
+                        <partial name="User/UserPasswordForm" />
+
+                        <button type="submit" class="btn btn-sm btn-primary mt-3">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script nonce="@Html.ScriptNonce()">
+        $(document).on('click', '.toggle-password', function () {
+            const $wrapper = $(this).closest('.password-toggle');
+            const $input = $wrapper.find('input');
+
+            const isPassword = $input.attr('type') === 'password';
+
+            // Toggle input type
+            $input.attr('type', isPassword ? 'text' : 'password');
+
+            // Toggle icon
+            const $icon = $(this).find('i');
+            $icon.toggleClass('bi-eye bi-eye-slash');
+        });
+
+        const userForm = FormBuilder.create('#user-form', {
+            builder:{
+                UserName: { required: true, minLength: 3 },
+                Password: { required: true, minLength: 6 },
+                ConfirmPassword: { required: true, minLength: 6, match: 'Password',notMapped: true },
+                Email: { required: true, email: true },
+            },
+            messages:{
+                ConfirmPassword: { match: 'Passwords do not match' }
+            },
+            live: true
+        });
+
+        userForm.onSubmit(function(isvalid){
+            if (!isvalid) return
+
+            ajaxPost(
+                '@Url.Action("SaveUser", "Maintenance")',
+                userForm.getValueJson(),
+                function (res) {
+                    if(!res?.success){
+                        showNotification({
+                            type: 'error',
+                            message: res?.message || 'Something went wrong!',
+                        });
+                    }
+
+                    showNotification({
+                        type: 'success',
+                        message: res?.message || 'Something went wrong!',
+                        onComplete: () => window.location.href = res.redirectTo
+                    });
+                }
+                ,{ contentType: "application/json", processData: false, useDefaultSuccessCallBack: false }
+            );
+        });
+
+    </script>
+
+</div>

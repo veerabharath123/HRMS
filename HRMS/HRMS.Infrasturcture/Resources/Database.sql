@@ -873,3 +873,5 @@ UPDATE e
 SET e.email = u.email
 FROM employee e
 JOIN users u ON u.employeeid = e.id;
+select * from employee
+update employee set email = 'eteshreddy@gmail.com' where id = 11

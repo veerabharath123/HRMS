@@ -1,0 +1,23 @@
+﻿@model UserDetailsResponseDto
+
+<div class="container-fluid">
+    <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
+    <h2 class="mt-1">@ViewBag.ModuleTitle</h2>
+
+    <form id="user-form">
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5>User Info</h5>
+                        <hr />
+
+                        <partial name="User/UserForm" />
+
+                        <button type="submit" class="btn btn-sm btn-primary mt-3">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

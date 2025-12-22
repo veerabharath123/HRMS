@@ -1,6 +1,7 @@
 ﻿using HRMS.Application.Common.Class.LinqExtensions;
 using HRMS.Application.Common.Interface;
 using HRMS.Application.Services.File;
+using HRMS.Domain.Constants;
 using HRMS.Domain.Entites;
 using HRMS.SharedKernel.Models.Common.Class;
 using HRMS.SharedKernel.Models.Request;
@@ -56,7 +57,11 @@ namespace HRMS.Application.Services.Chat
                             UnreadCount = c.Messages
                                 .Where(m => m.SenderId != employeeId &&
                                             m.MessageStatuses.Any(ms => ms.EmployeeId == employeeId && ms.ReadAt == null))
-                                .Count()
+                                .Count(),
+
+                            Participant = c.Participants
+                                            .Where(p => p.Employee != null && p.EmployeeId != employeeId).FirstOrDefault()
+
                         })
                         .OrderByDescending(x => x.LastMessage != null ? x.LastMessage.CreatedUtcAt : x.Conversation.CreatedDate)
                         .Select(x => new ChatConversationListResponseDto
@@ -66,13 +71,18 @@ namespace HRMS.Application.Services.Chat
                             Type = x.Conversation.TypeNavigation != null ? x.Conversation.TypeNavigation.Name : string.Empty,
 
                             Participants = x.Conversation.Participants
-                                .Where(p => p.Employee != null && p.EmployeeId != employeeId)
-                                .Select(p => p.Employee!.FullName)
-                                .ToList(),
+                                            .Where(p => p.Employee != null && p.EmployeeId != employeeId)
+                                            .Select(p => p.Employee!.FullName)
+                                            .ToList(),
+
+                            ParticipantId = x.Participant != null 
+                                            && x.Participant.Employee != null
+                                            && x.Participant.Employee.PhotoPictureId != null 
+                                            ? x.Participant.Employee.GuidId : null,
 
                             LastMessageDate = x.LastMessage != null ? x.LastMessage.CreatedUtcAt : x.Conversation.CreatedDate,
                             UnreadCount = x.UnreadCount,
-                            LastMessage = x.LastMessage != null ? x.LastMessage.Content : "start a new conversation",
+                            LastMessage = x.LastMessage != null ? x.LastMessage.Content : ChatConstants.START_NEW_CONVO,
                             LastMessageId = x.LastMessage != null ? x.LastMessage.Id : null,
                             EmployeeId = x.LastMessage != null ? x.LastMessage.SenderId : 0
                         })
@@ -85,7 +95,7 @@ namespace HRMS.Application.Services.Chat
             int employeeId = await GetCurrentEmployeeIdAsync();
 
             if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Enable to fetch chat conversations, please try again later");
+                return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
 
             var convos = await GetChatConversationListQuery(employeeId, request).ToListAsync();
 
@@ -94,18 +104,18 @@ namespace HRMS.Application.Services.Chat
         public async Task<ApiResponseDto> StartNewChatWithAsync(int chatWithEmployeeId)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == decimal.Zero || chatWithEmployeeId == decimal.Zero) return ApiResponseDto.FailureStatus("");
+            if (employeeId == decimal.Zero || chatWithEmployeeId == decimal.Zero) return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
 
             var convo = await CreateOrGetDirectConversationAsync(employeeId, chatWithEmployeeId);
             if (convo != null) return await GetChatConversationListAsync();
 
-            return ApiResponseDto.FailureStatus("Failed to create Conversation.");
+            return ApiResponseDto.FailureStatus(ChatConstants.CREATE_CONVO_FAILED_MSG);
         }
         public async Task<Conversation> CreateOrGetDirectConversationAsync(int employeeId, int otherEmployeeId)
         {
             // Get Direct Type Id
             int directTypeId = await _unitOfWork.ConversationTypesRepo.TableNoTracking
-                .Where(t => t.Name == "Direct")
+                .Where(t => t.Name == ChatConstants.CONVERSATION_TYPE.DIRECT)
                 .Select(t => t.Id)
                 .FirstAsync();
 
@@ -172,15 +182,15 @@ namespace HRMS.Application.Services.Chat
                                     )
                                     .Select(ms => ms.ReadAt)
                                     .FirstOrDefault(),
-                    MessageType = m.MessageType != null ? m.MessageType.Value : "Text",
+                    MessageType = m.MessageType != null ? m.MessageType.Value : ChatConstants.ATTACHMENT_TYPE.TEXT,
                     FileId = m.Attachments.Any() ? m.Attachments.First().File.GuidId : null
                 });
         }
         public async Task<ApiResponseDto> GetPreviousMessagesAsync(NextMessagesRequestDto request)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0 || request.ConversationId == 0)
-                return ApiResponseDto.FailureStatus("Failed to fetch chat messages.");
+            if (employeeId == decimal.Zero || request.ConversationId == decimal.Zero)
+                return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CHATS_FAILED_MSG);
 
             var lastMessageUtc = request.LastMessageTime!.Value;
             // Fetch next (older) 20 messages older than LastMessageTime
@@ -188,7 +198,7 @@ namespace HRMS.Application.Services.Chat
                                 m => !m.IsDeleted
                                 && m.ConversationId == request.ConversationId
                                 && m.CreatedUtcAt < lastMessageUtc,
-                            employeeId, 20)
+                            employeeId, ChatConstants.AMOUNT_OF_MSGS_PER_REQ)
                             .ToListAsync();
 
             var ordered = messages.OrderBy(m => m.CreatedDate);
@@ -199,7 +209,7 @@ namespace HRMS.Application.Services.Chat
         public async Task<ApiResponseDto> GetChatConversationDetailsAsync(int conversationId)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0 || conversationId == 0) return ApiResponseDto.FailureStatus("Enable to fetch chat conversation, please try again later");
+            if (employeeId == decimal.Zero || conversationId == decimal.Zero) return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
 
             var convo = await _unitOfWork.ConversationsRepo.Table
                 .Where(c => !c.IsDeleted && c.Id == conversationId)
@@ -232,7 +242,7 @@ namespace HRMS.Application.Services.Chat
                 ConversationId = request.ConversationId,
                 SenderId = employeeId,
                 Content = request.Content,
-                MessageTypeId = messageTypeId == 0 ? 1 : messageTypeId, 
+                MessageTypeId = messageTypeId == decimal.Zero ? 1 : messageTypeId, 
                 ParentMessageId = request.ParentMessageId,
                 IsEdited = false,
                 CreatedUtcAt = DateTime.UtcNow,
@@ -241,7 +251,8 @@ namespace HRMS.Application.Services.Chat
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
 
-            if (request.MessageType == "File" && request.FileId is not null) await AddAttachmentAsync(request.FileId.Value, message.Id);
+            if (request.MessageType == ChatConstants.ATTACHMENT_TYPE.FILE && request.FileId is not null) 
+                await AddAttachmentAsync(request.FileId.Value, message.Id);
 
             message = await _unitOfWork.MessagesRepo.TableNoTracking
                         .Include(m => m.Sender)
@@ -291,7 +302,7 @@ namespace HRMS.Application.Services.Chat
             int employeeId = await GetCurrentEmployeeIdAsync();
 
             if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Failed to send message, please try again later.");
+                return ApiResponseDto.FailureStatus(ChatConstants.SEND_MSG_FAILED_MSG);
 
             var message = await SaveMessageAsync(employeeId, request);
             
@@ -306,7 +317,7 @@ namespace HRMS.Application.Services.Chat
                 Id = message.Id,
                 ConversationId = message.ConversationId,
                 SenderId = message.SenderId,
-                SenderName = message.Sender?.FullName ?? "Unknown",
+                SenderName = message.Sender?.FullName ?? ChatConstants.CHAT_USER_UNKNOWN,
                 Content = message.Content,
                 ParentMessageId = message.ParentMessageId,
                 CreatedDate = DateTime.SpecifyKind(message.CreatedUtcAt, DateTimeKind.Utc),
@@ -315,7 +326,7 @@ namespace HRMS.Application.Services.Chat
                 ReadAt = null,
                 ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
                 ParentMessage = message.ParentMessage?.Content ?? string.Empty,
-                MessageType = message.MessageType != null ? message.MessageType.Value : "Text",
+                MessageType = message.MessageType != null ? message.MessageType.Value : ChatConstants.ATTACHMENT_TYPE.TEXT,
                 FileId = message.Attachments.Count != 0 ? message.Attachments.First().File!.GuidId : null
             };
 
@@ -330,15 +341,15 @@ namespace HRMS.Application.Services.Chat
             }
 
             response.IsMine = true;
-            return ApiResponseDto.SuccessStatus(response, "Message sent successfully.");
+            return ApiResponseDto.SuccessStatus(response, ChatConstants.SEND_MSG_SUCCESS_MSG);
         }
 
         public async Task<ApiResponseDto> MarkMessageAsDeliveredAsync(int messageId)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
 
-            if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Failed to send message, please try again later.");
+            if (employeeId == decimal.Zero)
+                return ApiResponseDto.FailureStatus(ChatConstants.SEND_MSG_FAILED_MSG);
 
             var statusesToMark = await _unitOfWork.MessageStatusRepo.Table
                 .Where(ms => ms.EmployeeId == employeeId
@@ -349,8 +360,8 @@ namespace HRMS.Application.Services.Chat
                 .Include(ms => ms.Message)
                 .ToListAsync();
 
-            if (statusesToMark.Count == 0)
-                return ApiResponseDto.SuccessStatus("No undelivered messages.");
+            if (statusesToMark.Count == decimal.Zero)
+                return ApiResponseDto.SuccessStatus(ChatConstants.NO_UNDELIVERED_MSG);
 
             foreach(var messageStatus in statusesToMark)
             {
@@ -381,14 +392,14 @@ namespace HRMS.Application.Services.Chat
                 );
             }
 
-            return ApiResponseDto.SuccessStatus("Messages marked as delivered.");
+            return ApiResponseDto.SuccessStatus(ChatConstants.MARK_DELIVERED_SUCCESS_MSG);
         }
 
         public async Task<ApiResponseDto> MarkMessageAsReadAsync(UpdateSeenRequestDto request)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Failed to mark messages as read.");
+            if (employeeId == decimal.Zero)
+                return ApiResponseDto.FailureStatus(ChatConstants.MARK_READ_FAILED_MSG);
 
             var tillReadUtc = request.TillRead!.Value.AddMilliseconds(1);
 
@@ -403,8 +414,8 @@ namespace HRMS.Application.Services.Chat
                 .Include(ms => ms.Message)
                 .ToListAsync();
 
-            if (statusesToMark.Count == 0)
-                return ApiResponseDto.SuccessStatus("No unread messages.");
+            if (statusesToMark.Count == decimal.Zero)
+                return ApiResponseDto.SuccessStatus(ChatConstants.NO_UNREAD_MSG);
 
             // 2) Mark all statuses as read
             foreach (var ms in statusesToMark)
@@ -420,7 +431,7 @@ namespace HRMS.Application.Services.Chat
             var saved = await _unitOfWork.SaveAsync();
 
             if (!saved)
-                return ApiResponseDto.FailureStatus("Failed to update read status.");
+                return ApiResponseDto.FailureStatus(ChatConstants.UPDATE_READ_FAILED_MSG);
 
             return await NotifySeenStatusAsync(statusesToMark);
         }
@@ -445,21 +456,21 @@ namespace HRMS.Application.Services.Chat
                 );
             }
 
-            return ApiResponseDto.SuccessStatus("Messages marked as read.");
+            return ApiResponseDto.SuccessStatus(ChatConstants.MARK_READ_SUCCESS_MSG);
         }
 
         public async Task<ApiResponseDto> SendTypingStatusAsync(TypingRequestDto request)
         {
             int employeeId = await GetCurrentEmployeeIdAsync();
-            if (employeeId == 0)
-                return ApiResponseDto.FailureStatus("Failed to mark messages as read.");
+            if (employeeId == decimal.Zero)
+                return ApiResponseDto.FailureStatus(ChatConstants.MARK_READ_FAILED_MSG);
 
             // Validate conversation + participant
             bool isMember = await _unitOfWork.ConversationParticipantsRepo.TableNoTracking
                 .AnyAsync(p => p.ConversationId == request.ConversationId && p.EmployeeId == employeeId);
 
             if (!isMember)
-                return ApiResponseDto.FailureStatus("User not part of conversation.");
+                return ApiResponseDto.FailureStatus(ChatConstants.USER_NOT_PART_OF_CONVO);
 
             // OPTIONAL: log typing time, update DB etc.
 
@@ -476,7 +487,7 @@ namespace HRMS.Application.Services.Chat
             foreach (var userId in participantUserIds)
                 await _chatNotificationServices.SendTypingToUserStatus(userId, request);
 
-            return ApiResponseDto.SuccessStatus("");
+            return ApiResponseDto.SuccessStatus(null);
         }
         public async Task<ApiResponseDto> GetAttachmentFileAsync(Guid Id)
         {
@@ -485,7 +496,7 @@ namespace HRMS.Application.Services.Chat
                 .FirstOrDefaultAsync(a => a.File != null && a.File.GuidId == Id);
 
             if (attachment == null || attachment.File == null)
-                return ApiResponseDto.FailureStatus("Attachment not found.");
+                return ApiResponseDto.FailureStatus(ChatConstants.ATT_NOT_FOUND_MSG);
 
             var fileRes = await _fileServices.GetFileBytesByStoredFileIdAsync(attachment.File.Id);
 

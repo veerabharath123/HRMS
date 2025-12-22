@@ -99,6 +99,8 @@ namespace HRMS.Application.Services.Employee
                                 join usr in _unitOfWork.UserRepo.TableNoTracking on emp.Id equals usr.EmployeeId
                                 into usrJoin from usr in usrJoin.DefaultIfEmpty()
 
+                                let user = _unitOfWork.UserRepo.TableNoTracking.FirstOrDefault(u => !string.IsNullOrWhiteSpace(emp.Email) && u.Email.ToLower() == emp.Email.ToLower())
+
                                 where emp.Id == employeeId && !emp.IsDeleted
 
                                 select new EmployeeDetailsDto
@@ -118,9 +120,10 @@ namespace HRMS.Application.Services.Employee
                                     MartialStatus = ms != null ? ms.Value : string.Empty,
                                     Gender = g != null ? g.Value : string.Empty,
                                     Email = emp.Email,
-                                    UserExists = usr != null,
+                                    UserExists = usr != null || user == null,
                                     HasPicture = emp.PhotoPictureId != null,
-                                    GuidId = emp.GuidId
+                                    GuidId = emp.GuidId,
+                                    UserName = usr == null && user != null ? user.UserName : string.Empty
                                 }
                               )
                               .FirstOrDefaultAsync();
@@ -172,30 +175,6 @@ namespace HRMS.Application.Services.Employee
             var saved = await _unitOfWork.SaveAsync();
 
             return ApiResponseDto.FlagStatus(saved, newEmployee.Id);
-        }
-
-        public async Task<ApiResponseDto> GetEmployeeImagesAsync(ListIdRequestDto request)
-        {
-            var employee = await _unitOfWork.EmployeeRepo.Table
-                .Where(e => request.IdList.Contains(e.Id) && !e.IsDeleted).ToListAsync();
-
-            var employeeImages = new List<EmpImageResponseDto>();
-
-            foreach (var emp in employee)
-            {
-                if(emp.PhotoPictureId is null) 
-                    continue;
-
-                var result = await _fileServices.GetFileByStoredFileIdAsync(emp.PhotoPictureId.Value);
-
-                employeeImages.Add(new EmpImageResponseDto
-                {
-                    Id = emp.Id,
-                    ImageBase64 = result
-                });
-            }
-
-            return ApiResponseDto.SuccessStatus(employeeImages);
         }
         public async Task<FileResponseDto?> GetEmployeeImageAsync(Guid id)
         {

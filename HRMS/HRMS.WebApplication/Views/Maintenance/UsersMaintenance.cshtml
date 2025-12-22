@@ -12,6 +12,30 @@
     .name-link:hover{
         text-decoration:underline;
     }
+    .tb-action-cell{
+        
+    }
+        .tb-action-cell .tb-action-btn{
+            border: none;
+            outline: none;
+            border-radius: 50%;
+
+        }
+
+    .tb-action-btn.btn-view{
+        background: dodgerblue;
+        color: white;
+    }
+
+    .tb-action-btn.btn-edit {
+        background: green;
+        color: white;
+    }
+
+    .tb-action-btn.btn-del {
+        background: red;
+        color: white;
+    }
 </style>
 
 <div class="container-fluid">
@@ -36,7 +60,7 @@
         { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {          
             return getIconElement(data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger');
         }},
-        { property: 'empFullName', displayName: 'Employee Name' ,search: false, render: function(data, type, row) {
+        { property: 'empFullName', displayName: 'Employee Name' , render: function(data, type, row) {
             const notMapped =  document.createElement('span');
             notMapped.className = 'text-secondary';
             notMapped.textContent = 'Not added';
@@ -50,7 +74,16 @@
 
             return anchor;
         }},
-        { property: 'id', displayName: 'Id', type: 'Number' , visible : false },
+        { 
+            property: 'id', displayName: 'Action', type: 'Number' , searchable : false, className: 'tb-action-cell', sortable: false,
+            render: function(data, type, row){
+                return `
+                    <a href='@Url.Action("ViewUser", "Maintenance")' class='btn btn-sm rounded btn-primary shadow'><i class="bi bi-eye"></i></a>
+                    <a href='@Url.Action("UpdateUser", "Maintenance")?id=${data}' class='btn btn-sm rounded btn-success shadow'><i class="bi bi-pencil-square"></i></a>
+                    <button class='btn btn-sm rounded btn-danger shadow'><i class="bi bi-trash"></i></button>
+                `
+            }
+        },
     ]
 
     const adTable = AdvanceSearchTable.create({

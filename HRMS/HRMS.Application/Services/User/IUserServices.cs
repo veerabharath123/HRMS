@@ -16,5 +16,7 @@ namespace HRMS.Application.Services
 
         Task<ApiResponseDto> GetUsersAsync();
         Task<ApiResponseDto> GetPaginatedUsersAsync(AdvanceTableRequestDto request);
+        Task<ApiResponseDto> GetUserByIdAsync(int id);
+        Task<ApiResponseDto> LinkEmployeeToUserAsync(LinkEmployeeRequestDto request);
     }
 }

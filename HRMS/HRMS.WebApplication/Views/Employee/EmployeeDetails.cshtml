@@ -64,25 +64,64 @@
                                         <div class="modal-dialog modal-fullscreen-sm-down">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title">User details</h5>
+                                                    <h5 class="modal-title">Are you user you want to link?</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label for="username" class="form-label">Username:</label>
-                                                        <input type="text" class="form-control form-control-sm" id="username" placeholder="Enter Username">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="email" class="form-label">Email:</label>
-                                                        <input type="email" class="form-control form-control-sm" id="email" placeholder="Enter Email">
-                                                    </div>
+                                                   <form id="link-user">
+                                                        <input asp-for="EmployeeDetails.EmployeeId" name="EmployeeId" type="hidden" />
+                                                       
+                                                        <div class="mb-3 form-control-section">
+                                                            <label for="user-email" class="form-label">User Email:</label>
+                                                            <input type="email" class="form-control form-control-sm" id="user-email" asp-for="EmployeeDetails.Email" name="Email" readonly>
+                                                        </div>
+                                                        <div class="mb-3 form-control-section">
+                                                            <label for="username" class="form-label">Username:</label>
+                                                            <input type="text" class="form-control form-control-sm" id="username" asp-for="EmployeeDetails.UserName" name="UserName" readonly>
+                                                        </div>
+                                                   </form>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-sm btn-primary">Create user</button>
+                                                    <button type="button" class="btn btn-sm btn-success" id="link-user-btn">Link User</button>
+                                                    <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Cancel</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <script nonce="@Html.ScriptNonce()">
+                                        const modal = document.getElementById('create-user-modal');
+
+                                        const linkUserForm = FormBuilder.create('#link-user', {
+                                            builder:{
+                                                Email: { required: true, email: true },
+                                                EmployeeId: { required: true }
+                                            }
+                                        });
+                                        linkUserForm.addManualSubmitTrigger('#link-user-btn');
+                                        linkUserForm.onSubmit(function(isvalid){
+                                            if (!isvalid) return
+
+                                            ajaxPost(
+                                                '@Url.Action("LinkEmployeeToUser", "Employee")',
+                                                linkUserForm.getValueJson(),
+                                                function (res) {
+                                                    if(!res?.success){
+                                                        showNotification({
+                                                            type: 'error',
+                                                            message: res?.message || 'Something went wrong!',
+                                                        });
+                                                        return
+                                                    }
+                                                    bootstap.Modal.getInstance(modal).hide()
+                                                    showNotification({
+                                                        type: 'success',
+                                                        message: res?.message,
+                                                    });
+                                                }
+                                                ,{ contentType: "application/json", processData: false, useDefaultSuccessCallBack: false }
+                                            );
+                                        });
+                                    </script>
                                 }
                             </div>
                         </div>

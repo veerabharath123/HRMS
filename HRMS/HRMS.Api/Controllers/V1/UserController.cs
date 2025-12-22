@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using HRMS.Application.Services;
 using HRMS.SharedKernel.Models.Request;
+using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,11 +33,23 @@ namespace HRMS.Api.Controllers.V1
             var response = await _userServices.GetPaginatedUsersAsync(request);
             return Ok(response);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetUserById([FromBody] IdRequestDto request)
+        {
+            var response = await _userServices.GetUserByIdAsync(request.Id);
+            return Ok(response);
+        }
 
         [HttpPost("[action]")]
         public async Task<IActionResult> InsertUser([FromBody] UserInsertRequestDto request)
         {
             var response = await _userServices.InsertUserAsync(request);
+            return Ok(response);
+        }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> LinkEmployeeToUser([FromBody] LinkEmployeeRequestDto request)
+        {
+            var response = await _userServices.LinkEmployeeToUserAsync(request);
             return Ok(response);
         }
         [AllowAnonymous]
@@ -54,25 +67,6 @@ namespace HRMS.Api.Controllers.V1
             var response = await _userServices.ValidateUserLoginAsync(request);
             return Ok(response);
         }
-        [AllowAnonymous]
-        [HttpPost("[action]")]
-        public async Task<IActionResult> GetDocument()
-        {
-            var response = await _userServices.GetDocument();
-            return Ok(response);
-        }
-        [AllowAnonymous]
-        [HttpPost("[action]")]
-        public async Task<IActionResult> UploadImage([FromBody] FileRequestDto request)
-        {
-            var response = await _userServices.UploadImage(request);
-            return Ok(response);
-        }
-        [HttpPost("[action]")]
-        public async Task<IActionResult> SendMessageByUser([FromBody] MessageRequestDto request)
-        {
-            var response = await _userServices.SendMessageByUser(request);
-            return Ok(response);
-        }
+        
     }
 }

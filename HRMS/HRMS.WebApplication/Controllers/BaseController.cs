@@ -76,6 +76,35 @@ namespace HRMS.WebApplication.Controllers
             return PartialView(viewName, result.Result);
         }
 
+        protected IActionResult FileFromRawResponse(
+            RawFileResponse? raw,
+            bool enableCaching = true,
+            bool inline = true)
+        {
+            if (raw == null || raw.Stream == null)
+                return NotFound();
+
+            if (enableCaching)
+            {
+                Response.Headers["Cache-Control"] = "private, max-age=31536000";
+            }
+
+            Response.Headers["Content-Disposition"] =
+                inline ? "inline" : "attachment";
+
+            return new FileStreamResult(raw.Stream, raw.ContentType)
+            {
+                EnableRangeProcessing = true
+            };
+        }
+        protected IActionResult DefaultAvatar(string basepath)
+        {
+            return PhysicalFile(
+                Path.Combine(basepath, "images/no-user.png"),
+                "Image/png"
+            );
+        }
+
         protected void InitBreadcrumbs(BreadcrumbManager breadcrumbManager, string name, bool isRootModule = false, object? routeValues = null)
         {
             if (Request.IsAjaxOrApiRequest()) return;

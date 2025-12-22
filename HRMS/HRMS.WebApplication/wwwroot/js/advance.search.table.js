@@ -119,7 +119,7 @@
                 .empty()
                 .append('<option></option>')
                 .append(config.columns
-                    .filter(c => c.visible !== false)
+                    .filter(c => c.visible !== false && c.searchable !== false)
                     .map(c => `<option value="${c.property}">${c.displayName || c.property}</option>`));
 
             loadOperator(row.find('.operator'));
@@ -232,34 +232,15 @@ const AdvanceSearchTable = (function () {
             tableSelector: options.tableSelector,
             columns: options.columns
         });
-        let actionButtonRenderFn = () => '';
 
         const table = initTable();
         filter.onAdvanceSearchSubmit(reload)
         filter.onSimpleSearchSubmit(reload)
 
-        if (typeof options.select === 'function') {
-            debugger
-            table.on('select.dt', function (e, dt, type, indexes) {
-                
-                if (type === 'row') {
-                    const rowData = dt.rows(indexes).data().toArray();
-                    console.log('Selected row:', rowData[0]);
-                    options.select(rowData[0])
-                }
-            });
-        }
-
-
         /* ---------- table ---------- */
         function initTable() {
-            const headerRow = $(`${options.tableSelector} thead tr`).empty();
-            options.columns.forEach(x => {
-                const elem = document.createElement('th');
-                if (!(x.visible === false))
-                    elem.textContent = (x.displayName || x.property);
-                headerRow.append(elem)
-            })
+            loadHeaderColumns()
+
             const table = $(options.tableSelector).DataTable({
                 serverSide: true,
                 processing: true,
@@ -268,13 +249,17 @@ const AdvanceSearchTable = (function () {
                 ...options.dataTableOptions
             });
 
-            if (options.hasActionButtons) {
-                const elem = document.createElement('th');
-                elem.textContent = 'Actions'
-                headerRow.append(elem)
-            }
-
             return table
+        }
+        function loadHeaderColumns() {
+            const headerRow = $(`${options.tableSelector} thead tr`).empty();
+
+            options.columns.forEach(x => {
+                const elem = document.createElement('th');
+                if (!(x.visible === false))
+                    elem.textContent = (x.displayName || x.property);
+                headerRow.append(elem)
+            })
         }
 
         function buildColumns() {

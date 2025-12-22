@@ -600,5 +600,33 @@ body {
     z-index: 1100 !important;
 }
 
+.password-toggle > span {
+    cursor: pointer;
+}
+
+    .password-toggle > span:active > i {
+        transform: scale(.9)
+    }
+
+.form-control-section .invalid-feedback {
+    height: 1rem;
+    margin-top: .0px !important;
+}
+
+.form-control-section.has-error {
+    margin: 0 !important
+}
+
+.form-control-section::after {
+    content: '.';
+    height: 1rem;
+    display: block;
+    visibility: hidden;
+}
+
+.form-control-section.has-error::after {
+    height: 0px !important;
+}
+
 
 

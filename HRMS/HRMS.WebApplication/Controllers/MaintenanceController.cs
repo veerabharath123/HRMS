@@ -44,8 +44,27 @@ namespace HRMS.WebApplication.Controllers
         {
             ViewBag.ModuleTitle = "Add User";
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
-            return View("UserForm");
+            return View("User/AddUser");
         }
+        [HttpGet]
+        public async Task<IActionResult> UpdateUser(int id)
+        {
+            var response = await _api.PostAsync<UserDetailsResponseDto>("/User/GetUserById", new { id }, true);
+
+            ViewBag.ModuleTitle = "Edit User";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            return ReturnView("User/UpdateUser", response);
+        }
+        [HttpGet]
+        public async Task<IActionResult> ViewUser(int id)
+        {
+            var response = await _api.PostAsync<UserDetailsResponseDto>("/User/GetUserById", new { id }, true);
+
+            ViewBag.ModuleTitle = "View User";
+            InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
+            return ReturnView("UserForm", response);
+        }
+
         [HttpPost]
         public async Task<IActionResult> SaveUser([FromBody] UserInsertRequestDto request)
         {

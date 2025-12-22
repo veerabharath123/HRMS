@@ -36,5 +36,10 @@ namespace HRMS.Domain.Entites
             Password = password;
             HashSalt = hash;
         }
+
+        public void LinkEmployee(int employeeId)
+        {
+            EmployeeId = employeeId;
+        }
     }
 }

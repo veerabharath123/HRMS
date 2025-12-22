@@ -83,7 +83,7 @@
                 input: $input,
                 feedback: $feedback,
                 rules: options.builder[name],
-                messages: options.messages[name] || {},
+                messages: options.messages?.[name] || {},
                 touched: false,
                 dirty: false,
                 notMapped: options.builder[name].notMapped === true,
@@ -316,7 +316,13 @@
         function getFormValueJson() {
             return JSON.stringify(getFormValue());
         }
+        let submitHandler = null;
+        function runSubmit() {
+            if (typeof submitHandler !== 'function') return;
 
+            const isValid = validateAll();
+            submitHandler(isValid);
+        }
 
         /* ==========================
            PUBLIC API
@@ -365,14 +371,24 @@
             controls: state.controls,
             onSubmit(fn) {
                 if (typeof fn === 'function') {
+                    submitHandler = fn;
+
                     $form.on('submit', function (e) {
                         e.preventDefault()
-                        const isvalid = validateAll();
-                        fn(isvalid)
-
+                        runSubmit()
                         return false;
                     })
                 }
+            },
+            addManualSubmitTrigger(selector) {
+                const $trigger = $(selector);
+
+                if (!$trigger.length) return;
+
+                $trigger.on('click', function (e) {
+                    e.preventDefault();
+                    runSubmit();
+                });
             }
         };
     }
