@@ -12,15 +12,42 @@
     .name-link:hover{
         text-decoration:underline;
     }
-    .tb-action-cell{
-        
-    }
-        .tb-action-cell .tb-action-btn{
-            border: none;
-            outline: none;
-            border-radius: 50%;
 
+    /* Keep column minimal */
+    .tb-action-cell {
+        width: .5rem;
+        position: relative;
+        padding: 0;
+    }
+
+        /* Actual action UI */
+        .tb-action-cell .actions {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) scaleX(0);
+            transform-origin: right;
+            opacity: 0;
+            display: flex;
+            gap: .5rem;
+            transition: transform .3s ease, opacity .15s ease-in-out;
+            padding: .3rem;
+            border-top-left-radius: 1.5rem;
+            border-bottom-left-radius: 1.5rem;
         }
+
+    /* Reveal on row hover / select */
+    tr .tb-action-cell:hover .actions,
+    tr.selected .tb-action-cell .actions {
+        transform: translateY(-50%) scaleX(1);
+        opacity: 1;
+    }
+
+    tr .tb-action-cell:hover .options,
+    tr.selected .tb-action-cell .options {
+        opacity: 0;
+    }
+
 
     .tb-action-btn.btn-view{
         background: dodgerblue;
@@ -56,10 +83,7 @@
 <script nonce="@Html.ScriptNonce()">
     const columns = [
         { property: 'email', displayName: 'Email' },
-        { property: 'userName', displayName: 'Username' },
-        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {          
-            return getIconElement(data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger');
-        }},
+        { property: 'userName', displayName: 'Username' },        
         { property: 'empFullName', displayName: 'Employee Name' , render: function(data, type, row) {
             const notMapped =  document.createElement('span');
             notMapped.className = 'text-secondary';
@@ -74,15 +98,11 @@
 
             return anchor;
         }},
+        { property: 'isActive', displayName: 'Active' , type: 'Bool' , render: function(data, type, row) {
+            return getIconElement(data ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger');
+        }},
         { 
-            property: 'id', displayName: 'Action', type: 'Number' , searchable : false, className: 'tb-action-cell', sortable: false,
-            render: function(data, type, row){
-                return `
-                    <a href='@Url.Action("ViewUser", "Maintenance")' class='btn btn-sm rounded btn-primary shadow'><i class="bi bi-eye"></i></a>
-                    <a href='@Url.Action("UpdateUser", "Maintenance")?id=${data}' class='btn btn-sm rounded btn-success shadow'><i class="bi bi-pencil-square"></i></a>
-                    <button class='btn btn-sm rounded btn-danger shadow'><i class="bi bi-trash"></i></button>
-                `
-            }
+            property: 'id', displayName: ' ', action: true
         },
     ]
 
@@ -92,10 +112,56 @@
         columns: columns,
         dataTableOptions: {
             dom: 'lt'
+        },
+        actions: {
+            enabled: true,
+            renderColumn: 'id',
+
+            buttons: {
+                view: { enable: true, className: 'bi bi-eye btn btn-sm btn-primary rounded-circle' },
+                edit: { enable: true, className: 'bi bi-pencil-square btn btn-sm btn-success rounded-circle' },
+                delete: { enable: true, className: 'bi bi-trash btn btn-sm btn-danger rounded-circle' },
+
+                custom: [
+                    {
+                        name: 'resetPwd',
+                        enable: true,
+                        render: function (id, row) {
+                            return getIconElement('bi bi-airplane-fill btn btn-sm btn-warning rounded-circle');
+                        }
+                    }
+                ]
+            }
         }
     })
 
     $(document).on('click','#user-table-accordion .table-refresh-btn',function(){
         adTable.clearAndReload();
     })
+    document.getElementById('user-table')
+    .addEventListener('tb.action:edit', function (e) {
+        const id = e?.detail?.data?.id;
+        if (!id) return;
+
+        const url = new URL(
+            '@Url.Action("UpdateUser", "Maintenance")',
+            window.location.origin
+        );
+
+        url.searchParams.set('id', id);
+        window.location.href = url.toString();
+    });
+    document.getElementById('user-table')
+    .addEventListener('tb.action:view', function (e) {
+        const id = e?.detail?.data?.id;
+        if (!id) return;
+
+        const url = new URL(
+            '@Url.Action("ViewUser", "Maintenance")',
+            window.location.origin
+        );
+
+        url.searchParams.set('id', id);
+        window.location.href = url.toString();
+    });
 </script>

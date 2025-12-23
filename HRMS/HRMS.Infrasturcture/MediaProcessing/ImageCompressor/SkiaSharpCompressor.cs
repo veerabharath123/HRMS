@@ -3,58 +3,134 @@ using SkiaSharp;
 
 namespace HRMS.Infrastructure.MediaProcessing.ImageCompressor
 {
-    
-    public class SkiaSharpCompressor : IImageCompressor
+
+    public sealed class SkiaSharpCompressor : IImageCompressor
     {
-        public async Task<byte[]> CompressAsync(byte[] inputBytes, long targetSizeInBytes, bool preserveTransparency = true)
+        private const int MinJpegQuality = 40;
+        private const int MaxJpegQuality = 90;
+        private const int ResizeStepPercent = 90; // scale down by 10%
+
+        public byte[] Compress(byte[] inputBytes, long targetSizeInBytes, bool preserveTransparency = true)
         {
-            return await Task.Run(() =>
+            if (inputBytes == null || inputBytes.Length == 0)
+                throw new ArgumentException("Input image is empty");
+
+            using var bitmap = DecodeBitmap(inputBytes);
+
+            var hasAlpha = bitmap.AlphaType != SKAlphaType.Opaque;
+
+            // PNG path (only when transparency must be preserved)
+            if (hasAlpha && preserveTransparency)
             {
-                using var inputStream = new SKMemoryStream(inputBytes);
-                using var bitmap = SKBitmap.Decode(inputStream) ?? throw new ArgumentException("Invalid image");
+                var png = EncodePng(bitmap);
+                if (png.Length <= targetSizeInBytes)
+                    return png;
+            }
 
-                if (bitmap.ColorType == SKColorType.Unknown)
-                    throw new ArgumentException("Unsupported image format");
-
-                return bitmap.ColorType switch
-                {
-                    SKColorType.Bgra8888 or 
-                    SKColorType.Rgba8888 => CompressPng(bitmap, targetSizeInBytes, preserveTransparency),
-                    _ => CompressJpeg(bitmap, targetSizeInBytes)
-                };
-            });
+            // JPEG path (with resize + binary search)
+            return CompressJpegWithResize(bitmap, targetSizeInBytes);
         }
 
-        private static byte[] CompressJpeg(SKBitmap bitmap, long targetSize)
+        // -----------------------
+        // Core helpers
+        // -----------------------
+
+        private static SKBitmap DecodeBitmap(byte[] input)
         {
-            int low = 10, high = 90, best = 90;
-            byte[]? result = null;
+            using var stream = new SKMemoryStream(input);
+            return SKBitmap.Decode(stream)
+                   ?? throw new ArgumentException("Invalid image format");
+        }
+
+        private static byte[] EncodePng(SKBitmap bitmap)
+        {
+            using var ms = new SKDynamicMemoryWStream();
+            bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
+            return ms.DetachAsData().ToArray();
+        }
+
+        private static byte[] CompressJpegWithResize(SKBitmap original, long targetSize)
+        {
+            SKBitmap current = original;
+            byte[]? best = null;
+
+            try
+            {
+                while (true)
+                {
+                    var jpeg = TryCompressJpeg(current, targetSize);
+                    if (jpeg != null)
+                        return jpeg;
+
+                    best ??= EncodeJpeg(current, MinJpegQuality);
+
+                    // Stop resizing if image is already small
+                    if (current.Width < 400 || current.Height < 400)
+                        return best;
+
+                    current = ResizeBitmap(current, ResizeStepPercent);
+                }
+            }
+            finally
+            {
+                if (!ReferenceEquals(current, original))
+                    current.Dispose();
+            }
+        }
+
+        // -----------------------
+        // JPEG compression
+        // -----------------------
+
+        private static byte[]? TryCompressJpeg(SKBitmap bitmap, long targetSize)
+        {
+            int low = MinJpegQuality;
+            int high = MaxJpegQuality;
+            byte[]? candidate = null;
 
             while (low <= high)
             {
                 int mid = (low + high) / 2;
-                using var ms = new SKDynamicMemoryWStream();
-                bitmap.Encode(ms, SKEncodedImageFormat.Jpeg, mid);
-                var data = ms.DetachAsData().ToArray();
+                var data = EncodeJpeg(bitmap, mid);
 
-                if (data.Length <= targetSize) { best = mid; result = data; low = mid + 1; }
-                else high = mid - 1;
+                if (data.Length <= targetSize)
+                {
+                    candidate = data;
+                    low = mid + 1;
+                }
+                else
+                {
+                    high = mid - 1;
+                }
             }
 
-            return result ?? [];
+            return candidate;
         }
 
-        private static byte[] CompressPng(SKBitmap bitmap, long targetSize, bool preserveTransparency)
+        private static byte[] EncodeJpeg(SKBitmap bitmap, int quality)
         {
             using var ms = new SKDynamicMemoryWStream();
-            bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
-            var data = ms.DetachAsData().ToArray();
+            bitmap.Encode(ms, SKEncodedImageFormat.Jpeg, quality);
+            return ms.DetachAsData().ToArray();
+        }
 
-            if (data.Length <= targetSize) return data;
+        // -----------------------
+        // Resize
+        // -----------------------
 
-            // fallback to JPEG if size too big
-            return CompressJpeg(bitmap, targetSize);
+        private static SKBitmap ResizeBitmap(SKBitmap source, int percent)
+        {
+            int width = source.Width * percent / 100;
+            int height = source.Height * percent / 100;
+
+            var resized = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+
+            using var canvas = new SKCanvas(resized);
+            canvas.DrawBitmap(source, new SKRect(0, 0, width, height));
+
+            return resized;
         }
     }
+
 
 }

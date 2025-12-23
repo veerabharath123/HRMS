@@ -116,10 +116,10 @@ namespace HRMS.WebApplication.Controllers
             return NotFound();
         }
  
-        public async Task<IActionResult> GetAttachmentsFile(Guid id, CancellationToken ct)
+        public async Task<IActionResult> GetAttachmentsFile(Guid id,[FromQuery] bool thumb = false, CancellationToken ct = default)
         {
             using var raw = await _api.GetRawFileAsync(
-                $"/Chats/GetAttachmentFile/{id}",
+                $"/Chats/GetAttachmentFile/{id}?thumb={thumb}",
                 authRequired: true,
                 cancellationToken: ct);
 

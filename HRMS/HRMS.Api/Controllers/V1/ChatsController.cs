@@ -72,9 +72,9 @@ namespace HRMS.Api.Controllers.V1
             return Ok(response);
         }
         [HttpGet("[action]/{id:guid}")]
-        public async Task<IActionResult> GetAttachmentFile(Guid id, CancellationToken ct)
+        public async Task<IActionResult> GetAttachmentFile(Guid id,[FromQuery] bool thumb = false)
         {
-            var response = await _chatServices.GetAttachmentFileResponseAsync(id);
+            var response = await _chatServices.GetAttachmentFileResponseAsync(id, thumb);
 
             if (response is null || response.FileContent is null || response.FileContent.Length == 0)
                 return NotFound();

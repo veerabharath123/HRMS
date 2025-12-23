@@ -17,10 +17,12 @@ namespace HRMS.Application.Services.File
     {
         private readonly IFileStorageFactory _fileStorageFactory;
         private readonly IUnitOfWork _unitOfWork;
-        public FileServices(IFileStorageFactory fileStorageFactory, IUnitOfWork unitOfWork)
+        private readonly IImageCompressor _imageCompressor;
+        public FileServices(IFileStorageFactory fileStorageFactory, IUnitOfWork unitOfWork, IImageCompressor imageCompressor)
         {
             _fileStorageFactory = fileStorageFactory;
             _unitOfWork = unitOfWork;
+            _imageCompressor = imageCompressor;
         }
         private async Task<FileFetchConfigDto> GetFileLocationConfigAsync(int fileId)
         {
@@ -72,7 +74,7 @@ namespace HRMS.Application.Services.File
 
             return await RetrieveFileFromStorageAsync(file.FileName, location);
         }
-        public async Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId)
+        public async Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId, bool thumb = false)
         {
             var file = await _unitOfWork.StoredFilesRepo.Table
                         .FirstOrDefaultAsync(s => s.Id == storedFileId && !s.IsDeleted);
@@ -81,7 +83,12 @@ namespace HRMS.Application.Services.File
                 ? throw new NullReferenceException(FileConstants.NO_STORAGE_CONFIG_MSG)
                 : await GetStorageLocationConfigAsync(file.FileLocationId);
 
-            var bytes = await RetrieveFileBytesFromStorageAsync(file.FileName, location);
+            var filename = (thumb ? "C_" : string.Empty) + file.GuidId.ToString();
+
+            var bytes = await RetrieveFileBytesFromStorageAsync(filename, location);
+
+            if(bytes.Length == 0)
+                bytes = await RetrieveFileBytesFromStorageAsync(file.GuidId.ToString(), location);
 
             return new FileResponseDto
             {
@@ -129,6 +136,18 @@ namespace HRMS.Application.Services.File
                         .CreateProvider(configDto)
                         .UploadAsync(filename, memoryStream);
 
+            var thumb = await UploadThumbFileToStorageAsync(filename, filebytes, configDto);
+
+            return ApiResponseDto.FlagStatus(isUploaded, isUploaded ? FileConstants.UPLOAD_SUCCESS_MSG : FileConstants.UPLOAD_FAILED_MSG);
+        }
+        private async Task<ApiResponseDto> UploadThumbFileToStorageAsync(string filename, byte[] filebytes, FileLocationConfigDto configDto, CancellationToken cancellationToken = default)
+        {
+            var compressedBytes = _imageCompressor.Compress(filebytes, 500000, true);
+            using var memoryStream = new MemoryStream(compressedBytes);
+            var isUploaded = await _fileStorageFactory
+                        .CreateProvider(configDto)
+                        .UploadAsync("C_" + filename, memoryStream, cancellationToken);
+
             return ApiResponseDto.FlagStatus(isUploaded, isUploaded ? FileConstants.UPLOAD_SUCCESS_MSG : FileConstants.UPLOAD_FAILED_MSG);
         }
         public async Task<ApiResponseDto> UploadFileAsync(FileRequestDto request)
@@ -138,7 +157,7 @@ namespace HRMS.Application.Services.File
             var file = await StoreFileInfoInDbAsync(request, location.Id);
             if (file is null) return ApiResponseDto.FailureStatus(FileConstants.UPLOAD_FAILED_MSG);
 
-            var uploadRes = await UploadFileToStorageAsync(request.FileName, request.FileContent, location);
+            var uploadRes = await UploadFileToStorageAsync(file.GuidId.ToString(), request.FileContent, location);
             if (!uploadRes.Success) return ApiResponseDto.FailureStatus(uploadRes.Message);
 
             return ApiResponseDto.SuccessStatus(file.GuidId, FileConstants.UPLOAD_SUCCESS_MSG);

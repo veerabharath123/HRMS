@@ -62,7 +62,7 @@ namespace HRMS.WebApplication.Controllers
 
             ViewBag.ModuleTitle = "View User";
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
-            return ReturnView("UserForm", response);
+            return ReturnView("User/UpdateUser", response);
         }
 
         [HttpPost]

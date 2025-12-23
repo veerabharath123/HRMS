@@ -100,7 +100,7 @@ namespace HRMS.WebApplication.Controllers
         protected IActionResult DefaultAvatar(string basepath)
         {
             return PhysicalFile(
-                Path.Combine(basepath, "images/no-user.png"),
+                Path.Combine(basepath, "images/user-no-img.png"),
                 "Image/png"
             );
         }

@@ -36,8 +36,8 @@ namespace HRMS.Domain.Constants
         }
         public struct ATTACHMENT_TYPE
         {
-            public const string TEXT = "TEXT";
-            public const string FILE = "FILE";            
+            public const string TEXT = "Text";
+            public const string FILE = "File";            
         }
     }
 }

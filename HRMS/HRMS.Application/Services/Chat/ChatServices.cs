@@ -251,7 +251,7 @@ namespace HRMS.Application.Services.Chat
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
 
-            if (request.MessageType == ChatConstants.ATTACHMENT_TYPE.FILE && request.FileId is not null) 
+            if (request.MessageType.Equals(ChatConstants.ATTACHMENT_TYPE.FILE,StringComparison.OrdinalIgnoreCase) && request.FileId is not null) 
                 await AddAttachmentAsync(request.FileId.Value, message.Id);
 
             message = await _unitOfWork.MessagesRepo.TableNoTracking
@@ -502,7 +502,7 @@ namespace HRMS.Application.Services.Chat
 
             return ApiResponseDto.SuccessStatus(fileRes);
         }
-        public async Task<FileResponseDto?> GetAttachmentFileResponseAsync(Guid Id)
+        public async Task<FileResponseDto?> GetAttachmentFileResponseAsync(Guid Id, bool thumb = false)
         {
             var attachment = await _unitOfWork.AttachmentsRepo.TableNoTracking
                 .Include(a => a.File)
@@ -511,7 +511,7 @@ namespace HRMS.Application.Services.Chat
             if (attachment == null || attachment.File == null)
                 return null;
 
-            return await _fileServices.GetFileBytesByStoredFileIdAsync(attachment.File.Id);
+            return await _fileServices.GetFileBytesByStoredFileIdAsync(attachment.File.Id, thumb);
 
         }
     }

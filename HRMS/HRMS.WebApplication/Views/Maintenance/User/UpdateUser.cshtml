@@ -1,5 +1,10 @@
 ﻿@model UserDetailsResponseDto
 
+@{
+    ViewData["Title"] = ViewBag.ModuleTitle;
+    ViewData["Module"] = "Maintenance";
+}
+
 <div class="container-fluid">
     <partial name="~/Views/Shared/Utilities/_BreadCrumbs.cshtml" />
     <h2 class="mt-1">@ViewBag.ModuleTitle</h2>

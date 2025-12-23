@@ -119,7 +119,7 @@
                 .empty()
                 .append('<option></option>')
                 .append(config.columns
-                    .filter(c => c.visible !== false && c.searchable !== false)
+                    .filter(c => c.visible !== false && c.searchable !== false && !c.action)
                     .map(c => `<option value="${c.property}">${c.displayName || c.property}</option>`));
 
             loadOperator(row.find('.operator'));
@@ -233,9 +233,12 @@ const AdvanceSearchTable = (function () {
             columns: options.columns
         });
 
+        let tbFn = () => { }
+
         const table = initTable();
         filter.onAdvanceSearchSubmit(reload)
         filter.onSimpleSearchSubmit(reload)
+        if (options.actions?.enabled) bindTableActions(options.tableSelector, table)
 
         /* ---------- table ---------- */
         function initTable() {
@@ -258,31 +261,49 @@ const AdvanceSearchTable = (function () {
                 const elem = document.createElement('th');
                 if (!(x.visible === false))
                     elem.textContent = (x.displayName || x.property);
+
                 headerRow.append(elem)
             })
         }
 
         function buildColumns() {
-            const cols= options.columns.map(c => ({
-                data: c.property,
-                title: c.displayName,
-                ...c
-            }));
+            const cols = options.columns
+                .filter(x => !x.action)
+                .map(c => ({
+                    data: c.property,
+                    title: c.displayName,
+                    ...c
+                }));
 
-            if (options.hasActionButtons) {
-                cols.push({
-                    data: null,
-                    defaultContent: '',
-                    render: function (data, type, row) {
-                        if (typeof options.renderActionButtons === 'function')
-                            options.renderActionButtons(data, type, row)
-                        else return''
-                    }
-                })
+            if (options.actions?.enabled) {
+                const actionColumn = buildActionsColumn();
+                if (actionColumn) cols.push(actionColumn);
             }
 
             return cols;
         }
+        function buildActionsColumn() {
+
+            const actions = options.actions;
+            if (!actions?.enabled) return null;
+
+            bindTableActions(options.tableSelector, tbFn)
+
+            return {
+                data: actions.renderColumn,
+                orderable: false,
+                searchable: false,
+                className: 'tb-action-cell',
+
+                createdCell: function (td, cellData, rowData) {
+                    td.replaceChildren();
+                    td.appendChild(
+                        buildActionCell(cellData, rowData, actions)
+                    );
+                }
+            };
+        }
+
         
         function buildAjax() {
             return {
@@ -390,6 +411,106 @@ const AdvanceSearchTable = (function () {
                 table.ajax.reload();
             }
         };
+    }
+
+    function buildActionCell(cellData, rowData, actionsConfig) {
+
+        const container = document.createElement('div');
+
+        const options = document.createElement('span');
+        options.className = 'options';
+        options.appendChild(defaultActionCell('bi bi-three-dots-vertical'));
+
+        const actionsWrap = document.createElement('div');
+        actionsWrap.className = 'actions shadow border';
+
+        const buttons = actionsConfig.buttons;
+
+        // ----- Default actions -----
+        if (buttons.view?.enable) {
+            actionsWrap.appendChild(
+                buttons.view.render
+                    ? buttons.view.render?.(cellData, rowData)
+                    : defaultActionCell((buttons.view.className || 'bi bi-eye'), 'view')
+            );
+        }
+
+        if (buttons.edit?.enable) {
+            actionsWrap.appendChild(
+                buttons.edit.render
+                    ? buttons.edit.render(cellData, rowData)
+                    : defaultActionCell((buttons.edit.className || 'bi bi-pencil-square'), 'edit')
+            );
+        }
+
+        if (buttons.delete?.enable) {
+            actionsWrap.appendChild(
+                buttons.delete.render
+                    ? buttons.delete.render(cellData, rowData)
+                    : defaultActionCell((buttons.delete.className || 'bi bi-trash'), 'del')
+            );
+        }
+
+        // ----- Custom actions -----
+        buttons.custom?.forEach(c => {
+            if (c.enable && typeof c.render === 'function') {
+                const el = c.render(cellData, rowData);
+                if (el instanceof HTMLElement) {
+                    actionsWrap.appendChild(el);
+                }
+                    
+            }
+        });
+
+        container.append(options, actionsWrap);
+        return container;
+    }
+
+    function defaultActionCell(iconName, actionType){
+        const icon = document.createElement('i');
+        icon.className = iconName
+        console.log(iconName, actionType, actionType === 'string' && actionType.length)
+        if (typeof actionType === 'string' && actionType.length) {
+            icon.dataset.action = actionType
+        }
+            
+
+        return icon;
+    }
+    function bindTableActions(tableSelector, tableApi1) {
+        const $table = $(tableSelector);
+
+        $table.off('click.tbActions')
+            .on('click.tbActions', '[data-action]', function (e) {
+            e.stopPropagation();
+
+            const tableApi = getTableApi(tableSelector)
+            if (!tableApi) return;
+
+            const tr = this.closest('tr');
+            const row = tableApi.row(tr);
+
+            if (!row.any()) return;
+
+            trigger(`tb.action:${this.dataset.action}`, {
+                action: this.dataset.action,
+                data: row.data()
+            }, $table[0] );
+        });
+    }
+    function getTableApi(tableSelector) {
+        return $.fn.dataTable.isDataTable(tableSelector)
+            ? $(tableSelector).DataTable()
+            : null;
+    }
+    function trigger(eventName, detail, target = document) {
+        target.dispatchEvent(
+            new CustomEvent(eventName, {
+                detail,
+                bubbles: true,
+                cancelable: true
+            })
+        );
     }
 
     return { create };

@@ -5,6 +5,26 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
+    .floating-bar {
+        width: 240px;
+        z-index: 100000;
+        transform: translateY(-100%);
+        justify-self: anchor-center;
+        padding: 1rem;
+        transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+        opacity: 0;
+    }
+    .floating-bar.show{
+        opacity: 1;
+        transform: translateX(0%)
+    }
+
+    .floating-bar .progress{
+        
+    }
+    .progress div{
+        width: 0%;
+    }
     .participant-img{
         object-fit: cover;
         width: 50px;
@@ -453,10 +473,17 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Send image</h5>
+                    
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body position-relative">
                     <partial name="Utilities/_ImageViewer" />
+
+                    <div class="floating-bar">
+                        <div class="progress shadow">
+                            <div id="uploadBar" class="progress-bar">0%</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer d-flex">
                     <textarea class="form-control flex-grow-1 me-2 message-input" placeholder="Write message..." rows="1" id="messageInput-attach"></textarea>
@@ -799,7 +826,7 @@
     })
 
     $(document).on("input", "#messageInput,#messageInput-attach", function (e) {
-        const conversationId = $(this).parent().attr('id');
+        const conversationId = $('#chat-messages').data('conversation');
 
         const request = {
             ConversationId: conversationId,
@@ -851,7 +878,8 @@
     });
 
     $(document).on("blur", "#messageInput,#messageInput-attach", function () {
-        const conversationId = $(this).parent().attr('id');
+        debugger
+        const conversationId = $('#chat-messages').data('conversation');
 
         if (isTyping) {
             isTyping = false;
@@ -1008,6 +1036,7 @@
     }
 
     function showPreviewModal() {
+        $('.floating-bar').removeClass('show')
         $('#attachment-pop-btn').trigger('click');
         bootstrap.Modal.getInstance(uploadModal)?.hide();
     }
@@ -1020,6 +1049,7 @@
     }).find('span').hide();
 
     function uploadFile(file) {
+        $('#uploadBar').text('').removeClass('progress-bar-striped progress-bar-animated')
         const formData = new FormData();
         formData.append('file', file);
 
@@ -1027,7 +1057,19 @@
             '@Url.Action("FileUpload", "File")',
             formData,
             handleUploadSuccess,
-            { useDefaultSuccessCallBack: false }
+            { 
+                useDefaultSuccessCallBack: false,
+                onProgress: function(p){
+                    $('.floating-bar').addClass('show')
+                     $('#uploadBar')
+                        .css('width', p.percent + '%')
+                        .text(p.percent + '%');
+
+                    if(ppercent == '100'){
+                        $('#uploadBar').text('').addClass('progress-bar-striped progress-bar-animated')
+                    }
+                }
+            }
         );
     }
 

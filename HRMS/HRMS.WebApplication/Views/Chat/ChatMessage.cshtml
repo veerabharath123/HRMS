@@ -17,7 +17,7 @@
             {
                 <div class="message-type-file load rounded mb-1">
                     <div class="img-wrapper">
-                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId })" loading="lazy" />
+                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId, thumb = true })" loading="lazy" />
                         <a class="d-center atth-download-btn" href="@Url.Action("DownloadAttachmentFile", "Chat", new { id = Model.FileId })" download>
                             <i class="bi bi-box-arrow-down"></i>
                         </a>
@@ -91,7 +91,7 @@ else
             {
                 <div class="message-type-file load rounded bg-secondary mb-1">
                     <div class="img-wrapper">
-                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId })" id="@(Model.FileId)-attachment" loading="lazy" />
+                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId, thumb = true })" id="@(Model.FileId)-attachment" loading="lazy" />
                     </div>
                 </div>
             }

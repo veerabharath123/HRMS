@@ -8,6 +8,6 @@ namespace HRMS.Application.Common.Interface
 {
     public interface IImageCompressor
     {
-        Task<byte[]> CompressAsync(byte[] inputBytes, long targetSizeInBytes, bool preserveTransparency = true);
+        byte[] Compress(byte[] inputBytes, long targetSizeInBytes, bool preserveTransparency = true);
     }
 }

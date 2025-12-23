@@ -91,6 +91,7 @@ function showNotification(options) {
 function ajaxRequest(options) {
     const config = buildAjaxConfig(options);
     const method = config.method.toUpperCase();
+    const startTime = Date.now();
 
     $.ajax({
         url: config.url,
@@ -104,7 +105,30 @@ function ajaxRequest(options) {
         afterSend: () => Spinner.hide(),
         complete: () => Spinner.hide(),
         success: (res) => handleAjaxSuccess(res, config),
-        error: config.errorCallback
+        error: config.errorCallback,
+        xhr: function () {            
+            const xhr = new window.XMLHttpRequest();
+            if (!options.onProgress) return xhr;
+            // 🔹 Upload progress
+            xhr.upload.addEventListener('progress', function (e) {
+                if (!e.lengthComputable) return;
+
+                const percent = Math.round((e.loaded / e.total) * 100);
+                const elapsed = (Date.now() - startTime) / 1000;
+                const speed = elapsed > 0 ? e.loaded / elapsed : 0;
+
+                options.onProgress?.({
+                    percent,
+                    loaded: e.loaded,
+                    total: e.total,
+                    speedBytesPerSec: speed,
+                    speedKBps: (speed / 1024).toFixed(2),
+                    speedMBps: (speed / (1024 * 1024)).toFixed(2)
+                });
+            });
+
+            return xhr;
+        },
     });
 }
 
@@ -122,7 +146,7 @@ function buildAjaxConfig(options) {
         useDefaultSuccessCallBack: true,
         successCallback: null,
         errorCallback: handleAjaxError,
-        beforeSend: null
+        beforeSend: null,
     };
 
     const config = { ...defaults, ...options };

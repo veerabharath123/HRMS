@@ -8,6 +8,6 @@ namespace HRMS.Application.Services.File
         Task<ApiResponseDto> ProcessFileMaintenanceAsync(CancellationToken cancellationToken = default);
         Task<ApiResponseDto> UploadFileAsync(FileRequestDto request);
         Task<string> GetFileByStoredFileIdAsync(int storedFileId);
-        Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId);
+        Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId, bool thumb = false);
     }
 }
