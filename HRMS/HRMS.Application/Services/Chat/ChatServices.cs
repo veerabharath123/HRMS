@@ -20,14 +20,16 @@ namespace HRMS.Application.Services.Chat
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IChatNotificationServices _chatNotificationServices;
+        private readonly IPresenceConnectionManager _presenceManager;
         private readonly IFileServices _fileServices;
         public ChatServices(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IChatNotificationServices chatNotificationServices,
-            IFileServices fileServices)
+            IFileServices fileServices, IPresenceConnectionManager presenceManager)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _chatNotificationServices = chatNotificationServices;
             _fileServices = fileServices;
+            _presenceManager = presenceManager;
         }
         private async Task<int> GetCurrentEmployeeIdAsync()
         {
@@ -110,8 +112,7 @@ namespace HRMS.Application.Services.Chat
             if (convo != null) return await GetChatConversationListAsync();
 
             return ApiResponseDto.FailureStatus(ChatConstants.CREATE_CONVO_FAILED_MSG);
-        }
-        public async Task<Conversation> CreateOrGetDirectConversationAsync(int employeeId, int otherEmployeeId)
+        }public async Task<Conversation> CreateOrGetDirectConversationAsync(int employeeId, int otherEmployeeId)
         {
             // Get Direct Type Id
             int directTypeId = await _unitOfWork.ConversationTypesRepo.TableNoTracking
@@ -211,7 +212,7 @@ namespace HRMS.Application.Services.Chat
             int employeeId = await GetCurrentEmployeeIdAsync();
             if (employeeId == decimal.Zero || conversationId == decimal.Zero) return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
 
-            var convo = await _unitOfWork.ConversationsRepo.Table
+            var convo = await _unitOfWork.ConversationsRepo.TableNoTracking
                 .Where(c => !c.IsDeleted && c.Id == conversationId)
                 .Include(c => c.Participants)
                 .Select(c => new ChatConversationDetailResponseDto
@@ -219,11 +220,17 @@ namespace HRMS.Application.Services.Chat
                     Id = c.Id,
                     Type = c.TypeNavigation != null ? c.TypeNavigation.Name : string.Empty,
                     Name = c.Name ?? c.Participants.Where(cp => cp.ConversationId == c.Id && cp.EmployeeId != employeeId).First().Employee.FullName,
+                    Participants = c.Participants
+                                    .Where(cp => cp.ConversationId == c.Id && cp.EmployeeId != employeeId)
+                                    .Select(x => new ChatConversationListResponseDto { EmployeeId = x.EmployeeId }).ToList()
                 })
                 .FirstOrDefaultAsync();
 
-            if(convo is not null)
+            if (convo is not null)
             {
+                var participant = convo.Participants.First().EmployeeId;
+                var userId = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId != null && u.EmployeeId == participant);
+                convo.PresenceStatus = _presenceManager.IsOnline(userId?.Id.ToString() ?? string.Empty) ? "Online" : "Offline";
                 var messages = await GetBaseMessageQuery(m => !m.IsDeleted && m.ConversationId == conversationId, employeeId, 20).ToListAsync();
                 convo.Messages = [.. messages.OrderBy(m => m.CreatedDate)];
             }

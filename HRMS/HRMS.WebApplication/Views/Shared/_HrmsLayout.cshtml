@@ -548,8 +548,30 @@
             if(response?.success && response?.result){
                 const result = response.result;
 
-                if(result){
+                if(result.length){
                     typeof updateTypingStatus === 'function' && updateTypingStatus(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+        chatConnection.on("UserOnline", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+                console.log('on' , result)
+                if(result.length){
+                    typeof updateOnlineStatus === 'function' && updateOnlineStatus(result);
+                }
+            } else {
+                console.error('Failed to fetch message:', result?.message);
+            }
+        });
+        chatConnection.on("UserOffline", (response) => {
+            if(response?.success && response?.result){
+                const result = response.result;
+                console.log('off', result)
+                if(result.length){
+                    typeof updateOfflineStatus === 'function' && updateOfflineStatus(result);
                 }
             } else {
                 console.error('Failed to fetch message:', result?.message);

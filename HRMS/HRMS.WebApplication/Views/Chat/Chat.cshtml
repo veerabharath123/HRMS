@@ -1163,4 +1163,21 @@
         inputContainerSelector: '#chat-attachment-modal',
         inputSelector: '.message-input'
     });
+
+    function updateOnlineStatus(conversationIds){
+        const chat = $('#chat-messages').data('conversation');
+        conversationIds.forEach(c =>{
+            if(chat === c){
+                $('#chat-window').find('.profile-status').text('Online')
+            }
+        })
+    }
+    function updateOfflineStatus(conversationIds){
+        const chat = $('#chat-messages').data('conversation');
+        conversationIds.forEach(c =>{
+            if(chat === c){
+                $('#chat-window').find('.profile-status').text('Offline')
+            }
+        })
+    }
 </script>

@@ -38,6 +38,7 @@ namespace HRMS.Infrastructure
         {
             return services
                 .AddSingleton<ICacheService, MemoryCacheService>()
+                .AddSingleton<IPresenceConnectionManager, PresenceConnectionManager>()
                 .AddScoped<IJwtTokenServices, JwtTokenServices>()
                 .AddScoped<IFileStorageFactory, FileStorageFactory>()
                 .AddScoped<ICaptchaServices, GoogleRecaptchaServices>()

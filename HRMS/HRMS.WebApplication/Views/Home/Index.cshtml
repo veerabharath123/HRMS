@@ -131,25 +131,6 @@
         }
         return false
     });
-
-    const table = new AdvanceSearchTable({
-        tableSelector: "#index-table",
-        filterSelector: "#search-box-index-table",
-        ajaxUrl: '@Url.Action("GetDatatables","Home")',
-        columns: [
-            { property: 'name' , type: 'text' },
-            { property: 'age' , type: 'number' },
-            { property: 'birthdate' , type: 'date' },
-            { property: 'timer' , type: 'time' },
-            { property: 'active' , type: 'bool' },
-        ],
-        dataTableOptions: {
-            pageLength: 10,
-            ordering: true,
-            searching: false,
-            select: true
-        }
-    });
   
 
     const connection = new signalR.HubConnectionBuilder()

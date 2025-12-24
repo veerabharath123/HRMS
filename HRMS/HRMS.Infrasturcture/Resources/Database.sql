@@ -877,3 +877,5 @@ select * from employee
 update employee set email = 'eteshreddy@gmail.com' where id = 11
 
 select * from storedfiles order by id desc
+
+select * from users
