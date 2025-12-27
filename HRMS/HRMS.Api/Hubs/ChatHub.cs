@@ -48,7 +48,7 @@ namespace HRMS.Api.Hubs
             var userId = Context.UserIdentifier ?? Context.ConnectionId;
             _manager.RemoveConnection(userId, Context.ConnectionId);
 
-            var becameOffline = _presenceManager.RemoveConnection(
+            var becameOffline = await _presenceManager.RemoveConnectionAsync(
                 userId,
                 Context.ConnectionId
             );

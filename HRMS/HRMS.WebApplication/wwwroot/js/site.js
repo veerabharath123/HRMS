@@ -56,7 +56,7 @@ function showNotification(options) {
     const defaultOptions = {
         timeOut: timer,
         closeButton: true,
-        progressBar: true,
+        progressBar: typeof onComplete === 'function',
         preventDuplicates: true,
         onShown: function () {
             if (typeof onShow === 'function') onShow();
@@ -83,6 +83,24 @@ function showNotification(options) {
             toastr.info(message, title || 'Info', finalOptions);
             break;
     }
+}
+
+// Function to play notification sound
+function playNotificationSound(type) {
+    // Define paths to your sound files
+    const sounds = {
+        'success': '/sounds/success.mp3',
+        'new-message': '/sounds/new-message.mp3', 
+        'new-message-chat': '/sounds/new-message-chat.mp3', 
+    };
+
+    const audioPath = sounds[type] || sounds['success'];
+    const audio = new Audio(audioPath);
+
+    // Play the sound and catch potential browser restrictions
+    audio.play().catch(function (error) {
+        console.warn("Audio play failed (browser likely blocked it):", error);
+    });
 }
 
 // ----------------------------

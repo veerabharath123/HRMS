@@ -9,7 +9,7 @@ namespace HRMS.Application.Common.Interface
     public interface IPresenceConnectionManager
     {
         public bool AddConnection(string userId, string connectionId);
-        public bool RemoveConnection(string userId, string connectionId);
+        public Task<bool> RemoveConnectionAsync(string userId, string connectionId);
         public bool IsOnline(string userId);
         public IReadOnlyCollection<string> GetConnections(string userId);
         public IReadOnlyCollection<string> GetOnlineUsers();

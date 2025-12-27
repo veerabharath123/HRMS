@@ -553,7 +553,7 @@
                     initScrollStateTracking();
                     initLazyLoading();
                     $(`.list-group-flush #${conversationId}-status .new-message-icon`).addClass('d-none').removeClass('d-center').text('');
-                    const lastMessageSection = $container.find('.message-section-other').last();
+                    const lastMessageSection = $('#chat-messages').find('.message-section-other').last();
 
                     checkLastMessageForSeen(lastMessageSection, conversationId);
 
@@ -596,18 +596,27 @@
     });
 
     $(document).on('click','#sendBtn', function(){
+        const messageText = $('#messageInput').val().trim();
+        const request = initTextMessageReqest(messageText);
+        sendMessage(request);
+    });
+    $(document).on('click','#sendHiBtn', function(){
+        const messageText = "Hi.";
+        const request = initTextMessageReqest(messageText);
+        sendMessage(request);
+    });
+    function initTextMessageReqest(messageText){
         
-        const message = $('#messageInput').val().trim();
         const conversationId = $('#messageInput').parent().attr('id');
         const parentMessageId = $('.reply-box').data('message-id') || null;
 
-        sendMessage({
+        return {
             ConversationId: conversationId,
-            Content: message,
+            Content: messageText,
             ParentMessageId: parentMessageId,
             MessageType: MESSAGE_TYPES.Text
-        });
-    });
+        }
+    }
 
     $(document).on('click','#reply-container .btn-close',function(){
         const replyContainer = $('#reply-container').addClass('d-none')
@@ -643,9 +652,28 @@
         }
     })
 
+    $(document).on('click','.copy-msg-btn', function(){
+        const section = $(this).closest('.message-section');
+        if(section.length){
+            const message = section.find('.message-content').text()?.trim();
+            if(typeof message === 'string' && message.length)
+                copyToClipboard(message)
+        }
+    })
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+            showNotification({ type: 'info', message: 'Text copied to clipboard' });
+        })
+        .catch(err => {
+          console.error('Failed to copy:', err);
+        });
+    }
+
     function sendMessage(request){
         if(!request.Content?.length){
-            toastr.warning('Message cannot be empty.');
+            showNotification({ type: 'warning', message: 'Message cannot be empty.' });
             return;
         }
         if(!request.ConversationId){
@@ -662,6 +690,9 @@
 
                     if(!$('#reply-container').hasClass('d-none')) 
                         $('#reply-container .btn-close').trigger('click')
+
+                    $('#send-first-message').remove();
+
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -681,6 +712,7 @@
                     $('#new-message-indicator').insertBefore(nonReadMessage.closest('.message-section-other'))
                 },
                 afterLoad: function(){
+                    playNotificationSound('new-message-chat')
                     userIsNearBottom ? scrollToBottom() : showNewMessageIndicator();
 
                     $(`.list-group-flush #${data.conversationId} .last-message`).text(data.content);
@@ -694,7 +726,7 @@
                     
                 },
                 useDefaultSuccessCallBack : false,
-                htmlMethod: 'before'
+                htmlMethod: 'before'mitt
             }
         );
     }
@@ -703,6 +735,7 @@
         const convoElem = $(`.list-group-flush #chat-convo-card-${result.conversationId}`);
         const readCountElem = convoElem.find(".new-message-icon");
         const messageElem = convoElem.find(".last-message");
+        const dateElem = convoElem.find(".last-message-date");
 
         if (parseInt(result.unreadCount) === 0) {
             readCountElem.addClass("d-none").removeClass("d-center");
@@ -717,10 +750,33 @@
         if (!oldMessageId || newMessageId > oldMessageId) {
             messageElem.text(result.content);
             messageElem.attr("data-last-message-id", newMessageId)
+            dateElem.text(formatChatDate(result.createdDateUtc))
             convoElem.prependTo('.list-group-flush');
         }
     }
 
+    function formatChatDate(utcIsoString) {
+        const date = new Date(utcIsoString);
+        const now = new Date();
+
+        const isToday =
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth() &&
+            date.getDate() === now.getDate();
+
+        if (isToday) {
+            return date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit'
+        });
+    }
 
     $('#search-emp input').on('input', function () {
         const val = this.value.trim();
@@ -777,6 +833,7 @@
         )
     }
     function updateTypingStatus(result){
+        
         if(!$('#chat-box').hasClass('open-chat')){
             updateTypingStatusInChatList(result)
             return;
@@ -791,8 +848,6 @@
             $(`#${result.conversationId}.user-clickable`).removeClass('show-typing')
             $('.profile-status').text('Online')
         }
-        const container = $('#chat-messages')
-        const message = container.find('.message-section').last()[0];
 
         if(userIsNearBottom) scrollToBottom();
     }
@@ -878,7 +933,6 @@
     });
 
     $(document).on("blur", "#messageInput,#messageInput-attach", function () {
-        debugger
         const conversationId = $('#chat-messages').data('conversation');
 
         if (isTyping) {

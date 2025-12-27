@@ -507,6 +507,7 @@
                     toastr.info(result.content, result.senderName);
                     ajaxPost('@Url.Action("MarkMessageAsDelivered", "Chat")',JSON.stringify(result), ()=>{})
                     typeof updateReadCount === 'function' && updateReadCount(result)
+                    playNotificationSound('new-message')
                 } else{
                     typeof createMessage === 'function' && createMessage(result);
                 }
@@ -548,7 +549,7 @@
             if(response?.success && response?.result){
                 const result = response.result;
 
-                if(result.length){
+                if(result){
                     typeof updateTypingStatus === 'function' && updateTypingStatus(result);
                 }
             } else {
