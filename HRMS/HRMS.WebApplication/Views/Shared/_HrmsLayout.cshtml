@@ -559,9 +559,8 @@
         chatConnection.on("UserOnline", (response) => {
             if(response?.success && response?.result){
                 const result = response.result;
-                console.log('on' , result)
-                if(result.length){
-                    typeof updateOnlineStatus === 'function' && updateOnlineStatus(result);
+                if(result){
+                    typeof updatePresence === 'function' && updatePresence(result);
                 }
             } else {
                 console.error('Failed to fetch message:', result?.message);
@@ -570,9 +569,8 @@
         chatConnection.on("UserOffline", (response) => {
             if(response?.success && response?.result){
                 const result = response.result;
-                console.log('off', result)
-                if(result.length){
-                    typeof updateOfflineStatus === 'function' && updateOfflineStatus(result);
+                if(result){
+                    typeof updatePresence === 'function' && updatePresence(result);
                 }
             } else {
                 console.error('Failed to fetch message:', result?.message);

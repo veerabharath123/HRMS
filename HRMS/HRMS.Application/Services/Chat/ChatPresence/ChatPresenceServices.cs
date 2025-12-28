@@ -1,11 +1,5 @@
 ﻿using HRMS.Application.Common.Interface;
-using HRMS.Domain.Entites;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static HRMS.Domain.Records.ChatRecords;
 
 namespace HRMS.Application.Services.Chat.ChatPresence
@@ -32,7 +26,6 @@ namespace HRMS.Application.Services.Chat.ChatPresence
             if (user?.EmployeeId == null)
                 return null;
 
-            // 🔹 Get conversations + participants in ONE logical flow
             var conversations = await _unitOfWork.ConversationsRepo
                 .TableNoTracking
                 .Where(c =>
@@ -47,20 +40,13 @@ namespace HRMS.Application.Services.Chat.ChatPresence
                 })
                 .ToListAsync();
 
-            if (conversations.Count == 0)
-                return null;
+            if (conversations.Count == decimal.Zero) return null;
 
-            var conversationIds = conversations
-                .Select(c => c.Id)
-                .ToList();
+            var conversationIds = conversations.Select(c => c.Id).ToList();
 
-            var participantEmployeeIds = conversations
-                .SelectMany(c => c.Participants)
-                .Distinct()
-                .ToList();
+            var participantEmployeeIds = conversations.SelectMany(c => c.Participants).Distinct().ToList();
 
-            if (participantEmployeeIds.Count == 0)
-                return null;
+            if (participantEmployeeIds.Count == decimal.Zero) return null;
 
             var notifyUsers = await _unitOfWork.UserRepo
                 .TableNoTracking
@@ -71,11 +57,7 @@ namespace HRMS.Application.Services.Chat.ChatPresence
                 .Select(u => u.Id.ToString())
                 .ToListAsync();
 
-            return new PresenceRecord(
-                userId,
-                notifyUsers,
-                conversationIds
-            );
+            return new PresenceRecord(userId, notifyUsers, conversationIds);
         }
 
         public Task<PresenceRecord?> UserConnectedAsync(string userId) => GetPresenceForUserAsync(userId);

@@ -40,12 +40,27 @@ namespace HRMS.WebApplication.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (result is null || !result.Success || !result.HasResult)
+            if (result is null || !result.Success || result.Result is null)
             {
                 return View("Error");
             }
 
             return View(viewName, result.Result);
+        }
+        protected IActionResult ReturnView<TResult, TTransformResult>(string viewName = "", ApiResponseModel<TResult>? result = null, Func<TResult, TTransformResult>? tranform = null)
+        {
+            if (result is not null && result.Logout)
+            {
+                TempData["message"] = "Session expired, Login again.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (result is null || !result.Success || result.Result is null)
+            {
+                return View("Error");
+            }
+
+            return View(viewName, tranform is not null ? tranform.Invoke(result.Result) : result.Result);
         }
         protected IActionResult ReturnPartial<TResult>(string viewName = "", ApiResponseModel<TResult>? result = null)
         {

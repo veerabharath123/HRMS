@@ -558,6 +558,9 @@
                     checkLastMessageForSeen(lastMessageSection, conversationId);
 
                     if(participantImg.length) $('#open-menu').attr('src', participantImg.attr('src'))
+
+                    // const profileStatus = $('.profile-status').text();
+                    // $('.profile-status').text(applyProfileStatusFormatting(profileStatus))
                     
                 }
             }
@@ -590,6 +593,23 @@
             }
         )
     }
+    function applyProfileStatusFormatting(statusText){
+        if(statusText === 'Online') return statusText;
+        const statusDate = new Date(statusText);
+        if(isNaN(statusDate.getTime())) return 'Offline';
+        return 'Last seen at ' + formatChatDate(statusDate);
+    }
+    function formatPresenceText(result) {
+        if (result.isOnline) return 'Online';
+
+        if (!result.lastSeenUtc) return 'Offline';
+
+        const date = new Date(result.lastSeenUtc);
+        if (isNaN(date.getTime())) return 'Offline';
+
+        return 'Last seen at ' + formatChatDate(date);
+    }
+
 
     $(document).on('click','#back-btn',function(){
         $('#chat-box').removeClass('open-chat')
@@ -758,6 +778,8 @@
     function formatChatDate(utcIsoString) {
         const date = new Date(utcIsoString);
         const now = new Date();
+
+        if(!date || isNaN(date)) return null;
 
         const isToday =
             date.getFullYear() === now.getFullYear() &&
@@ -1218,20 +1240,31 @@
         inputSelector: '.message-input'
     });
 
-    function updateOnlineStatus(conversationIds){
+    function updateOnlineStatus(result){
         const chat = $('#chat-messages').data('conversation');
-        conversationIds.forEach(c =>{
+        result.conversationIds.forEach(c =>{
             if(chat === c){
-                $('#chat-window').find('.profile-status').text('Online')
+                const profileStatus = applyProfileStatusFormatting(result.status);
+                $('#chat-window').find('.profile-status').text(profileStatus)
             }
         })
     }
-    function updateOfflineStatus(conversationIds){
+    function updateOfflineStatus(result){
         const chat = $('#chat-messages').data('conversation');
-        conversationIds.forEach(c =>{
+        result.conversationIds.forEach(c =>{
             if(chat === c){
-                $('#chat-window').find('.profile-status').text('Offline')
+                const profileStatus = applyProfileStatusFormatting(result.status);
+                $('#chat-window').find('.profile-status').text(profileStatus)
             }
         })
+    }
+    function updatePresence(result) {
+        const activeConversation = $('#chat-messages').data('conversation');
+
+        if (!result.conversationIds?.includes(activeConversation))
+            return;
+
+        const profileStatus = formatPresenceText(result);
+        $('#chat-window').find('.profile-status').text(profileStatus);
     }
 </script>

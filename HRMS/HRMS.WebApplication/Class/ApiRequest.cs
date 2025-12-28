@@ -124,20 +124,27 @@ namespace HRMS.WebApplication.Class
             if (!TryCreateUri(_apiBaseUrl + actionPath, out var uri))
                 return null;
 
-            var request = CreateRequest(HttpMethod.Get, uri!, null, authRequired);
-
-            var response = await _httpClient.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                response.Dispose();
+                var request = CreateRequest(HttpMethod.Get, uri!, null, authRequired);
+
+                var response = await _httpClient.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    response.Dispose();
+                    return null;
+                }
+
+                return new RawFileResponse(response);
+            }
+            catch(TaskCanceledException)
+            {
                 return null;
             }
-
-            return new RawFileResponse(response);
         }
         private static async Task<ApiResponseModel<TResponse>> HandleResponse<TResponse>(HttpResponseMessage response)
         {

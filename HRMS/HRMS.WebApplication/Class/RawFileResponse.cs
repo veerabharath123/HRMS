@@ -6,6 +6,7 @@
 
         public Stream Stream => Response.Content.ReadAsStream();
 
+
         public string ContentType =>
             Response.Content.Headers.ContentType?.ToString()
             ?? "application/octet-stream";

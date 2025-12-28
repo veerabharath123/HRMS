@@ -36,7 +36,12 @@ namespace HRMS.Api.Hubs
                 if (record != null && record.NotifyUserIds.Count > 0)
                 {
                     await Clients.Users(record.NotifyUserIds)
-                        .SendAsync("UserOnline", ApiResponseDto.SuccessStatus(record.ConversationIds));
+                        .SendAsync("UserOnline", ApiResponseDto.SuccessStatus(new
+                        {
+                            record.ConversationIds,
+                            IsOnline = true,
+                            LastSeenUtc = _presenceManager.GetLastSeen(userId)
+                        }));
                 }
             }
 
@@ -60,7 +65,12 @@ namespace HRMS.Api.Hubs
                 if (record != null && record.NotifyUserIds.Count > 0)
                 {
                     await Clients.Users(record.NotifyUserIds)
-                        .SendAsync("UserOffline", ApiResponseDto.SuccessStatus(record.ConversationIds));
+                        .SendAsync("UserOffline", ApiResponseDto.SuccessStatus(new
+                        {
+                            record.ConversationIds,
+                            IsOnline = false,
+                            LastSeenUtc = _presenceManager.GetLastSeen(userId)
+                        }));
                 }
             }
 

@@ -8,7 +8,9 @@ using HRMS.SharedKernel.Models.Request;
 using HRMS.SharedKernel.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -43,6 +45,11 @@ namespace HRMS.Application.Services.Chat
                 }
             }
             return 0;
+        }
+        private async Task<int> GetUserIdByEmployeeIdAsync(int employeeId)
+        {
+            var user = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId != null && u.EmployeeId == employeeId);
+            return user?.Id ?? 0;
         }
         private IQueryable<ChatConversationListResponseDto> GetChatConversationListQuery(int employeeId, AdvanceTableRequestDto? search = null)
         {
@@ -212,7 +219,7 @@ namespace HRMS.Application.Services.Chat
             int employeeId = await GetCurrentEmployeeIdAsync();
             if (employeeId == decimal.Zero || conversationId == decimal.Zero) return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
 
-            var convo = await _unitOfWork.ConversationsRepo.TableNoTracking
+            var converstaion = await _unitOfWork.ConversationsRepo.TableNoTracking
                 .Where(c => !c.IsDeleted && c.Id == conversationId)
                 .Include(c => c.Participants)
                 .Select(c => new ChatConversationDetailResponseDto
@@ -226,17 +233,49 @@ namespace HRMS.Application.Services.Chat
                 })
                 .FirstOrDefaultAsync();
 
-            if (convo is not null)
+            if(converstaion is null) return ApiResponseDto.FailureStatus(ChatConstants.FETCH_CONVO_FAILED_MSG);
+
+            await LoadPresenceStatusAsync(converstaion);
+            await LoadMessagesStatusAsync(converstaion, employeeId);
+
+            return ApiResponseDto.SuccessStatus(converstaion);
+        }
+        private async Task LoadPresenceStatusAsync(ChatConversationDetailResponseDto converstaion)
+        {
+            var participantId = converstaion.Participants.First().EmployeeId;
+            var userId = await GetUserIdByEmployeeIdAsync(participantId);
+            converstaion.IsOnline = _presenceManager.IsOnline(userId.ToString());
+
+            var lastSeenDateTime = FormatChatDate(_presenceManager.GetLastSeen(userId.ToString()));
+            converstaion.LastSeenFormatted = !string.IsNullOrWhiteSpace(lastSeenDateTime) ? $"Last seen at {lastSeenDateTime}" : null;
+        }
+        private async Task LoadMessagesStatusAsync(ChatConversationDetailResponseDto converstaion, int currentEmployeeId)
+        {
+            var messages = await GetBaseMessageQuery(m => !m.IsDeleted && m.ConversationId == converstaion.Id, currentEmployeeId, ChatConstants.AMOUNT_OF_MSGS_PER_REQ).ToListAsync();
+            converstaion.Messages = [.. messages.OrderBy(m => m.CreatedDate)];
+        }
+        private static string? FormatChatDate(DateTimeOffset? utcDate)
+        {
+            if (utcDate is null)
+                return null;
+
+            // Convert UTC → local time
+            var localDate = utcDate.Value.ToLocalTime();
+            var now = DateTimeOffset.Now;
+
+            var isToday =
+                localDate.Year == now.Year &&
+                localDate.Month == now.Month &&
+                localDate.Day == now.Day;
+
+            if (isToday)
             {
-                var participant = convo.Participants.First().EmployeeId;
-                var userId = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId != null && u.EmployeeId == participant);
-                convo.PresenceStatus = _presenceManager.IsOnline(userId?.Id.ToString() ?? string.Empty) ? "Online" : "Offline";
-                var messages = await GetBaseMessageQuery(m => !m.IsDeleted && m.ConversationId == conversationId, employeeId, 20).ToListAsync();
-                convo.Messages = [.. messages.OrderBy(m => m.CreatedDate)];
+                return localDate.ToString("hh:mm tt", CultureInfo.InvariantCulture);
             }
 
-            return ApiResponseDto.SuccessStatus(convo);
+            return localDate.ToString("dd/MM", CultureInfo.InvariantCulture);
         }
+
         public async Task<Message> SaveMessageAsync(int employeeId, ChatMessageRequestDto request)
         {
             var messageTypeId = await _unitOfWork.GeneralReferenceRepo.TableNoTracking
@@ -276,7 +315,7 @@ namespace HRMS.Application.Services.Chat
 
             if(fileId is not null)
             {
-                var attachment = new HRMS.Domain.Entites.Attachment();
+                var attachment = new HRMS.Domain.Entites.Attachment(); 
                 attachment.Attach(messageId, fileId.Value);
                 _unitOfWork.AttachmentsRepo.Add(attachment);
                 await _unitOfWork.SaveAsync();

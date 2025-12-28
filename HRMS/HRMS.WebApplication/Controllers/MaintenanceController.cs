@@ -2,6 +2,7 @@
 using HRMS.SharedKernel.Models.Response;
 using HRMS.WebApplication.Class;
 using HRMS.WebApplication.Class.BreadCrumbs;
+using HRMS.WebApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -44,7 +45,11 @@ namespace HRMS.WebApplication.Controllers
         {
             ViewBag.ModuleTitle = "Add User";
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
-            return View("User/AddUser");
+            return View("UserForm", new UserFormVm
+            {
+                Mode = FormMode.Add,
+                SubmitUrl = Url.Action(nameof(SaveUser)) ?? string.Empty,
+            });
         }
         [HttpGet]
         public async Task<IActionResult> UpdateUser(int id)
@@ -53,7 +58,12 @@ namespace HRMS.WebApplication.Controllers
 
             ViewBag.ModuleTitle = "Edit User";
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
-            return ReturnView("User/UpdateUser", response);
+            return ReturnView("UserForm", response, r => new UserFormVm
+            {
+                Mode = FormMode.Edit,
+                SubmitUrl = Url.Action(nameof(EditUser)) ?? string.Empty,
+                UserDetails = r
+            });
         }
         [HttpGet]
         public async Task<IActionResult> ViewUser(int id)
@@ -62,11 +72,21 @@ namespace HRMS.WebApplication.Controllers
 
             ViewBag.ModuleTitle = "View User";
             InitBreadcrumbs(_breadcrumbManager, ViewBag.ModuleTitle);
-            return ReturnView("User/UpdateUser", response);
+            return ReturnView("UserForm", response, r => new UserFormVm
+            {
+                Mode = FormMode.View,
+                UserDetails = r
+            });
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveUser([FromBody] UserInsertRequestDto request)
+        {
+            var response = await _api.PostAsync<ApiResponseDto>("/User/InsertUser", request, true); 
+            return JsonResponse(response,Url.Action(nameof(UsersMaintenance)));
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditUser([FromBody] UserInsertRequestDto request)
         {
             var response = await _api.PostAsync<ApiResponseDto>("/User/InsertUser", request, true); 
             return JsonResponse(response,Url.Action(nameof(UsersMaintenance)));
