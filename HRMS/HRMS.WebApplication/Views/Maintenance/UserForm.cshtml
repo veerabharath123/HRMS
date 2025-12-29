@@ -19,7 +19,7 @@
 
                         <div class="mt-3 form-control-section"> 
                             <label for="username" class="form-label">Username:</label> 
-                            <input type="text" class="form-control form-control-sm" id="username" placeholder="Enter Username" asp-for="UserDetails.UserName" name="Email" asp-readonly="Model.IsReadOnly">
+                            <input type="text" class="form-control form-control-sm" id="username" placeholder="Enter Username" asp-for="UserDetails.UserName" name="UserName" asp-readonly="Model.IsReadOnly">
                             <span class="invalid-feedback"></span> 
                         </div> 
                         <div class="form-control-section"> 
@@ -80,7 +80,7 @@
             $icon.toggleClass('bi-eye bi-eye-slash');
         });
 
-        const mode = $('#formMode').val()?.toUppercase();
+        const mode = $('#formMode').val()?.toUpperCase();
 
         const rules = {
             UserName: { required: true, minLength: 3 },

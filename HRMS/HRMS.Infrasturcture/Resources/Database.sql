@@ -874,8 +874,11 @@ SET e.email = u.email
 FROM employee e
 JOIN users u ON u.employeeid = e.id;
 select * from employee
-update employee set email = 'eteshreddy@gmail.com' where id = 11
+update employee set email = 'henryv@gmail.com' where id = 6
+update employee set bio = 'child care' where id = 5
 
 select * from storedfiles order by id desc
 
 select * from users
+select * from employee
+

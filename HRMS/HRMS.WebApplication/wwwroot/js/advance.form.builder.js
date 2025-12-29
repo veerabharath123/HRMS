@@ -277,7 +277,7 @@
             if (!c) return;
 
             c.input.removeClass('is-invalid');
-            c.feedback.text('').hide();
+            c.feedback?.text('').hide();
             c.input.closest('.form-control-section').removeClass('has-error');
         }
 
@@ -337,7 +337,7 @@
             reset() {
                 Object.values(state.controls).forEach(c => {
                     c.input.val('').prop('checked', false).removeClass('is-invalid');
-                    c.feedback.text('').hide();
+                    c.feedback?.text('').hide();
                     c.touched = false;
                     c.dirty = false;
                 });

@@ -207,7 +207,6 @@ const EmojiPicker = (function () {
             insertAtCursor(activeInput[0], emoji);
             saveRecent(emoji);
 
-            $modal.modal('hide');
             activeInput.focus();
         });
     }

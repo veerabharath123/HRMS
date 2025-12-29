@@ -1240,24 +1240,6 @@
         inputSelector: '.message-input'
     });
 
-    function updateOnlineStatus(result){
-        const chat = $('#chat-messages').data('conversation');
-        result.conversationIds.forEach(c =>{
-            if(chat === c){
-                const profileStatus = applyProfileStatusFormatting(result.status);
-                $('#chat-window').find('.profile-status').text(profileStatus)
-            }
-        })
-    }
-    function updateOfflineStatus(result){
-        const chat = $('#chat-messages').data('conversation');
-        result.conversationIds.forEach(c =>{
-            if(chat === c){
-                const profileStatus = applyProfileStatusFormatting(result.status);
-                $('#chat-window').find('.profile-status').text(profileStatus)
-            }
-        })
-    }
     function updatePresence(result) {
         const activeConversation = $('#chat-messages').data('conversation');
 
