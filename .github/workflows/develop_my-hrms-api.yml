@@ -13,23 +13,29 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore API dependencies
+        run: dotnet restore src/HRMS.Api/HRMS.Api.csproj
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build API
+        run: dotnet build src/HRMS.Api/HRMS.Api.csproj --configuration Release --no-restore
 
-      - name: Upload artifact for deployment job
+      - name: Publish API
+        run: dotnet publish src/HRMS.Api/HRMS.Api.csproj `
+             --configuration Release `
+             --output "${{env.DOTNET_ROOT}}/myapp" `
+             --no-build
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
@@ -62,4 +68,5 @@ jobs:
           app-name: 'my-hrms-api'
           slot-name: 'Production'
           package: .
+
           
