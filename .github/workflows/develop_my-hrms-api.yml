@@ -1,0 +1,74 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - my-hrms-api
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Restore API dependencies
+        run: dotnet restore HRMS/HRMS.Api/HRMS.Api.csproj
+
+      - name: Build API
+        run: dotnet build HRMS/HRMS.Api/HRMS.Api.csproj --configuration Release --no-restore
+
+      - name: Publish API
+        run: dotnet publish HRMS/HRMS.Api/HRMS.Api.csproj `
+             --configuration Release `
+             --output "${{env.DOTNET_ROOT}}/myapp" `
+             --no-build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2ACEE8A8E8F04981A51FB8EA2E2D57B2 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B4F1E73129F6499287D364032D5B2984 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A82BEFD584834A5DB64FD799E879A32B }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'my-hrms-api'
+          slot-name: 'Production'
+          package: .
+
+          
+
+
