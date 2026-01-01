@@ -10,6 +10,7 @@ namespace HRMS.Domain.Entites
 {
     public class Message : AuditableWithBaseEntity<int>
     {
+        public Guid? TempId { get; set; }
         public int ConversationId { get; set; }
         public int SenderId { get; set; }
 

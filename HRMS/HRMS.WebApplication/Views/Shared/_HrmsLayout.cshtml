@@ -536,8 +536,8 @@
                 const result = response.result;
                 if($('#chat-box').hasClass('open-chat') && result?.length){
                     result.forEach(id => {
-                        $(`#chat-messages .message-section#${id} .read-at`).removeClass("d-none")
-                        $(`#chat-messages .message-section#${id} .delivered-status`).removeClass("d-none")
+                        $(`#chat-messages .message-section[data-temp-id="${id}"] .read-at`).removeClass("d-none")
+                        $(`#chat-messages .message-section[data-temp-id="${id}"] .delivered-status`).remove()
                     });
                 }
             } else {

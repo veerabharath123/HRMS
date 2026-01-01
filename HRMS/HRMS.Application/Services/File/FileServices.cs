@@ -162,6 +162,30 @@ namespace HRMS.Application.Services.File
 
             return ApiResponseDto.SuccessStatus(file.GuidId, FileConstants.UPLOAD_SUCCESS_MSG);
         }
+        public async Task<ApiResponseDto> StoreFileAsync(FileRequestDto request)
+        {
+            var location = await GetFileLocationConfigAsync();
+
+            var file = await StoreFileInfoInDbAsync(request, location.Id);
+
+            if (file is null) return ApiResponseDto.FailureStatus(FileConstants.UPLOAD_FAILED_MSG);
+
+            return ApiResponseDto.SuccessStatus(file.GuidId, FileConstants.UPLOAD_SUCCESS_MSG);
+        }
+        public async Task<ApiResponseDto> UploadFileAsync(UploadFileRequestDto request)
+        {
+            var location = await GetFileLocationConfigAsync();
+
+            var file = await _unitOfWork.StoredFilesRepo.TableNoTracking
+                        .FirstOrDefaultAsync(s => s.GuidId == request.Id && !s.IsDeleted);
+
+            if (file is null) return ApiResponseDto.FailureStatus(FileConstants.UPLOAD_FAILED_MSG);
+
+            var uploadRes = await UploadFileToStorageAsync(file.GuidId.ToString(), request.FileContent, location);
+            if (!uploadRes.Success) return ApiResponseDto.FailureStatus(uploadRes.Message);
+
+            return ApiResponseDto.SuccessStatus(file.GuidId, FileConstants.UPLOAD_SUCCESS_MSG);
+        }
 
         private async Task<StoredFiles?> StoreFileInfoInDbAsync(FileRequestDto request, int locationId)
         {

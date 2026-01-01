@@ -31,6 +31,18 @@ namespace HRMS.Api.Controllers.V1
             var response = await _fileServices.UploadFileAsync(request);
             return Ok(response);
         }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> StoreFile([FromBody] FileRequestDto request)
+        {
+            var response = await _fileServices.StoreFileAsync(request);
+            return Ok(response);
+        }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> UploadLazyFile([FromBody] UploadFileRequestDto request)
+        {
+            var response = await _fileServices.UploadFileAsync(request);
+            return Ok(response);
+        }
         
     }
 }

@@ -43,10 +43,28 @@ namespace HRMS.WebApplication.Controllers
             {
                 var response = await _api.PostAsync<ChatMessageResponseDto>("/Chats/SendMessage", request, true);
 
+                return JsonResponse(response);
+            }
+
+            throw new Exception("Invalid data");
+        }
+        [HttpPost]
+        public async Task<IActionResult> SendMessageHtml([FromBody] ChatMessageRequestDto request)
+        {
+            if(ModelState.IsValid)
+            {
+                var response = await _api.PostAsync<ChatMessageResponseDto>("/Chats/SendMessage", request, true);
+
                 return PartialView("ChatMessage",response.Result);
             }
 
             throw new Exception("Invalid data");
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateMessage([FromBody] ChatMessageResponseDto response)
+        {
+            if (response is null) return NoContent();
+            return PartialView("ChatMessage", response);
         }
         [HttpPost]
         public async Task<IActionResult> StartNewChatWith([FromBody] IdRequestDto request)
@@ -75,7 +93,7 @@ namespace HRMS.WebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMessageHtml([FromBody] ChatMessageResponseDto message)
         {
-            var response = await _api.PostAsync("/Chats/MarkMessageAsDelivered", new { message.Id }, true);
+            _ = await _api.PostAsync("/Chats/MarkMessageAsDelivered", new { message.Id }, true);
             return PartialView("ChatMessage", message);
         }
         [HttpPost]

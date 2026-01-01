@@ -729,11 +729,13 @@ CREATE TABLE ConversationParticipants (
 
     CONSTRAINT UQ_ConversationParticipants UNIQUE (ConversationId, EmployeeId)
 );
+alter table Messages add TempId uniqueidentifier
 
 CREATE TABLE Messages (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     GuidId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
 
+	TempId uniqueidentifier,
     ConversationId INT NOT NULL,
     SenderId INT NOT NULL,
     ParentMessageId INT NULL,

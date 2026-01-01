@@ -2,7 +2,7 @@
 
 @if (!Model.IsMine)
 {
-    <div class="d-flex flex-wrap justify-content-start message-section message-section-other rounded" id="@Model.Id">
+    <div class="d-flex flex-wrap justify-content-start message-section message-section-other rounded" id="@Model.Id" data-temp-id="@Model.TempId">
         @* <div class="message-sender-name">
             @Model.SenderName
         </div> *@
@@ -57,7 +57,7 @@
 }
 else
 {
-    <div class="d-flex flex-wrap justify-content-end message-section rounded" id="@Model.Id">
+    <div class="d-flex flex-wrap justify-content-end message-section rounded" id="@Model.Id" data-temp-id="@Model.TempId">
        @*  <div class="message-sender-name text-end">
             @Model.SenderName
         </div> *@
@@ -74,10 +74,10 @@ else
                     </span>
                 </li>
                 <li><hr class="dropdown-divider"></hr></li>
-                <li><a class="dropdown-item reply-btn small" href="#" data-message-id="@Model.Id">Reply</a></li>
-                <li><a class="dropdown-item small" href="#" data-message-id="@Model.Id">Edit</a></li>
-                <li><a class="dropdown-item small" href="#" data-message-id="@Model.Id">Star</a></li>
-                <li><a class="dropdown-item copy-msg-btn small" href="#" data-message-id="@Model.Id">Copy</a></li>
+                <li><a class="dropdown-item reply-btn small" href="#" >Reply</a></li>
+                <li><a class="dropdown-item small" href="#" >Edit</a></li>
+                <li><a class="dropdown-item small" href="#" >Star</a></li>
+                <li><a class="dropdown-item copy-msg-btn small" href="#">Copy</a></li>
             </ul>
         </div>
 
@@ -91,7 +91,11 @@ else
             {
                 <div class="message-type-file load rounded bg-secondary mb-1">
                     <div class="img-wrapper">
-                        <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId, thumb = true })" id="@(Model.FileId)-attachment" loading="lazy" />
+                        @if (Model.FileId is not null)
+                        {
+                            <img alt="attachment" class="img-fluid attached-img" src="@Url.Action("GetAttachmentsFile", "Chat", new { id = Model.FileId, thumb = true })" id="@(Model.FileId)-attachment" loading="lazy" />
+                        }
+                        <div class="img-loader"></div>
                     </div>
                 </div>
             }
@@ -102,8 +106,9 @@ else
                 <span class="message-time" data-datetime="@Model.CreatedDateUtc">
                     @Model.CreatedDate.ToLocalTime().ToString("hh:mm tt")
                 </span>
-                <i class="bi bi-send-check-fill delivered-status @(Model.DeliveredAt is null ? "d-none" : "")"></i>
-                <i class="bi bi-eye-fill read-at @(Model.ReadAt is null ? "d-none" : "")"></i>
+                <i class="bi bi-clock-fill pending-status" asp-visible="Model.Pending"></i>
+                <i class="bi bi-send-check-fill delivered-status" asp-visible="Model.IsDelivered"></i>
+                <i class="bi bi-eye-fill read-at" asp-visible="Model.IsRead"></i>
             </div>
         </div>
         

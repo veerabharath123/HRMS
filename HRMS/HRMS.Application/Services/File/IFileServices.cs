@@ -9,5 +9,8 @@ namespace HRMS.Application.Services.File
         Task<ApiResponseDto> UploadFileAsync(FileRequestDto request);
         Task<string> GetFileByStoredFileIdAsync(int storedFileId);
         Task<FileResponseDto> GetFileBytesByStoredFileIdAsync(int storedFileId, bool thumb = false);
+        Task<ApiResponseDto> StoreFileAsync(FileRequestDto request);
+        Task<ApiResponseDto> UploadFileAsync(UploadFileRequestDto request);
+
     }
 }

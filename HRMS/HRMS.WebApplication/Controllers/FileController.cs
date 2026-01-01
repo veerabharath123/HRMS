@@ -18,7 +18,21 @@ namespace HRMS.WebApplication.Controllers
             var response = await _api.PostAsync<Guid>("/Files/UploadFile", request, true);
             return JsonResponse(response);
         }
-        private static async Task<object> ToFileDtoAsync(IFormFile file)
+        [HttpPost]
+        public async Task<IActionResult> StoreFile([FromForm] IFormFile file)
+        {
+            var request = await ToFileDtoAsync(file);
+            var response = await _api.PostAsync<Guid>("/Files/StoreFile", request, true);
+            return JsonResponse(response);
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateLazyFile([FromForm] IFormFile file, Guid Id)
+        {
+            var request = await ToFileDtoAsync(file);
+            var response = await _api.PostAsync<Guid>("/Files/UpdateLazyFile", request, true);
+            return JsonResponse(response);
+        }
+        private static async Task<object> ToFileDtoAsync(IFormFile file, Guid? id = null)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
@@ -28,6 +42,7 @@ namespace HRMS.WebApplication.Controllers
 
             return new
             {
+                id,
                 FileContent = ms.ToArray(),
                 FileName = Path.GetFileNameWithoutExtension(file.FileName),
                 FileExtension = Path.GetExtension(file.FileName)?.TrimStart('.') ?? "",

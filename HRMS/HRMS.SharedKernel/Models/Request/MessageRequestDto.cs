@@ -27,5 +27,7 @@ namespace HRMS.SharedKernel.Models.Request
         public Guid? FileId { get; set; }
         [Required]
         public string MessageType { get; set; } = "Text";
+        [Required]
+        public Guid TempId { get; set; } 
     }
 }

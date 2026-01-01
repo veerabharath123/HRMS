@@ -54,10 +54,14 @@ namespace HRMS.SharedKernel.Models.Response
         public bool IsMine { get; set; }   // For UI: left or right alignment
 
         public DateTime? DeliveredAt { get; set; }
+        public bool IsDelivered => DeliveredAt is not null && !IsRead;
         public DateTime? ReadAt { get; set; }
+        public bool IsRead=> ReadAt is not null;
         public int UnreadCount { get; set; }
         public string MessageType { get; set; } = string.Empty;
         public Guid? FileId { get; set; }
+        public Guid? TempId { get; set; }
+        public bool Pending { get; set; } 
     }
     public class ChatMessagesResponseDto
     {

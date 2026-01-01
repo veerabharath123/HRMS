@@ -5,6 +5,29 @@
     ViewData["Module"] = ViewBag.ModuleTitle;
 }
 <style nonce="@Html.ScriptNonce()">
+    .img-wrapper.loading .img-loader::after{
+        content: '';
+        background-image: url(/images/spinner.png);
+        background-size: 30px 30px;
+        position: absolute;
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        animation: spin 1s linear infinite;
+    }
+
+    .img-wrapper:not(.loading) .img-loader {
+        display: none;
+    }
+    .img-loader{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(10px);
+    }
+
     .floating-bar {
         width: 240px;
         z-index: 100000;
@@ -75,14 +98,6 @@
         color: white;
     }
 
-    .img-wrapper.load::after {
-        content: '';
-        background-image: url('@Url.Content("/images/spinner.png")');  
-        background-size: 30px 30px;
-        position: absolute;
-        aspect-ratio: 1 / 1;
-        width: 30px;
-    }
     .img-wrapper {
         max-width: 260px; /* WhatsApp bubble width */
         overflow: hidden;
@@ -618,12 +633,12 @@
     $(document).on('click','#sendBtn', function(){
         const messageText = $('#messageInput').val().trim();
         const request = initTextMessageReqest(messageText);
-        sendMessage(request);
+        sendLazyMessage(request);
     });
     $(document).on('click','#sendHiBtn', function(){
         const messageText = "Hi.";
         const request = initTextMessageReqest(messageText);
-        sendMessage(request);
+        sendLazyMessage(request);
     });
     function initTextMessageReqest(messageText){
         
@@ -691,7 +706,7 @@
         });
     }
 
-    function sendMessage(request){
+    function sendLazyMessage(request, callback){
         if(!request.Content?.length){
             showNotification({ type: 'warning', message: 'Message cannot be empty.' });
             return;
@@ -699,23 +714,51 @@
         if(!request.ConversationId){
             return;
         }
-        ajaxLoadHtml(
+        request.tempId = crypto.randomUUID();
+
+        createLazyMessage({
+            Id: 0,
+            ConversationId: request.ConversationId,
+            SenderId: 0,
+            SenderName: '',
+            Content: request.Content,
+            ParentMessageId:request.ParentMessageId,
+            ParentMessage: request.ParentMessageId ? $(`#${request.ParentMessageId} .message-content`).text() : '',
+            ParentMessageSenderName:'',
+            CreatedDate: new Date(),
+            CreatedDateUtc: new Date().toISOString(),
+            IsMine: true,
+            DeliveredAt: null,
+            ReadAt: null,
+            UnreadCount: 0,
+            MessageType: request.MessageType,
+            FileId: request.FileId || null,
+            TempId: request.tempId,
+            Pending: true
+        }, request, callback);
+    }
+    function sendMessage(request, callback){
+        ajaxPost(
             '@Url.Action("SendMessage", "Chat")',
             JSON.stringify(request),
-            '#typing-status',
-            { 
-                afterLoad: function(t,$message){
-                    if(userIsNearBottom) scrollToBottom();
-                    $('#messageInput').val('');
+            function(res){
+                if(!res?.success || !res?.data) return;
 
-                    if(!$('#reply-container').hasClass('d-none')) 
-                        $('#reply-container .btn-close').trigger('click')
+                const data = res.data;
+                if(data.tempId) {
+                    const message = $(`.message-section[data-temp-id="${data.tempId}"]`)
+                    .attr('id', data.id)
+                    .find('.pending-status').addClass('d-none');
 
-                    $('#send-first-message').remove();
+                    typeof callback === 'function' && callback(request)
+                }
 
-                },
+                
+
+                if(userIsNearBottom) scrollToBottom();
+            },
+            {
                 useDefaultSuccessCallBack : false,
-                htmlMethod: 'before'
             }
         );
     }
@@ -744,6 +787,39 @@
                         checkLastMessageForSeen(lastMessageSection,data.conversationId )
                     }
                     
+                },
+                useDefaultSuccessCallBack : false,
+                contentType: "application/json",
+                processData: false,
+                htmlMethod: 'before'
+            }
+        );
+    }
+    function createLazyMessage(lazyRequest,request,callback){
+        ajaxLoadHtml(
+            '@Url.Action("CreateMessage", "Chat")',
+            JSON.stringify(lazyRequest),
+            '#typing-status',
+            { 
+                afterLoad: function(tar,msg){
+                    playNotificationSound('new-message-chat')
+                    userIsNearBottom ? scrollToBottom() : showNewMessageIndicator();
+
+                    $('#messageInput').val('');
+
+                    $(`.list-group-flush #${lazyRequest.conversationId} .last-message`).text(lazyRequest.content);
+
+                    if(!$('#reply-container').hasClass('d-none'))
+                        $('#reply-container .btn-close').trigger('click')
+
+                    $('#send-first-message').remove();
+
+                    if(request.MessageType?.toUpperCase() === 'TEXT')
+                        sendMessage(request)
+
+                    typeof callback === 'function' && callback(request)
+
+                    if(!$('#chat-box').hasClass('open-chat')) return;                    
                 },
                 useDefaultSuccessCallBack : false,
                 htmlMethod: 'before'
@@ -1121,10 +1197,32 @@
         if (!currentFile) return;
 
         toggleSendButton(true);
-        uploadFile(currentFile);
+
+        const lazyRequest = {
+            ConversationId: $('#chat-messages').data('conversation'),
+            Content: $messageInput.val(),
+            ParentMessageId: null,
+            MessageType: MESSAGE_TYPES.File,
+            FileId: null,
+        }
+
+        sendLazyMessage(lazyRequest, function(request){
+            const tempId = request.tempId;
+            
+            toggleSendButton(false);
+            closePreviewModal();
+            const img = document.createElement('img')
+            img.src = URL.createObjectURL(currentFile)
+            img.classList.add('img-fluid','attached-img')
+
+            const message = $(`#chat-messages .message-section[data-temp-id="${tempId}"]`)
+            message.find('.img-wrapper').append(img).addClass('loading')
+            attachmentViewer.reset()
+            uploadFile(currentFile, request)
+        });
     }).find('span').hide();
 
-    function uploadFile(file) {
+    function uploadFile(file, request) {
         $('#uploadBar').text('').removeClass('progress-bar-striped progress-bar-animated')
         const formData = new FormData();
         formData.append('file', file);
@@ -1132,7 +1230,7 @@
         ajaxPostFile(
             '@Url.Action("FileUpload", "File")',
             formData,
-            handleUploadSuccess,
+            function(res) { handleUploadSuccess(res, request) },
             { 
                 useDefaultSuccessCallBack: false,
                 onProgress: function(p){
@@ -1141,7 +1239,7 @@
                         .css('width', p.percent + '%')
                         .text(p.percent + '%');
 
-                    if(ppercent == '100'){
+                    if(p.percent == '100'){
                         $('#uploadBar').text('').addClass('progress-bar-striped progress-bar-animated')
                     }
                 }
@@ -1149,25 +1247,16 @@
         );
     }
 
-    function handleUploadSuccess(res) {
-        toggleSendButton(false);
-
+    function handleUploadSuccess(res, request) {
         if (!res?.success || !res?.data) return;
-
-        closePreviewModal();
-        sendChatMessage(res.data);
-        cleanupObjectUrl();
-        attachmentViewer.reset()
-    }
-
-    function sendChatMessage(fileId) {
-        sendMessage({
-            ConversationId: $('#chat-messages').data('conversation'),
-            Content: $messageInput.val(),
-            ParentMessageId: null,
-            MessageType: MESSAGE_TYPES.File,
-            FileId: fileId
+        request.FileId = res?.data
+        sendMessage(request, function(){
+            debugger
+            const message = $(`#chat-messages .message-section[data-temp-id="${request.tempId}"]`)
+            message.find('.img-wrapper').removeClass('loading')
         });
+
+
     }
 
     function toggleSendButton(disabled) {

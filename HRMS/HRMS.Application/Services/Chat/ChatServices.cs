@@ -292,7 +292,8 @@ namespace HRMS.Application.Services.Chat
                 ParentMessageId = request.ParentMessageId,
                 IsEdited = false,
                 CreatedUtcAt = DateTime.UtcNow,
-                UpdatedUtcAt = DateTime.UtcNow
+                UpdatedUtcAt = DateTime.UtcNow,
+                TempId = request.TempId
             };
             _unitOfWork.MessagesRepo.Add(message);
             await _unitOfWork.SaveChangesAsync();
@@ -373,7 +374,8 @@ namespace HRMS.Application.Services.Chat
                 ParentMessageSenderName = message.ParentMessage?.Sender?.FullName ?? string.Empty,
                 ParentMessage = message.ParentMessage?.Content ?? string.Empty,
                 MessageType = message.MessageType != null ? message.MessageType.Value : ChatConstants.ATTACHMENT_TYPE.TEXT,
-                FileId = message.Attachments.Count != 0 ? message.Attachments.First().File!.GuidId : null
+                FileId = message.Attachments.Count != 0 ? message.Attachments.First().File!.GuidId : null,
+                TempId = request.TempId
             };
 
             foreach (var participant in participants)
@@ -484,7 +486,7 @@ namespace HRMS.Application.Services.Chat
         private async Task<ApiResponseDto> NotifySeenStatusAsync(List<MessageStatus> seenStatusList)
         {
             var groupedBySender = seenStatusList
-                .Where(ms => ms.Message != null)
+                .Where(ms => ms.Message != null && ms.Message.TempId.HasValue)
                 .GroupBy(ms => ms.Message!.SenderId)
                 .ToList();
 
@@ -496,9 +498,9 @@ namespace HRMS.Application.Services.Chat
 
                 var user = await _unitOfWork.UserRepo.TableNoTracking.FirstOrDefaultAsync(u => u.EmployeeId == senderUser.EmployeeId);
 
-                if (user is not null) await _chatNotificationServices.SendSeenStatusToUserAsync<List<int>>(
+                if (user is not null) await _chatNotificationServices.SendSeenStatusToUserAsync<List<Guid>>(
                     user.Id.ToString(),
-                    [.. group.Select(ms => ms.MessageId).Distinct()]
+                    [.. group.Select(ms => ms.Message!.TempId!.Value).Distinct()]
                 );
             }
 
