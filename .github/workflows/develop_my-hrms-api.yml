@@ -24,13 +24,13 @@ jobs:
           dotnet-version: '9.x'
 
       - name: Restore API dependencies
-        run: dotnet restore HRMS.Api/HRMS.Api.csproj
+        run: dotnet restore HRMS/HRMS.Api/HRMS.Api.csproj
 
       - name: Build API
-        run: dotnet build HRMS.Api/HRMS.Api.csproj --configuration Release --no-restore
+        run: dotnet build HRMS/HRMS.Api/HRMS.Api.csproj --configuration Release --no-restore
 
       - name: Publish API
-        run: dotnet publish HRMS.Api/HRMS.Api.csproj `
+        run: dotnet publish HRMS/HRMS.Api/HRMS.Api.csproj `
              --configuration Release `
              --output "${{env.DOTNET_ROOT}}/myapp" `
              --no-build
@@ -70,4 +70,5 @@ jobs:
           package: .
 
           
+
 
